@@ -1,0 +1,105 @@
+name: Testes
+
+# Em todo push e pull request: sintaxe, unitário e integração — nada disso pede
+# Docker, banco ou rede, então cabe no caminho rápido. O E2E sobe o wp-env e sai
+# caro, por isso roda de noite ou sob pedido. O smoke ao vivo nunca roda aqui:
+# não há credencial do ERP no runner e não queremos criar cadastro na conta da
+# Gama por automação.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  schedule:
+    # 03:00 em Porto Alegre (UTC-3).
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      e2e:
+        description: 'Rodar também o E2E no wp-env'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unitario:
+    name: Sintaxe e unitário (PHP 8.4)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 8.4 é a versão da VPS: divergir aqui esconderia erro que só aparece lá.
+      - name: Preparar PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, json
+          coverage: none
+
+      - name: Sintaxe (php -l)
+        run: bash ./scripts/php-lint.sh
+
+      - name: Suíte unitária
+        run: php tests/run.php --suite=unit
+
+  integracao:
+    name: Integração (ERP falso)
+    runs-on: ubuntu-latest
+    needs: unitario
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, json
+          coverage: none
+
+      - name: Suíte de integração
+        run: php tests/run.php --suite=integration
+
+  e2e:
+    name: E2E no wp-env
+    runs-on: ubuntu-latest
+    needs: integracao
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.e2e)
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Instalar navegador do Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Subir wp-env e preparar a loja
+        run: npm run e2e:subir
+
+      - name: Suíte E2E
+        run: npm run test:e2e
+
+      - name: Guardar relatório quando falhar
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-e2e
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: Derrubar wp-env
+        if: always()
+        run: npm run e2e:derrubar

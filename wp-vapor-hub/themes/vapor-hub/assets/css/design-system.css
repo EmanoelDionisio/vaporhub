@@ -1,0 +1,721 @@
+/**
+ * Vapor Hub — Design System
+ *
+ * Sistema de design em CSS puro, espelhando os tokens do MVP React.
+ * Todas as variáveis, tipografia, utilitários e componentes do tema.
+ *
+ * @package VaporHub
+ * @since   1.0.0
+ */
+
+/* =========================================================================
+   1. CUSTOM PROPERTIES (TOKENS DE DESIGN)
+   ========================================================================= */
+
+:root {
+	/* --- Cores (vitrine preta / premium de vapor) --- */
+	--vh-cor-primaria: #c8f542;
+	--vh-cor-primaria-hover: #d6ff6a;
+	--vh-cor-primaria-leve: rgba(200, 245, 66, 0.12);
+	--vh-cor-primaria-media: rgba(200, 245, 66, 0.28);
+
+	--vh-cor-fundo: #0a0a0b;
+	--vh-cor-superficie: #141416;
+
+	--vh-cor-texto: #f4f1ea;
+	--vh-cor-texto-suave: #9a9a92;
+	--vh-cor-texto-invertido: #0a0a0b;
+
+	--vh-cor-borda: #2a2a2c;
+	--vh-cor-borda-forte: #3a3a3e;
+
+	/* Cores semânticas */
+	--vh-cor-sucesso: #22c55e;
+	--vh-cor-sucesso-fundo: #f0fdf4;
+	--vh-cor-erro: #ef4444;
+	--vh-cor-erro-fundo: #fef2f2;
+	--vh-cor-info: #3b82f6;
+	--vh-cor-info-fundo: #eff6ff;
+	--vh-cor-alerta: #f59e0b;
+	--vh-cor-alerta-fundo: #fffbeb;
+
+	/* --- Tipografia --- */
+	--vh-fonte-familia: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+	--vh-fonte-peso-normal: 400;
+	--vh-fonte-peso-medio: 500;
+	--vh-fonte-peso-semi: 600;
+	--vh-fonte-peso-bold: 700;
+	--vh-fonte-peso-extra: 800;
+
+	--vh-fonte-xs: 0.75rem;    /* 12px */
+	--vh-fonte-sm: 0.875rem;   /* 14px */
+	--vh-fonte-base: 1rem;     /* 16px */
+	--vh-fonte-lg: 1.125rem;   /* 18px */
+	--vh-fonte-xl: 1.25rem;    /* 20px */
+	--vh-fonte-2xl: 1.5rem;    /* 24px */
+	--vh-fonte-3xl: 1.875rem;  /* 30px */
+	--vh-fonte-4xl: 2.25rem;   /* 36px */
+	--vh-fonte-5xl: 3rem;      /* 48px */
+
+	--vh-linha-apertada: 1.25;
+	--vh-linha-normal: 1.5;
+	--vh-linha-relaxada: 1.75;
+
+	/* --- Espaçamento --- */
+	--vh-espaco-1: 0.25rem;   /* 4px */
+	--vh-espaco-2: 0.5rem;    /* 8px */
+	--vh-espaco-3: 0.75rem;   /* 12px */
+	--vh-espaco-4: 1rem;      /* 16px */
+	--vh-espaco-5: 1.25rem;   /* 20px */
+	--vh-espaco-6: 1.5rem;    /* 24px */
+	--vh-espaco-8: 2rem;      /* 32px */
+	--vh-espaco-10: 2.5rem;   /* 40px */
+	--vh-espaco-12: 3rem;     /* 48px */
+	--vh-espaco-16: 4rem;     /* 64px */
+	--vh-espaco-20: 5rem;     /* 80px */
+	--vh-espaco-24: 6rem;     /* 96px */
+
+	/* --- Border Radius --- */
+	--vh-raio-sm: 0.375rem;   /* 6px */
+	--vh-raio-md: 0.5rem;     /* 8px */
+	--vh-raio-lg: 0.75rem;    /* 12px */
+	--vh-raio-xl: 1rem;       /* 16px */
+	--vh-raio-2xl: 1.25rem;   /* 20px */
+	--vh-raio-full: 9999px;
+
+	/* --- Sombras --- */
+	--vh-sombra-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+	--vh-sombra-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07),
+	                0 2px 4px -2px rgba(0, 0, 0, 0.05);
+	--vh-sombra-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08),
+	                0 4px 6px -4px rgba(0, 0, 0, 0.04);
+	--vh-sombra-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+	                0 8px 10px -6px rgba(0, 0, 0, 0.04);
+
+	/* --- Transições --- */
+	--vh-transicao: all 0.3s ease;
+	--vh-transicao-rapida: all 0.15s ease;
+	--vh-transicao-lenta: all 0.5s ease;
+
+	/* --- Z-index --- */
+	--vh-z-header: 1000;
+	--vh-z-dropdown: 1010;
+	--vh-z-modal: 1050;
+	--vh-z-toast: 1080;
+
+	/* --- Largura do container --- */
+	--vh-container-max: 1280px;
+	--vh-container-padding: var(--vh-espaco-4);
+}
+
+/* =========================================================================
+   2. RESET MÍNIMO COMPLEMENTAR
+   ========================================================================= */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	scroll-behavior: smooth;
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	font-family: var(--vh-fonte-familia);
+	font-size: var(--vh-fonte-base);
+	font-weight: var(--vh-fonte-peso-normal);
+	line-height: var(--vh-linha-normal);
+	color: var(--vh-cor-texto);
+	background-color: var(--vh-cor-fundo);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+img,
+video {
+	max-width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* =========================================================================
+   3. TIPOGRAFIA
+   ========================================================================= */
+
+h1, h2, h3, h4, h5, h6 {
+	margin: 0 0 var(--vh-espaco-4);
+	font-weight: var(--vh-fonte-peso-bold);
+	line-height: var(--vh-linha-apertada);
+	color: var(--vh-cor-texto);
+}
+
+h1 { font-size: var(--vh-fonte-4xl); }
+h2 { font-size: var(--vh-fonte-3xl); }
+h3 { font-size: var(--vh-fonte-2xl); }
+h4 { font-size: var(--vh-fonte-xl); }
+h5 { font-size: var(--vh-fonte-lg); }
+h6 { font-size: var(--vh-fonte-base); font-weight: var(--vh-fonte-peso-semi); }
+
+p {
+	margin: 0 0 var(--vh-espaco-4);
+	line-height: var(--vh-linha-relaxada);
+	color: var(--vh-cor-texto-suave);
+}
+
+a {
+	color: var(--vh-cor-primaria);
+	text-decoration: none;
+	transition: var(--vh-transicao-rapida);
+}
+
+a:hover,
+a:focus-visible {
+	color: var(--vh-cor-primaria-hover);
+	text-decoration: underline;
+}
+
+small {
+	font-size: var(--vh-fonte-sm);
+}
+
+strong, b {
+	font-weight: var(--vh-fonte-peso-semi);
+}
+
+/* =========================================================================
+   4. LAYOUT — CONTAINER E SEÇÃO
+   ========================================================================= */
+
+.vh-container {
+	width: 100%;
+	max-width: var(--vh-container-max);
+	margin-inline: auto;
+	padding-inline: var(--vh-container-padding);
+}
+
+.vh-section {
+	padding-block: var(--vh-espaco-12);
+}
+
+.vh-section-lg {
+	padding-block: var(--vh-espaco-16);
+}
+
+/* =========================================================================
+   5. BOTÕES
+   ========================================================================= */
+
+.vh-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--vh-espaco-2);
+	padding: var(--vh-espaco-3) var(--vh-espaco-6);
+	font-family: var(--vh-fonte-familia);
+	font-size: var(--vh-fonte-sm);
+	font-weight: var(--vh-fonte-peso-semi);
+	line-height: 1;
+	text-decoration: none;
+	border: 2px solid transparent;
+	border-radius: var(--vh-raio-xl);
+	cursor: pointer;
+	transition: var(--vh-transicao);
+	white-space: nowrap;
+	user-select: none;
+}
+
+.vh-btn:focus-visible {
+	outline: 2px solid var(--vh-cor-primaria);
+	outline-offset: 2px;
+}
+
+/* Primário — laranja sólido */
+.vh-btn-primary {
+	background-color: var(--vh-cor-primaria);
+	color: var(--vh-cor-texto-invertido);
+	border-color: var(--vh-cor-primaria);
+}
+
+.vh-btn-primary:hover,
+.vh-btn-primary:focus-visible {
+	background-color: var(--vh-cor-primaria-hover);
+	border-color: var(--vh-cor-primaria-hover);
+	color: var(--vh-cor-texto-invertido);
+	text-decoration: none;
+	transform: translateY(-1px);
+	box-shadow: var(--vh-sombra-md);
+}
+
+/* Secundário — branco com borda */
+.vh-btn-secondary {
+	background-color: var(--vh-cor-superficie);
+	color: var(--vh-cor-texto);
+	border-color: var(--vh-cor-borda);
+}
+
+.vh-btn-secondary:hover,
+.vh-btn-secondary:focus-visible {
+	background-color: var(--vh-cor-fundo);
+	border-color: var(--vh-cor-borda-forte);
+	color: var(--vh-cor-texto);
+	text-decoration: none;
+}
+
+/* Fantasma — só texto */
+.vh-btn-ghost {
+	background-color: transparent;
+	color: var(--vh-cor-texto-suave);
+	border-color: transparent;
+	padding-inline: var(--vh-espaco-3);
+}
+
+.vh-btn-ghost:hover,
+.vh-btn-ghost:focus-visible {
+	background-color: var(--vh-cor-primaria-leve);
+	color: var(--vh-cor-primaria);
+	text-decoration: none;
+}
+
+/* Tamanhos */
+.vh-btn-sm {
+	padding: var(--vh-espaco-2) var(--vh-espaco-4);
+	font-size: var(--vh-fonte-xs);
+}
+
+.vh-btn-lg {
+	padding: var(--vh-espaco-4) var(--vh-espaco-8);
+	font-size: var(--vh-fonte-base);
+}
+
+/* =========================================================================
+   6. CARDS
+   ========================================================================= */
+
+.vh-card {
+	position: relative;
+	background-color: var(--vh-cor-superficie);
+	border: 1px solid var(--vh-cor-borda);
+	border-radius: var(--vh-raio-2xl);
+	overflow: hidden;
+	box-shadow: var(--vh-sombra-sm);
+	transition: var(--vh-transicao);
+}
+
+.vh-card:hover {
+	box-shadow: var(--vh-sombra-lg);
+	transform: translateY(-4px);
+	border-color: var(--vh-cor-borda-forte);
+}
+
+.vh-card-imagem {
+	aspect-ratio: 4 / 5;
+	overflow: hidden;
+	background-color: var(--vh-cor-fundo);
+}
+
+.vh-card-imagem img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.5s ease;
+}
+
+.vh-card:hover .vh-card-imagem img {
+	transform: scale(1.05);
+}
+
+.vh-card-conteudo {
+	padding: var(--vh-espaco-4);
+}
+
+.vh-card-titulo {
+	font-size: var(--vh-fonte-base);
+	font-weight: var(--vh-fonte-peso-semi);
+	margin-bottom: var(--vh-espaco-1);
+	color: var(--vh-cor-texto);
+}
+
+.vh-card-preco {
+	font-size: var(--vh-fonte-lg);
+	font-weight: var(--vh-fonte-peso-extra);
+	color: var(--vh-cor-primaria);
+}
+
+/* =========================================================================
+   7. BADGES / SELOS
+   ========================================================================= */
+
+.vh-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: var(--vh-espaco-1) var(--vh-espaco-3);
+	font-size: var(--vh-fonte-xs);
+	font-weight: var(--vh-fonte-peso-semi);
+	line-height: 1;
+	border-radius: var(--vh-raio-full);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	white-space: nowrap;
+}
+
+.vh-badge-exclusivo {
+	background-color: var(--vh-cor-primaria);
+	color: var(--vh-cor-texto-invertido);
+}
+
+.vh-badge-promo {
+	background-color: var(--vh-cor-sucesso);
+	color: var(--vh-cor-texto-invertido);
+}
+
+.vh-badge-novo {
+	background-color: var(--vh-cor-info);
+	color: var(--vh-cor-texto-invertido);
+}
+
+.vh-badge-personalizavel {
+	background-color: var(--vh-cor-texto);
+	color: var(--vh-cor-texto-invertido);
+}
+
+/* =========================================================================
+   8. FORMULÁRIOS
+   ========================================================================= */
+
+.vh-label {
+	display: block;
+	margin-bottom: var(--vh-espaco-2);
+	font-size: var(--vh-fonte-sm);
+	font-weight: var(--vh-fonte-peso-medio);
+	color: var(--vh-cor-texto);
+}
+
+.vh-input,
+.vh-textarea {
+	width: 100%;
+	padding: var(--vh-espaco-3) var(--vh-espaco-4);
+	font-family: var(--vh-fonte-familia);
+	font-size: var(--vh-fonte-base);
+	color: var(--vh-cor-texto);
+	background-color: var(--vh-cor-superficie);
+	border: 1px solid var(--vh-cor-borda);
+	border-radius: var(--vh-raio-lg);
+	transition: var(--vh-transicao-rapida);
+	outline: none;
+}
+
+.vh-input:focus,
+.vh-textarea:focus {
+	border-color: var(--vh-cor-primaria);
+	box-shadow: 0 0 0 3px var(--vh-cor-primaria-leve);
+}
+
+.vh-input::placeholder,
+.vh-textarea::placeholder {
+	color: var(--vh-cor-texto-suave);
+	opacity: 0.6;
+}
+
+.vh-textarea {
+	min-height: 120px;
+	resize: vertical;
+}
+
+.vh-select {
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239c7349' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right var(--vh-espaco-3) center;
+	padding-right: var(--vh-espaco-10);
+}
+
+/* =========================================================================
+   9. HEADER
+   ========================================================================= */
+
+.vh-header {
+	position: sticky;
+	top: 0;
+	z-index: var(--vh-z-header);
+	background-color: rgba(255, 255, 255, 0.85);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border-bottom: 1px solid var(--vh-cor-borda);
+	transition: var(--vh-transicao);
+}
+
+.vh-header-scrolled {
+	box-shadow: var(--vh-sombra-md);
+	background-color: rgba(255, 255, 255, 0.95);
+}
+
+.vh-header-inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 72px;
+	max-width: var(--vh-container-max);
+	margin-inline: auto;
+	padding-inline: var(--vh-container-padding);
+}
+
+/* =========================================================================
+   10. GRADE DE PRODUTOS
+   ========================================================================= */
+
+.vh-grade {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: var(--vh-espaco-4);
+}
+
+@media (min-width: 768px) {
+	.vh-grade {
+		grid-template-columns: repeat(3, 1fr);
+		gap: var(--vh-espaco-6);
+	}
+}
+
+@media (min-width: 1200px) {
+	.vh-grade {
+		grid-template-columns: repeat(4, 1fr);
+	}
+}
+
+/* =========================================================================
+   11. ANIMAÇÕES
+   ========================================================================= */
+
+.vh-fade-in {
+	opacity: 0;
+	transition: opacity 0.6s ease;
+}
+
+.vh-fade-in.vh-visivel {
+	opacity: 1;
+}
+
+.vh-slide-up {
+	opacity: 0;
+	transform: translateY(24px);
+	transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.vh-slide-up.vh-visivel {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/* Animação de pulso para itens adicionados ao carrinho */
+@keyframes vh-pulsar {
+	0%, 100% { transform: scale(1); }
+	50% { transform: scale(1.05); }
+}
+
+.vh-pulsar {
+	animation: vh-pulsar 0.3s ease;
+}
+
+/* Efeito shimmer para loading */
+@keyframes vh-shimmer {
+	0% { background-position: -200% 0; }
+	100% { background-position: 200% 0; }
+}
+
+.vh-skeleton {
+	background: linear-gradient(
+		90deg,
+		var(--vh-cor-borda) 25%,
+		var(--vh-cor-fundo) 50%,
+		var(--vh-cor-borda) 75%
+	);
+	background-size: 200% 100%;
+	animation: vh-shimmer 1.5s infinite;
+	border-radius: var(--vh-raio-md);
+}
+
+/* =========================================================================
+   12. UTILITÁRIOS DE TEXTO
+   ========================================================================= */
+
+.vh-text-center { text-align: center; }
+.vh-text-left   { text-align: left; }
+.vh-text-right  { text-align: right; }
+
+.vh-text-primary { color: var(--vh-cor-primaria); }
+.vh-text-muted   { color: var(--vh-cor-texto-suave); }
+
+.vh-text-xs   { font-size: var(--vh-fonte-xs); }
+.vh-text-sm   { font-size: var(--vh-fonte-sm); }
+.vh-text-base { font-size: var(--vh-fonte-base); }
+.vh-text-lg   { font-size: var(--vh-fonte-lg); }
+.vh-text-xl   { font-size: var(--vh-fonte-xl); }
+.vh-text-2xl  { font-size: var(--vh-fonte-2xl); }
+
+.vh-font-medium { font-weight: var(--vh-fonte-peso-medio); }
+.vh-font-semi   { font-weight: var(--vh-fonte-peso-semi); }
+.vh-font-bold   { font-weight: var(--vh-fonte-peso-bold); }
+.vh-font-extra  { font-weight: var(--vh-fonte-peso-extra); }
+
+.vh-truncate {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* =========================================================================
+   13. UTILITÁRIOS DE ESPAÇAMENTO
+   ========================================================================= */
+
+.vh-mt-0  { margin-top: 0; }
+.vh-mt-4  { margin-top: var(--vh-espaco-4); }
+.vh-mt-8  { margin-top: var(--vh-espaco-8); }
+.vh-mb-0  { margin-bottom: 0; }
+.vh-mb-4  { margin-bottom: var(--vh-espaco-4); }
+.vh-mb-8  { margin-bottom: var(--vh-espaco-8); }
+
+.vh-pt-0  { padding-top: 0; }
+.vh-pb-0  { padding-bottom: 0; }
+
+/* =========================================================================
+   14. UTILITÁRIOS DE DISPLAY / FLEX
+   ========================================================================= */
+
+.vh-flex          { display: flex; }
+.vh-flex-col      { flex-direction: column; }
+.vh-flex-wrap     { flex-wrap: wrap; }
+.vh-items-center  { align-items: center; }
+.vh-justify-center { justify-content: center; }
+.vh-justify-between { justify-content: space-between; }
+.vh-gap-2 { gap: var(--vh-espaco-2); }
+.vh-gap-4 { gap: var(--vh-espaco-4); }
+.vh-gap-6 { gap: var(--vh-espaco-6); }
+
+.vh-hidden { display: none; }
+
+/* =========================================================================
+   15. RESPONSIVIDADE — BREAKPOINTS MOBILE-FIRST
+   ========================================================================= */
+
+/* 576px — Celulares grandes */
+@media (min-width: 576px) {
+	:root {
+		--vh-container-padding: var(--vh-espaco-6);
+	}
+
+	h1 { font-size: var(--vh-fonte-5xl); }
+}
+
+/* 768px — Tablets */
+@media (min-width: 768px) {
+	.vh-section {
+		padding-block: var(--vh-espaco-16);
+	}
+
+	.vh-section-lg {
+		padding-block: var(--vh-espaco-20);
+	}
+
+	.vh-hidden-mobile { display: initial; }
+	.vh-hidden-tablet { display: none; }
+}
+
+/* 992px — Laptops */
+@media (min-width: 992px) {
+	:root {
+		--vh-container-padding: var(--vh-espaco-8);
+	}
+
+	.vh-hidden-tablet { display: initial; }
+}
+
+/* 1200px — Desktops */
+@media (min-width: 1200px) {
+	.vh-section {
+		padding-block: var(--vh-espaco-20);
+	}
+
+	.vh-section-lg {
+		padding-block: var(--vh-espaco-24);
+	}
+}
+
+/* =========================================================================
+   16. ACESSIBILIDADE
+   ========================================================================= */
+
+.vh-sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+:focus-visible {
+	outline: 2px solid var(--vh-cor-primaria);
+	outline-offset: 2px;
+}
+
+/* Seleção de texto e accent nativo — cor da marca (evita vermelho padrão do SO) */
+::selection {
+	background: var(--vh-cor-primaria-media);
+	color: var(--vh-cor-texto);
+}
+
+::-moz-selection {
+	background: var(--vh-cor-primaria-media);
+	color: var(--vh-cor-texto);
+}
+
+select,
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+progress {
+	accent-color: var(--vh-cor-primaria);
+}
+
+select option:checked {
+	background: var(--vh-cor-primaria);
+	color: var(--vh-cor-texto-invertido);
+}
+
+/* Respeitar preferência de movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* =========================================================================
+   17. DARK MODE (preparado para uso futuro)
+   Descomente o bloco abaixo quando for implementar.
+   ========================================================================= */
+
+/*
+@media (prefers-color-scheme: dark) {
+	:root {
+		--vh-cor-fundo: #0f0d0b;
+		--vh-cor-superficie: #1a1714;
+		--vh-cor-texto: #f5f0eb;
+		--vh-cor-texto-suave: #b8a08a;
+		--vh-cor-borda: #2e271f;
+		--vh-cor-borda-forte: #3d3428;
+	}
+}
+*/

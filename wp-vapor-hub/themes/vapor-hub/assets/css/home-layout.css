@@ -1,0 +1,956 @@
+/**
+ * Vapor Hub — Layout da página inicial (espelho do MVP)
+ *
+ * Estilos específicos das template-parts da home. Depende de design-system.css.
+ *
+ * @package VaporHub
+ * @since   1.0.1
+ */
+
+/* =========================================================================
+   0. CONTEXTO — main em tela cheia (Hello Elementor / Elementor)
+   ========================================================================= */
+
+body.home #content,
+body.home .site-main,
+main#site-content.vh-home {
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	padding: 0;
+}
+
+.vh-home {
+	background-color: var(--vh-cor-fundo);
+}
+
+/* =========================================================================
+   1. HERO (banner full-bleed, ~600px)
+   ========================================================================= */
+
+.vh-hero {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: clamp(420px, 75vh, 640px);
+	width: 100%;
+	overflow: hidden;
+	text-align: center;
+}
+
+.vh-hero-bg {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+}
+
+.vh-hero-bg-img {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.vh-hero-bg-img > img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* Carrossel do hero: imagens empilhadas com transição suave. */
+.vh-hero-bg--carrossel .vh-hero-bg-img {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+}
+
+/*
+ * A transição de fade só entra depois que o JS marca o carrossel como pronto.
+ * Assim o primeiro slide (elemento LCP) pinta de imediato, sem aguardar transição.
+ */
+.vh-hero-bg--carrossel.vh-hero-pronto .vh-hero-bg-img {
+	transition: opacity 1s ease;
+}
+
+.vh-hero-bg--carrossel .vh-hero-bg-img--ativa {
+	opacity: 1;
+}
+
+/* =========================================================================
+   HERO — Modo "somente imagem" (carrossel de slides ligado no painel)
+   A arte do slide ocupa o banner inteiro, sem textos/botões por cima. A
+   altura acompanha a própria imagem (sem corte), inclusive a versão mobile.
+   ========================================================================= */
+.vh-hero--imagem {
+	min-height: 0;
+	display: block;
+	overflow: visible;
+}
+
+.vh-hero--imagem .vh-hero-bg {
+	position: relative;
+	inset: auto;
+}
+
+.vh-hero--imagem .vh-hero-bg-img {
+	height: auto;
+}
+
+.vh-hero--imagem .vh-hero-bg-img > img {
+	height: auto;
+}
+
+/* Carrossel (2+ slides): empilha mantendo a altura do primeiro slide. */
+.vh-hero--imagem .vh-hero-bg--carrossel .vh-hero-bg-img {
+	position: absolute;
+	inset: 0;
+	height: 100%;
+}
+
+.vh-hero--imagem .vh-hero-bg--carrossel .vh-hero-bg-img:first-child {
+	position: relative;
+}
+
+.vh-hero--imagem .vh-hero-bg--carrossel .vh-hero-bg-img > img {
+	height: 100%;
+}
+
+.vh-hero--imagem .vh-hero-bg--carrossel .vh-hero-bg-img:first-child > img {
+	height: auto;
+}
+
+.vh-hero-pontos {
+	position: absolute;
+	z-index: 2;
+	left: 0;
+	right: 0;
+	bottom: clamp(16px, 4vh, 32px);
+	display: flex;
+	justify-content: center;
+	gap: 10px;
+	pointer-events: none;
+}
+
+.vh-hero-ponto {
+	width: 11px;
+	height: 11px;
+	padding: 0;
+	border-radius: 50%;
+	border: 2px solid rgba(255, 255, 255, 0.85);
+	background: transparent;
+	cursor: pointer;
+	pointer-events: auto;
+	transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.vh-hero-ponto--ativo {
+	background: #fff;
+	transform: scale(1.15);
+}
+
+/* Setas de navegação do carrossel */
+.vh-hero-setas {
+	position: absolute;
+	z-index: 2;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 clamp(10px, 2.5vw, 24px);
+	pointer-events: none;
+}
+
+.vh-hero-seta {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	padding: 0;
+	border: 2px solid rgba(255, 255, 255, 0.85);
+	border-radius: 50%;
+	background: rgba(12, 24, 48, 0.35);
+	color: #fff;
+	cursor: pointer;
+	pointer-events: auto;
+	transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+	backdrop-filter: blur(4px);
+}
+
+.vh-hero-seta:hover,
+.vh-hero-seta:focus-visible {
+	background: rgba(12, 129, 216, 0.75);
+	border-color: #fff;
+	outline: none;
+	transform: scale(1.05);
+}
+
+.vh-hero-seta:active {
+	transform: scale(0.98);
+}
+
+.vh-hero-seta svg {
+	display: block;
+}
+
+.vh-hero-overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	background: linear-gradient(
+		90deg,
+		rgba(0, 0, 0, 0.82) 0%,
+		rgba(0, 0, 0, 0.45) 45%,
+		rgba(0, 0, 0, 0.15) 100%
+	);
+}
+
+.vh-hero-conteudo {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	max-width: 48rem;
+	padding-block: var(--vh-espaco-12);
+}
+
+.vh-hero-badge {
+	display: inline-block;
+	margin-bottom: var(--vh-espaco-4);
+	padding: var(--vh-espaco-1) var(--vh-espaco-3);
+	font-size: var(--vh-fonte-xs);
+	font-weight: var(--vh-fonte-peso-bold);
+	line-height: 1.2;
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	color: var(--vh-cor-primaria);
+	background: color-mix(in srgb, var(--vh-cor-primaria) 18%, transparent);
+	border: 1px solid color-mix(in srgb, var(--vh-cor-primaria) 35%, transparent);
+	border-radius: var(--vh-raio-full);
+	backdrop-filter: blur(8px);
+}
+
+.vh-hero-titulo {
+	margin: 0 0 var(--vh-espaco-6);
+	font-size: clamp(var(--vh-fonte-3xl), 5vw, var(--vh-fonte-5xl));
+	font-weight: var(--vh-fonte-peso-extra);
+	line-height: var(--vh-linha-apertada);
+	color: #ffffff;
+	text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+}
+
+.vh-hero-titulo .vh-hero-titulo-destaque {
+	display: block;
+	margin-top: var(--vh-espaco-2);
+	color: var(--vh-cor-primaria);
+}
+
+.vh-hero-subtitulo {
+	margin: 0 0 var(--vh-espaco-8);
+	max-width: 36rem;
+	font-size: clamp(var(--vh-fonte-base), 2vw, var(--vh-fonte-xl));
+	font-weight: var(--vh-fonte-peso-medio);
+	line-height: var(--vh-linha-relaxada);
+	color: rgba(255, 255, 255, 0.88);
+	text-shadow: 0 1px 12px rgba(0, 0, 0, 0.25);
+}
+
+.vh-hero-acoes {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	align-items: stretch;
+	justify-content: center;
+	gap: var(--vh-espaco-4);
+	width: 100%;
+	max-width: 28rem;
+}
+
+@media (min-width: 576px) {
+	.vh-hero-acoes {
+		flex-direction: row;
+		max-width: none;
+		width: auto;
+	}
+}
+
+/* Botões do hero: primário forte + secundário vidro (como no MVP) */
+.vh-hero .vh-btn-primary {
+	padding: var(--vh-espaco-4) var(--vh-espaco-8);
+	font-size: var(--vh-fonte-lg);
+	font-weight: var(--vh-fonte-peso-bold);
+	border-radius: var(--vh-raio-full);
+	box-shadow: 0 12px 40px color-mix(in srgb, var(--vh-cor-primaria) 28%, transparent);
+}
+
+.vh-hero .vh-btn-secondary {
+	background: rgba(255, 255, 255, 0.12);
+	border-color: rgba(255, 255, 255, 0.35);
+	color: #ffffff;
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+}
+
+.vh-hero .vh-btn-secondary:hover,
+.vh-hero .vh-btn-secondary:focus-visible {
+	background: rgba(255, 255, 255, 0.22);
+	border-color: rgba(255, 255, 255, 0.45);
+	color: #ffffff;
+	text-decoration: none;
+}
+
+/* Hero no mobile: legibilidade e botões em coluna, sem perder conteúdo. */
+@media (max-width: 767px) {
+	.vh-hero {
+		min-height: clamp(360px, 64vh, 520px);
+	}
+
+	/* Em telas estreitas o conteúdo é centralizado, então escurecemos de forma
+	   uniforme (gradiente vertical) para o texto ficar sempre legível. */
+	.vh-hero-overlay {
+		background: linear-gradient(
+			180deg,
+			rgba(0, 0, 0, 0.55) 0%,
+			rgba(0, 0, 0, 0.45) 45%,
+			rgba(0, 0, 0, 0.65) 100%
+		);
+	}
+
+	.vh-hero-conteudo {
+		padding-block: var(--vh-espaco-10);
+	}
+
+	.vh-hero-titulo {
+		font-size: clamp(1.7rem, 8vw, 2.4rem);
+	}
+
+	.vh-hero-subtitulo {
+		font-size: var(--vh-fonte-base);
+	}
+
+	.vh-hero-acoes .vh-btn {
+		width: 100%;
+		justify-content: center;
+	}
+
+	.vh-hero-pontos {
+		bottom: 12px;
+	}
+
+	.vh-hero-setas {
+		padding: 0 8px;
+	}
+
+	.vh-hero-seta {
+		width: 38px;
+		height: 38px;
+	}
+}
+
+/* =========================================================================
+   2. BENEFÍCIOS — faixa compacta (surface + borda inferior)
+   ========================================================================= */
+
+.vh-beneficios.vh-section {
+	padding-block: var(--vh-espaco-8);
+	background-color: var(--vh-cor-superficie);
+	border-bottom: 1px solid var(--vh-cor-borda);
+}
+
+.vh-beneficios-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: var(--vh-espaco-6);
+	align-items: start;
+}
+
+@media (min-width: 768px) {
+	.vh-beneficios-grid {
+		gap: var(--vh-espaco-6);
+	}
+}
+
+.vh-beneficios-item,
+.vh-beneficios-card {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--vh-espaco-3);
+	justify-content: center;
+	text-align: left;
+}
+
+@media (max-width: 767px) {
+	.vh-home-head {
+		margin-bottom: var(--vh-espaco-8);
+	}
+
+	.vh-home-title {
+		font-size: var(--vh-fonte-2xl);
+		line-height: 1.2;
+	}
+
+	.vh-categorias-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--vh-espaco-3);
+	}
+
+	.vh-beneficios-grid {
+		gap: var(--vh-espaco-4);
+	}
+
+	.vh-beneficios-item,
+	.vh-beneficios-card {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+}
+
+.vh-beneficios-icone {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: var(--vh-raio-full);
+	background: var(--vh-cor-primaria-leve);
+	color: var(--vh-cor-primaria);
+}
+
+.vh-beneficios-icone svg {
+	width: 1.35rem;
+	height: 1.35rem;
+}
+
+.vh-beneficios-titulo {
+	display: block;
+	margin-bottom: var(--vh-espaco-1);
+	font-size: var(--vh-fonte-sm);
+	font-weight: var(--vh-fonte-peso-bold);
+	line-height: var(--vh-linha-apertada);
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: var(--vh-cor-texto);
+}
+
+.vh-beneficios-descricao {
+	display: block;
+	font-size: var(--vh-fonte-xs);
+	line-height: var(--vh-linha-normal);
+}
+
+/* =========================================================================
+   3. CATEGORIAS — grid de cards 4:5
+   ========================================================================= */
+
+.vh-categorias {
+	background-color: var(--vh-cor-fundo);
+}
+
+.vh-categorias-header {
+	margin-bottom: var(--vh-espaco-10);
+}
+
+.vh-categorias-eyebrow {
+	display: block;
+	margin-bottom: var(--vh-espaco-2);
+	font-size: var(--vh-fonte-sm);
+	font-weight: var(--vh-fonte-peso-bold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--vh-cor-primaria);
+}
+
+.vh-categorias-titulo {
+	margin: 0 0 var(--vh-espaco-3);
+	font-size: var(--vh-fonte-3xl);
+	font-weight: var(--vh-fonte-peso-extra);
+	color: var(--vh-cor-texto);
+}
+
+.vh-categorias-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(140px, 1fr));
+	gap: var(--vh-espaco-4);
+	justify-content: center;
+}
+
+@media (min-width: 768px) {
+	.vh-categorias-grid {
+		grid-template-columns: repeat(3, minmax(150px, 1fr));
+	}
+}
+
+@media (min-width: 1200px) {
+	.vh-categorias-grid {
+		/*
+		 * Centraliza visualmente no desktop mesmo quando há 5 itens.
+		 * Evita "sobrar coluna vazia" à direita.
+		 */
+		grid-template-columns: repeat(auto-fit, minmax(150px, 170px));
+		justify-content: center;
+	}
+}
+
+.vh-categorias-card {
+	position: relative;
+	display: block;
+	aspect-ratio: 4 / 5;
+	overflow: hidden;
+	border-radius: var(--vh-raio-2xl);
+	background: #2a241d;
+	text-decoration: none;
+	color: inherit;
+	transition: transform var(--vh-transicao-lenta), box-shadow var(--vh-transicao);
+}
+
+.vh-categorias-card:hover {
+	transform: translateY(-3px);
+	box-shadow: var(--vh-sombra-xl);
+	text-decoration: none;
+}
+
+.vh-categorias-card-imagem {
+	position: absolute;
+	inset: 0;
+}
+
+.vh-categorias-card-imagem img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0.82;
+	transition: opacity 0.5s ease, transform 0.55s ease;
+}
+
+.vh-categorias-card:hover .vh-categorias-card-imagem img {
+	opacity: 1;
+	transform: scale(1.08);
+}
+
+.vh-categorias-card-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	padding: var(--vh-espaco-4);
+	text-align: center;
+	background: linear-gradient(
+		to top,
+		rgba(0, 0, 0, 0.82) 0%,
+		rgba(0, 0, 0, 0.2) 45%,
+		transparent 100%
+	);
+}
+
+.vh-categorias-card-nome {
+	display: block;
+	font-size: var(--vh-fonte-sm);
+	font-weight: var(--vh-fonte-peso-bold);
+	line-height: var(--vh-linha-apertada);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: #ffffff;
+}
+
+.vh-categorias-card-qtd {
+	display: block;
+	margin-top: var(--vh-espaco-1);
+	color: rgba(255, 255, 255, 0.75);
+}
+
+/* =========================================================================
+   4. DESTAQUES — cabeçalho + grade WooCommerce
+   ========================================================================= */
+
+.vh-home-destaques {
+	background-color: var(--vh-cor-superficie);
+}
+
+.vh-home-head {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--vh-espaco-4);
+	margin-bottom: var(--vh-espaco-10);
+}
+
+@media (min-width: 768px) {
+	.vh-home-head {
+		flex-direction: row;
+		align-items: flex-end;
+	}
+}
+
+.vh-home-head .vh-badge {
+	margin-bottom: var(--vh-espaco-2);
+	background: transparent;
+	border: none;
+	padding: 0;
+	font-size: var(--vh-fonte-sm);
+	font-weight: var(--vh-fonte-peso-bold);
+	letter-spacing: 0.08em;
+	color: var(--vh-cor-primaria);
+}
+
+.vh-home-title {
+	margin: 0;
+	font-size: var(--vh-fonte-3xl);
+	font-weight: var(--vh-fonte-peso-extra);
+	color: var(--vh-cor-texto);
+}
+
+.vh-home-head .vh-btn-ghost {
+	align-self: flex-start;
+	padding: 0 0 var(--vh-espaco-1);
+	font-size: var(--vh-fonte-base);
+	font-weight: var(--vh-fonte-peso-bold);
+	color: var(--vh-cor-texto);
+	border-bottom: 2px solid var(--vh-cor-primaria);
+	border-radius: 0;
+}
+
+.vh-home-head .vh-btn-ghost:hover {
+	color: var(--vh-cor-primaria);
+	background: transparent;
+}
+
+.vh-home-grid {
+	width: 100%;
+}
+
+.vh-home-grid .woocommerce ul.products {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--vh-espaco-3);
+}
+
+@media (min-width: 480px) {
+	.vh-home-grid .woocommerce ul.products {
+		gap: var(--vh-espaco-4);
+	}
+}
+
+@media (min-width: 768px) {
+	.vh-home-grid .woocommerce ul.products {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--vh-espaco-6);
+	}
+}
+
+@media (min-width: 1200px) {
+	.vh-home-grid .woocommerce ul.products {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+.vh-home-grid .woocommerce {
+	margin-bottom: 0;
+}
+
+/* =========================================================================
+   5. CTA REVENDA
+   ========================================================================= */
+
+.vh-revenda {
+	background-color: var(--vh-cor-fundo);
+}
+
+.vh-revenda-card {
+	position: relative;
+	overflow: hidden;
+	padding: var(--vh-espaco-8);
+	border-radius: var(--vh-raio-2xl);
+	background: linear-gradient(
+		115deg,
+		color-mix(in srgb, var(--vh-cor-texto) 92%, var(--vh-cor-primaria)) 0%,
+		color-mix(in srgb, #262626 88%, var(--vh-cor-primaria)) 52%,
+		color-mix(in srgb, var(--vh-cor-texto) 90%, var(--vh-cor-primaria)) 100%
+	);
+	box-shadow: var(--vh-sombra-xl);
+}
+
+@media (min-width: 768px) {
+	.vh-revenda-card {
+		padding: var(--vh-espaco-12);
+	}
+}
+
+.vh-revenda-blur-1 {
+	position: absolute;
+	top: -4rem;
+	right: -4rem;
+	width: 16rem;
+	height: 16rem;
+	border-radius: var(--vh-raio-full);
+	background: color-mix(in srgb, var(--vh-cor-primaria) 22%, transparent);
+	filter: blur(48px);
+	pointer-events: none;
+}
+
+.vh-revenda-blur-2 {
+	position: absolute;
+	bottom: -3rem;
+	left: -2.5rem;
+	width: 12rem;
+	height: 12rem;
+	border-radius: var(--vh-raio-full);
+	background: color-mix(in srgb, var(--vh-cor-primaria) 12%, transparent);
+	filter: blur(36px);
+	pointer-events: none;
+}
+
+.vh-revenda-conteudo {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: var(--vh-espaco-8);
+}
+
+@media (min-width: 768px) {
+	.vh-revenda-conteudo {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+}
+
+.vh-revenda-titulo {
+	margin: 0 0 var(--vh-espaco-2);
+	font-size: clamp(var(--vh-fonte-2xl), 3vw, var(--vh-fonte-3xl));
+	font-weight: var(--vh-fonte-peso-extra);
+	color: #ffffff;
+}
+
+.vh-revenda-descricao {
+	margin: 0;
+	max-width: 36rem;
+	font-size: var(--vh-fonte-base);
+	line-height: var(--vh-linha-relaxada);
+	color: rgba(255, 255, 255, 0.72);
+}
+
+.vh-revenda-conteudo .vh-btn-primary,
+.vh-revenda-conteudo button.vh-btn-primary {
+	flex-shrink: 0;
+	align-self: flex-start;
+	padding: var(--vh-espaco-4) var(--vh-espaco-8);
+	font-weight: var(--vh-fonte-peso-bold);
+	border-radius: var(--vh-raio-full);
+	box-shadow: var(--vh-sombra-lg);
+	/* Herda fundo/borda/cor do .vh-btn-primary (tokens globais). */
+}
+
+.vh-revenda-detalhe {
+	position: absolute;
+	bottom: var(--vh-espaco-4);
+	right: var(--vh-espaco-4);
+	z-index: 0;
+	opacity: 0.35;
+	pointer-events: none;
+}
+
+.vh-revenda-detalhe svg {
+	display: block;
+	color: rgba(255, 255, 255, 0.25);
+}
+
+/* =========================================================================
+   6. COMUNIDADE — scroll horizontal
+   ========================================================================= */
+
+.vh-comunidade {
+	background-color: var(--vh-cor-superficie);
+	border-top: 1px solid var(--vh-cor-borda);
+}
+
+.vh-comunidade-eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--vh-espaco-2);
+	margin-bottom: var(--vh-espaco-2);
+	font-size: var(--vh-fonte-sm);
+	font-weight: var(--vh-fonte-peso-bold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--vh-cor-primaria);
+}
+
+.vh-comunidade-eyebrow svg {
+	flex-shrink: 0;
+}
+
+.vh-comunidade-titulo {
+	margin: 0 0 var(--vh-espaco-3);
+	font-size: var(--vh-fonte-3xl);
+	font-weight: var(--vh-fonte-peso-extra);
+	color: var(--vh-cor-texto);
+}
+
+.vh-comunidade-scroll {
+	width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding-bottom: var(--vh-espaco-4);
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: thin;
+	scrollbar-color: var(--vh-cor-borda) transparent;
+}
+
+.vh-comunidade-scroll::-webkit-scrollbar {
+	height: 6px;
+}
+
+.vh-comunidade-scroll::-webkit-scrollbar-thumb {
+	background: var(--vh-cor-borda-forte);
+	border-radius: var(--vh-raio-full);
+}
+
+.vh-comunidade-trilha {
+	display: flex;
+	gap: var(--vh-espaco-4);
+	width: max-content;
+	padding-inline: max(var(--vh-container-padding), calc((100vw - var(--vh-container-max)) / 2 + var(--vh-container-padding)));
+	padding-block: var(--vh-espaco-2);
+	scroll-snap-type: x mandatory;
+}
+
+.vh-comunidade-card {
+	position: relative;
+	flex: 0 0 auto;
+	width: min(280px, 78vw);
+	aspect-ratio: 4 / 5;
+	overflow: hidden;
+	border-radius: var(--vh-raio-2xl);
+	background: var(--vh-cor-fundo);
+	scroll-snap-align: center;
+	box-shadow: 0 10px 28px -14px rgba(0, 0, 0, 0.35);
+	transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.vh-comunidade-card:hover {
+	transform: translateY(-6px);
+	box-shadow: 0 22px 44px -18px rgba(0, 0, 0, 0.45);
+}
+
+.vh-comunidade-card img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.5s ease;
+}
+
+.vh-comunidade-card:hover img {
+	transform: scale(1.06);
+}
+
+/* Selo discreto de Instagram no canto da foto. */
+.vh-comunidade-selo {
+	position: absolute;
+	top: var(--vh-espaco-3);
+	right: var(--vh-espaco-3);
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	border-radius: var(--vh-raio-full);
+	color: #ffffff;
+	background: rgba(0, 0, 0, 0.3);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+	opacity: 0.85;
+	transition: opacity 0.3s ease, background 0.3s ease;
+}
+
+.vh-comunidade-card:hover .vh-comunidade-selo {
+	opacity: 1;
+	background: color-mix(in srgb, var(--vh-cor-primaria) 80%, transparent);
+}
+
+.vh-comunidade-card-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	padding: var(--vh-espaco-4);
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.78), transparent 55%);
+	opacity: 0;
+	transition: opacity 0.35s ease;
+}
+
+.vh-comunidade-card:hover .vh-comunidade-card-overlay {
+	opacity: 1;
+}
+
+.vh-comunidade-usuario {
+	font-size: var(--vh-fonte-sm);
+	font-weight: var(--vh-fonte-peso-bold);
+	color: #ffffff;
+}
+
+.vh-comunidade-card-envio {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 2px dashed var(--vh-cor-borda-forte);
+	background: var(--vh-cor-fundo);
+	cursor: pointer;
+	text-decoration: none;
+	transition: var(--vh-transicao);
+	font: inherit;
+	color: inherit;
+	padding: 0;
+	width: auto;
+	min-width: 280px;
+	min-height: 350px;
+	flex-shrink: 0;
+}
+
+.vh-comunidade-card-envio:hover {
+	border-color: var(--vh-cor-primaria);
+	background: var(--vh-cor-primaria-leve);
+	text-decoration: none;
+}
+
+.vh-comunidade-envio-conteudo {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	padding: var(--vh-espaco-6);
+	color: var(--vh-cor-texto-suave);
+}
+
+.vh-comunidade-card-envio:hover .vh-comunidade-envio-conteudo {
+	color: var(--vh-cor-texto);
+}
+
+.vh-comunidade-envio-texto {
+	display: block;
+	margin-top: var(--vh-espaco-3);
+	font-weight: var(--vh-fonte-peso-bold);
+	font-size: var(--vh-fonte-lg);
+	color: var(--vh-cor-texto);
+}
+
+.vh-comunidade-envio-sub {
+	margin-top: var(--vh-espaco-2);
+}
+
+.vh-comunidade-vazio {
+	padding: var(--vh-espaco-12) var(--vh-espaco-4);
+}
+
+.vh-comunidade-vazio svg {
+	margin: 0 auto var(--vh-espaco-4);
+}

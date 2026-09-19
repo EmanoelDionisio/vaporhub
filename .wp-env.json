@@ -1,0 +1,31 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/wp-env.json",
+	"core": null,
+	"phpVersion": "8.4",
+	"plugins": [
+		"./wp-vapor-hub/plugins/vapor-hub-loja",
+		"https://downloads.wordpress.org/plugin/woocommerce.zip"
+	],
+	"mappings": {
+		"wp-content/mu-plugins": "./tests/e2e/mu-plugins",
+		"wp-content/vh-e2e": "./tests/e2e",
+		"wp-content/themes/vapor-hub": "./wp-vapor-hub/themes/vapor-hub"
+	},
+	"config": {
+		"WP_DEBUG": true,
+		"WP_DEBUG_LOG": true,
+		"WP_DEBUG_DISPLAY": false,
+		"SCRIPT_DEBUG": true,
+		"VH_E2E": true
+	},
+	"env": {
+		"tests": {
+			"config": {
+				"WP_DEBUG": true,
+				"WP_DEBUG_LOG": true,
+				"WP_DEBUG_DISPLAY": false,
+				"VH_E2E": true
+			}
+		}
+	}
+}

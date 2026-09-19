@@ -1,0 +1,15 @@
+node_modules/
+build/
+dist/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.wp-env.override.json
+.DS_Store
+*.log
+.env*
+!.env.example
+!.env.wp-deploy.example
+.cursor/mcp.json
+.stfolder/

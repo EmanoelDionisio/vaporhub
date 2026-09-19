@@ -1,0 +1,226 @@
+/**
+ * Design System — Minha Loja
+ * Loading assíncrono: skeleton (padrão) e utilitários de visibilidade.
+ *
+ * Use skeleton quando o conteúdo depende de REST/API externa.
+ * Evite spinner centralizado (.vh-estado-carregando) — legado apenas.
+ *
+ * @package VaporHubLoja
+ */
+
+/* ── Visibilidade confiável (tema pode anular [hidden]) ── */
+.vh-ui-oculto,
+[hidden].vh-ui-oculto {
+    display: none !important;
+}
+
+.vh-skeleton-panel.vh-ui-oculto,
+.vh-painel-async.vh-ui-oculto {
+    display: none !important;
+}
+
+/* ── Painel skeleton ── */
+.vh-skeleton-panel {
+    padding: 4px 0 8px;
+}
+
+.vh-skeleton-panel--erro {
+    padding: 24px 16px;
+    text-align: center;
+}
+
+.vh-skeleton-panel__erro {
+    margin: 0;
+    font-size: 14px;
+    color: var(--vh-perigo);
+    line-height: 1.5;
+}
+
+.vh-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ── Blocos base ── */
+.vh-skeleton {
+    display: block;
+    border-radius: 6px;
+    background: linear-gradient(
+        90deg,
+        var(--vh-cinza-100) 0%,
+        var(--vh-cinza-200) 45%,
+        var(--vh-cinza-100) 90%
+    );
+    background-size: 200% 100%;
+    animation: vh-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.vh-skeleton--line {
+    height: 14px;
+    width: 100%;
+}
+
+.vh-skeleton--w-20 { width: 20%; }
+.vh-skeleton--w-28 { width: 28%; }
+.vh-skeleton--w-40 { width: 40%; }
+.vh-skeleton--w-50 { width: 50%; }
+.vh-skeleton--w-60 { width: 60%; }
+.vh-skeleton--w-75 { width: 75%; }
+.vh-skeleton--w-full { width: 100%; height: 12px; }
+
+.vh-skeleton--badge {
+    height: 24px;
+    width: 72px;
+    border-radius: 999px;
+}
+
+.vh-skeleton--input {
+    height: 38px;
+    width: 100%;
+    border-radius: var(--vh-raio-sm);
+}
+
+.vh-skeleton--input-lg {
+    height: 42px;
+}
+
+.vh-skeleton--btn {
+    height: 38px;
+    width: 140px;
+    border-radius: var(--vh-raio-sm);
+    flex-shrink: 0;
+}
+
+.vh-skeleton--avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.vh-skeleton--card {
+    height: 120px;
+    width: 100%;
+    border-radius: var(--vh-raio-sm);
+}
+
+/* ── Layouts compostos ── */
+.vh-skeleton-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.vh-skeleton-table {
+    border: 1px solid var(--vh-cinza-200);
+    border-radius: var(--vh-raio-sm);
+    overflow: hidden;
+    background: #fff;
+}
+
+.vh-skeleton-table__head {
+    padding: 14px 16px;
+    background: var(--vh-cinza-50, #f8f9fa);
+    border-bottom: 1px solid var(--vh-cinza-200);
+}
+
+.vh-skeleton-table__row {
+    display: grid;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--vh-cinza-100);
+}
+
+.vh-skeleton-table__row:last-child {
+    border-bottom: none;
+}
+
+.vh-skeleton-table__row--2 { grid-template-columns: 1fr 1fr; }
+.vh-skeleton-table__row--3 { grid-template-columns: 1fr 0.8fr 1.4fr; }
+.vh-skeleton-table__row--4 { grid-template-columns: 1fr 1fr 0.8fr 1fr; }
+.vh-skeleton-table__row--5 { grid-template-columns: 1.1fr 1.4fr 0.7fr 0.9fr 1.1fr; }
+
+.vh-skeleton-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 640px;
+}
+
+.vh-skeleton-form__grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vh-skeleton-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+@keyframes vh-skeleton-shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vh-skeleton {
+        animation: none;
+        background: var(--vh-cinza-100);
+    }
+}
+
+@media (max-width: 900px) {
+    .vh-skeleton-table__row--5 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .vh-skeleton-table__row--5 .vh-skeleton:nth-child(n+3) {
+        grid-column: 1 / -1;
+    }
+}
+
+/* ── Legado: spinner (não usar em telas novas) ── */
+.vh-estado-carregando.vh-ui-oculto {
+    display: none !important;
+}
+
+.vh-estado-carregando {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 32px 16px;
+    color: var(--vh-cinza-600);
+    font-size: 14px;
+}
+
+.vh-estado-carregando__spinner {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--vh-cinza-300);
+    border-top-color: var(--vh-primario);
+    border-radius: 50%;
+    animation: vh-spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes vh-spin {
+    to { transform: rotate(360deg); }
+}
+
+.vh-estado-carregando__texto--erro {
+    color: var(--vh-perigo);
+}
