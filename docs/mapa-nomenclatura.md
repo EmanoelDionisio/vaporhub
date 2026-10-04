@@ -30,7 +30,7 @@ Atributos WooCommerce continuam `pa_{slug}` (`pa_sabor`, `pa_puffs`, `pa_teor_ni
 
 ## Identidade visual padrão
 
-Preto + lima: primária `#c8f542`, fundo `#0a0a0b`, superfície `#141416`, texto `#f4f1ea`.
+Violeta da logo: primária `#7618f1`, hover `#5c10d0`, fundo `#f6f4fb`, superfície `#ffffff`, texto `#1a1228`. Ajustável em Minha Loja → Aparência.
 
 ## O que o usuário informa depois
 

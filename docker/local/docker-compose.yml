@@ -1,0 +1,114 @@
+# Vapor Hub — DockerPress local isolado (Compose, não Swarm, não produção).
+#
+# Porta HTTP 8083 de propósito: 8080 Perfex, 8081 DockerPress genérico, 8082 Espaço Sex.
+# MySQL e Redis ficam só na rede interna — nada publicado no host.
+#
+# Uso (raiz do repo):
+#   npm run wp:local
+#   npm run wp:local:down
+
+name: vaporhub
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-vaporhub_local_root}
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME:-vaporhub}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max-allowed-packet=256M
+    volumes:
+      - vaporhub_mysql_data:/var/lib/mysql
+    networks:
+      - vaporhub_local
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save "" --appendonly no
+    networks:
+      - vaporhub_local
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  wordpress:
+    image: newalliance/dockerpress:1.28-nginx-dual-php8.3-patch1
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${HTTP_PORT:-8083}:80"
+    volumes:
+      - vaporhub_wp_data:/var/www/html
+      - ../../wp-vapor-hub/themes/vapor-hub:/var/www/html/wp-content/themes/vapor-hub:ro
+      - ../../wp-vapor-hub/plugins/vapor-hub-loja:/var/www/html/wp-content/plugins/vapor-hub-loja:ro
+      - ../../wp-vapor-hub/setup:/var/www/html/wp-content/vapor-hub-setup:ro
+      - ./mu-plugins/local-http-prepend.php:/var/www/html/wp-content/mu-plugins/local-http-prepend.php:ro
+      - ./mu-plugins/local-http-fix.php:/var/www/html/wp-content/mu-plugins/local-http-fix.php:ro
+      - ./php/local-dev.ini:/usr/local/etc/php/conf.d/99-local-dev.ini:ro
+      - ./patches/90-nginx-security-headers.sh:/usr/local/bin/entrypoint.d/90-nginx-security-headers.sh:ro
+      - ./patches/91-nginx-http-local.sh:/usr/local/bin/entrypoint.d/91-nginx-http-local.sh:ro
+      # Entrypoint HTTP do DockerPress local (irmão em Sistemas/dockerpress). Copiado pelo script de up.
+      - ./patches/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
+    networks:
+      - vaporhub_local
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_PORT: "3306"
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-vaporhub}
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-vaporhub_local_root}
+      MYSQL_SSL_DISABLE: "true"
+
+      WP_REDIS_HOST: redis
+      WP_REDIS_PORT: "6379"
+      WP_REDIS_DATABASE: "2"
+
+      VIRTUAL_HOST: 127.0.0.1:${HTTP_PORT:-8083}
+      HTTP_PORT: ${HTTP_PORT:-8083}
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_PASS: ${ADMIN_PASS:-vaporhub_local}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@vaporhub.local}
+      WP_LOCALE: ${WP_LOCALE:-pt_BR}
+      WP_DEBUG: ${WP_DEBUG:-true}
+      WP_ENVIRONMENT_TYPE: local
+      TZ: ${TZ:-America/Sao_Paulo}
+
+      NGINX_LOG_LEVEL: full
+      NGINX_CACHE_ENABLED: "0"
+      PHP_FPM_DUAL_POOL: "1"
+      PHP_FPM_MAX_CHILDREN: "8"
+      PHP_FPM_ADMIN_MAX_CHILDREN: "3"
+      PHP_FPM_MAX_REQUESTS: "500"
+      PHP_MEMORY_LIMIT: 512M
+      WC_DISABLE_FRAGMENTS: "1"
+
+      DISABLE_WP_CRON: "0"
+      WP_ACTION_SCHEDULER: "0"
+      FORCE_URL_UPDATE: "0"
+      VERIFY_WP_CHECKSUMS: "0"
+      NGINX_CORS_ENABLED: "0"
+
+volumes:
+  vaporhub_mysql_data:
+  vaporhub_wp_data:
+
+networks:
+  vaporhub_local:
+    driver: bridge

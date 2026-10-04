@@ -11,5 +11,6 @@ blob-report/
 .env*
 !.env.example
 !.env.wp-deploy.example
+docker/local/patches/entrypoint.sh
 .cursor/mcp.json
 .stfolder/

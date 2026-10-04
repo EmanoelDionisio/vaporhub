@@ -11,14 +11,34 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$categorias = get_terms( array(
+$args = array(
 	'taxonomy'   => 'product_cat',
 	'hide_empty' => true,
 	'parent'     => 0,
 	'orderby'    => 'count',
 	'order'      => 'DESC',
-	'number'     => 6,
-) );
+	'number'     => 8,
+);
+
+$categorias = get_terms( $args );
+if ( ! is_wp_error( $categorias ) && ! empty( $categorias ) ) {
+	$padrao = (int) get_option( 'default_product_cat', 0 );
+	if ( $padrao > 0 ) {
+		$sem_padrao = array_values(
+			array_filter(
+				$categorias,
+				static function ( $cat ) use ( $padrao ) {
+					return (int) $cat->term_id !== $padrao;
+				}
+			)
+		);
+		if ( ! empty( $sem_padrao ) ) {
+			$categorias = array_slice( $sem_padrao, 0, 6 );
+		}
+	} else {
+		$categorias = array_slice( $categorias, 0, 6 );
+	}
+}
 
 if ( is_wp_error( $categorias ) || empty( $categorias ) ) :
 ?>
@@ -39,10 +59,10 @@ endif;
 		<div class="vh-categorias-header vh-text-center">
 			<span class="vh-categorias-eyebrow"><?php esc_html_e( 'Navegue por categoria', 'vapor-hub' ); ?></span>
 			<h2 class="vh-categorias-titulo">
-				<?php esc_html_e( 'Equipamentos profissionais', 'vapor-hub' ); ?>
+				<?php esc_html_e( 'O que você procura', 'vapor-hub' ); ?>
 			</h2>
 			<p class="vh-text-muted">
-				<?php esc_html_e( 'Pods, e-líquidos e acessórios — escolha pelo que você usa.', 'vapor-hub' ); ?>
+				<?php esc_html_e( 'Pods, e-líquidos, nicotina oral e acessórios — escolha pelo que você usa.', 'vapor-hub' ); ?>
 			</p>
 		</div>
 

@@ -423,31 +423,31 @@ $total_beneficios   = max( 1, count( $beneficios ) );
             <div class="vh-hero-grid">
                 <div class="vh-form-grupo">
                     <label><?php esc_html_e( 'Cor Primária', 'vapor-hub-loja' ); ?></label>
-                    <input type="color" name="vh_identidade_visual[cor_primaria]" value="<?php echo esc_attr( $identidade['cor_primaria'] ?? '#c8f542' ); ?>" />
+                    <input type="color" name="vh_identidade_visual[cor_primaria]" value="<?php echo esc_attr( $identidade['cor_primaria'] ?? '#7618f1' ); ?>" />
                 </div>
                 <div class="vh-form-grupo">
                     <label><?php esc_html_e( 'Cor Primária (Hover)', 'vapor-hub-loja' ); ?></label>
-                    <input type="color" name="vh_identidade_visual[cor_primaria_hover]" value="<?php echo esc_attr( $identidade['cor_primaria_hover'] ?? '#d6ff6a' ); ?>" />
+                    <input type="color" name="vh_identidade_visual[cor_primaria_hover]" value="<?php echo esc_attr( $identidade['cor_primaria_hover'] ?? '#5c10d0' ); ?>" />
                 </div>
                 <div class="vh-form-grupo">
                     <label><?php esc_html_e( 'Cor de Fundo', 'vapor-hub-loja' ); ?></label>
-                    <input type="color" name="vh_identidade_visual[cor_fundo]" value="<?php echo esc_attr( $identidade['cor_fundo'] ?? '#0a0a0b' ); ?>" />
+                    <input type="color" name="vh_identidade_visual[cor_fundo]" value="<?php echo esc_attr( $identidade['cor_fundo'] ?? '#f6f4fb' ); ?>" />
                 </div>
                 <div class="vh-form-grupo">
                     <label><?php esc_html_e( 'Cor de Superfície', 'vapor-hub-loja' ); ?></label>
-                    <input type="color" name="vh_identidade_visual[cor_superficie]" value="<?php echo esc_attr( $identidade['cor_superficie'] ?? '#141416' ); ?>" />
+                    <input type="color" name="vh_identidade_visual[cor_superficie]" value="<?php echo esc_attr( $identidade['cor_superficie'] ?? '#ffffff' ); ?>" />
                 </div>
                 <div class="vh-form-grupo">
                     <label><?php esc_html_e( 'Cor de Texto', 'vapor-hub-loja' ); ?></label>
-                    <input type="color" name="vh_identidade_visual[cor_texto]" value="<?php echo esc_attr( $identidade['cor_texto'] ?? '#f4f1ea' ); ?>" />
+                    <input type="color" name="vh_identidade_visual[cor_texto]" value="<?php echo esc_attr( $identidade['cor_texto'] ?? '#1a1228' ); ?>" />
                 </div>
                 <div class="vh-form-grupo">
                     <label><?php esc_html_e( 'Cor de Texto Suave', 'vapor-hub-loja' ); ?></label>
-                    <input type="color" name="vh_identidade_visual[cor_texto_suave]" value="<?php echo esc_attr( $identidade['cor_texto_suave'] ?? '#9a9a92' ); ?>" />
+                    <input type="color" name="vh_identidade_visual[cor_texto_suave]" value="<?php echo esc_attr( $identidade['cor_texto_suave'] ?? '#6b6680' ); ?>" />
                 </div>
                 <div class="vh-form-grupo">
                     <label><?php esc_html_e( 'Cor de Borda', 'vapor-hub-loja' ); ?></label>
-                    <input type="color" name="vh_identidade_visual[cor_borda]" value="<?php echo esc_attr( $identidade['cor_borda'] ?? '#2a2a2c' ); ?>" />
+                    <input type="color" name="vh_identidade_visual[cor_borda]" value="<?php echo esc_attr( $identidade['cor_borda'] ?? '#e4dff0' ); ?>" />
                 </div>
             </div>
 

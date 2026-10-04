@@ -56,11 +56,19 @@
     }
 }
 
-/* App renderizado no front-end (/minha-loja/*) — sem cromo wp-admin. */
+/* App renderizado no front-end (/minha-loja/*) — sem cromo wp-admin.
+   O WP injeta margin-top:32px no html quando a admin bar “está ativa”;
+   esconder #wpadminbar sem zerar esse offset deixa a faixa vazia no topo. */
+html:has(body.vh-loja-front) {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
 .vh-loja-front .vh-loja-app {
     min-height: 100vh;
 }
 
+html:has(body.vh-loja-front) #wpadminbar,
 .vh-loja-front #wpadminbar {
     display: none !important;
 }
@@ -69,21 +77,21 @@
 body.vh-loja-front ::selection,
 body.vh-loja-tela ::selection,
 .vh-loja-app ::selection {
-    background: rgba(12, 129, 216, 0.22);
+    background: color-mix(in srgb, var(--vh-primario, #7618f1) 22%, transparent);
     color: var(--vh-cinza-900, #212529);
 }
 
 body.vh-loja-front ::-moz-selection,
 body.vh-loja-tela ::-moz-selection,
 .vh-loja-app ::-moz-selection {
-    background: rgba(12, 129, 216, 0.22);
+    background: color-mix(in srgb, var(--vh-primario, #7618f1) 22%, transparent);
     color: var(--vh-cinza-900, #212529);
 }
 
 body.vh-loja-front select,
 body.vh-loja-tela select,
 .vh-loja-app select {
-    accent-color: var(--vh-primario, #0c81d8);
+    accent-color: var(--vh-primario, #7618f1);
 }
 
 /* ═══════════════════════════════════════════════
@@ -206,7 +214,7 @@ body.vh-loja-tela select,
 }
 
 .vh-loja-nav-item--ativo {
-    background: rgba(242, 127, 13, 0.14);
+    background: color-mix(in srgb, var(--vh-primario, #7618f1) 14%, transparent);
     color: #fff;
     border-left-color: var(--vh-primario);
 }
@@ -502,8 +510,8 @@ body.vh-loja-tela select,
     height: 52px;
     margin: 0 auto 16px;
     border-radius: 50%;
-    background: var(--vh-primario-light, #e7f1fb);
-    color: var(--vh-primario, #0c81d8);
+    background: var(--vh-primario-light, rgba(118, 24, 241, 0.14));
+    color: var(--vh-primario, #7618f1);
 }
 
 .vh-modal__icone .dashicons {
@@ -605,7 +613,7 @@ body.vh-modal-aberto {
 }
 
 .vh-loja-filtros select {
-    accent-color: var(--vh-primario, #0c81d8);
+    accent-color: var(--vh-primario, #7618f1);
 }
 
 .vh-loja-filtros input[type="date"] {

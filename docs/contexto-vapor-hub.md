@@ -12,7 +12,7 @@ O projeto **Piscou Afundou permanece intocado**. Daqui para frente, o trabalho d
 | Pasta / repositório | `/home/emanoeldionisio/Projetos/Empresa/Sistemas/vapor-hub` |
 | Papel | Hub/template para lojas do nicho vapor (não é a marca de uma loja específica) |
 | Origem | Cópia completa do Piscou Afundou (tema filho Hello Elementor + plugin Minha Loja + setup + React + testes + skills) |
-| Estado nesta cópia | Rebrand de pastas/prefixos feito. Nicho vapor no setup, Tiny como hub, visual preto/lima. Credenciais e host do piloto ainda não entram. |
+| Estado nesta cópia | Rebrand de pastas/prefixos feito. Nicho vapor no setup, Tiny como hub, visual violeta da logo (`#7618f1`). Credenciais e host do piloto ainda não entram. |
 
 O nome **não** deve citar CIA do Vapor, POD & VAPE, Piscou Afundou nem Gama da Pesca. Ele precisa servir o piloto e as próximas lojas do mesmo nicho.
 

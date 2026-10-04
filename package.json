@@ -12,6 +12,8 @@
     "wp:deploy": "bash ./scripts/deploy-wordpress-assets.sh",
     "wp:setup:remote": "bash ./scripts/remote-wp-setup.sh",
     "wp:deploy:all": "bash ./scripts/deploy-and-setup.sh",
+    "wp:local": "bash ./scripts/docker-local-up.sh",
+    "wp:local:down": "bash ./scripts/docker-local-down.sh",
     "test": "php tests/run.php --suite=all",
     "test:unit": "php tests/run.php --suite=unit",
     "test:integration": "php tests/run.php --suite=integration",

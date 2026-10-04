@@ -34,13 +34,13 @@ Acesse **Elementor › Configurações › Kit Global** (ou clique no ícone de 
 
 | Token             | Hex       | Uso                                          |
 | ----------------- | --------- | -------------------------------------------- |
-| **Primária**      | `#c8f542` | Botões, links ativos, destaques, badges      |
-| **Secundária**    | `#d6ff6a` | Hover de botões, gradientes, acentos escuros |
-| **Texto**         | `#f4f1ea` | Títulos, parágrafos, corpo de texto           |
-| **Texto Sec.**    | `#9a9a92` | Subtítulos, labels, textos auxiliares         |
-| **Fundo**         | `#0a0a0b` | Background geral do site (body)              |
+| **Primária**      | `#7618f1` | Botões, links ativos, destaques, badges      |
+| **Secundária**    | `#5c10d0` | Hover de botões, gradientes, acentos         |
+| **Texto**         | `#1a1228` | Títulos, parágrafos, corpo de texto           |
+| **Texto Sec.**    | `#6b6680` | Subtítulos, labels, textos auxiliares         |
+| **Fundo**         | `#f6f4fb` | Background geral do site (body)              |
 | **Superfície**    | `#ffffff` | Cards, modais, áreas de conteúdo             |
-| **Borda**         | `#2a2a2c` | Divisores, bordas de cards e inputs          |
+| **Borda**         | `#e4dff0` | Divisores, bordas de cards e inputs          |
 
 Configure cada cor no painel **Global Colors** para que fiquem disponíveis como variáveis em todo o site.
 
@@ -109,8 +109,8 @@ Usar um **Container** com `display: flex`, `justify-content: space-between`, `al
 | Menu selecionado  | Menu principal do WordPress                        |
 | Itens             | Início, Loja, Acessórios, Comunidade, Contato      |
 | Estilo do texto   | `font-size: 15px`, `font-weight: 600`, cor `#f4f1ea` |
-| Hover             | Cor `#c8f542`, sem underline                       |
-| Ativo             | Cor `#c8f542`, `font-weight: 700`                  |
+| Hover             | Cor `#7618f1`, sem underline                       |
+| Ativo             | Cor `#7618f1`, `font-weight: 700`                  |
 | Alinhamento       | Centro                                             |
 | Pointer           | Nenhum (ou underline sutil)                        |
 
@@ -124,8 +124,8 @@ Três widgets **Icon** ou botões de ícone lado a lado:
 | 🛒 Carrinho | Mini-cart WooCommerce               | Widget Menu Cart (Elementor Pro) com badge de quantidade |
 | 👤 Conta   | Link para Minha Conta               | Ícone com link para `/minha-conta/`              |
 
-- Ícones: tamanho 20–22px, cor `#f4f1ea`, hover `#c8f542`
-- Badge do carrinho: círculo `#c8f542` com texto branco
+- Ícones: tamanho 20–22px, cor `#f4f1ea`, hover `#7618f1`
+- Badge do carrinho: círculo `#7618f1` com texto branco
 
 ### 2.3 Menu Mobile (< 1024px)
 
@@ -168,7 +168,7 @@ Container de **fundo escuro** (`#f4f1ea` ou gradiente dark) com texto claro.
 - **Redes sociais:** widget Social Icons
   - Formato: círculos
   - Cor padrão: branco com fundo transparente ou `rgba(255,255,255,0.1)`
-  - Hover: fundo `#c8f542`, ícone branco
+  - Hover: fundo `#7618f1`, ícone branco
   - Redes: Instagram, Facebook, YouTube (ajustar conforme a marca)
 
 #### Coluna 2 — Links da Loja
@@ -184,7 +184,7 @@ Lista de links (widget Icon List sem ícone, ou lista simples):
 - Nicotina oral
 - Vape
 
-Estilo: cor `rgba(255,255,255,0.7)`, hover `#c8f542`
+Estilo: cor `rgba(255,255,255,0.7)`, hover `#7618f1`
 
 #### Coluna 3 — Links de Suporte
 
@@ -212,7 +212,7 @@ Usar widget **Icon List** com ícones à esquerda:
 | ✉️ Envelope       | contato@piloto.example     |
 | 📍 Map Marker     | Cidade, Estado — Brasil          |
 
-Ícones em `#c8f542`, texto em branco/opaco.
+Ícones em `#7618f1`, texto em branco/opaco.
 
 ### 3.2 Barra Inferior
 
@@ -251,7 +251,7 @@ Criar uma **Page** com template Elementor Full Width (ou Canvas, se não precisa
 
 1. **Badge:** texto "Nova Coleção 2026" em tag/span
    - Background: `rgba(242,127,13,0.15)`
-   - Cor: `#c8f542`
+   - Cor: `#7618f1`
    - Padding: `8px 20px`
    - Border-radius: `50px`
    - Font-size: `14px`, `font-weight: 600`
@@ -271,12 +271,12 @@ Criar uma **Page** com template Elementor Full Width (ou Canvas, se não precisa
 
 | Botão        | Estilo          | Cor fundo   | Cor texto | Border-radius |
 | ------------ | --------------- | ----------- | --------- | ------------- |
-| Ver Coleção  | Primário/sólido | `#c8f542`   | `#ffffff` | 12px          |
+| Ver Coleção  | Primário/sólido | `#7618f1`   | `#ffffff` | 12px          |
 | Saiba Mais   | Outline/ghost   | transparente| `#ffffff` | 12px          |
 
 - Padding botões: `14px 32px`
 - Font-weight: `600`
-- Hover do primário: `#d6ff6a`
+- Hover do primário: `#5c10d0`
 - Hover do outline: fundo `rgba(255,255,255,0.1)`
 
 ### 4.2 Barra de Benefícios
@@ -302,7 +302,7 @@ Seção com 4 colunas (Inner Section ou Flexbox Container):
 
 - Background da seção: `#ffffff` ou `#0a0a0b`
 - Borda: `1px solid #2a2a2c`
-- Ícone: cor `#c8f542`, 24px
+- Ícone: cor `#7618f1`, 24px
 - Título: `font-weight: 600`, `14px`
 - Descrição: `font-weight: 400`, `13px`, cor `#9a9a92`
 - Gap entre colunas: `24px`
@@ -345,9 +345,9 @@ Para estilizar os cards de produto de acordo com o MVP:
 - Border-radius: `16px`
 - Sombra: `0 1px 3px rgba(0,0,0,0.06)`
 - Hover: sombra mais pronunciada, leve translate-Y
-- Preço com desconto: preço antigo riscado, novo em `#c8f542` e `font-weight: 700`
-- Badge "Promoção": background `#c8f542`, texto branco, canto superior esquerdo
-- Botão "Adicionar ao Carrinho": aparece no hover, fundo `#c8f542`
+- Preço com desconto: preço antigo riscado, novo em `#7618f1` e `font-weight: 700`
+- Badge "Promoção": background `#7618f1`, texto branco, canto superior esquerdo
+- Botão "Adicionar ao Carrinho": aparece no hover, fundo `#7618f1`
 
 > **Dica:** Use CSS customizado no card ou crie um Loop Template dedicado para personalizar completamente a aparência dos cards de produto.
 
@@ -363,7 +363,7 @@ Para estilizar os cards de produto de acordo com o MVP:
 | Propriedade           | Valor                                               |
 | --------------------- | --------------------------------------------------- |
 | Background            | Gradiente escuro (`#f4f1ea` → `#2a1f14`)            |
-| Shapes decorativos    | Divs absolutas com blur (`filter: blur(80px)`, cores `#c8f542` com opacidade 10–20%) |
+| Shapes decorativos    | Divs absolutas com blur (`filter: blur(80px)`, cores `#7618f1` com opacidade 10–20%) |
 | Overflow              | Hidden                                               |
 | Padding               | `80px 0`                                             |
 
@@ -373,7 +373,7 @@ Conteúdo (container centralizado):
 - Título H2: "Seja um Revendedor Vapor Hub"
 - Subtítulo: parágrafo descritivo, cor `rgba(255,255,255,0.7)`
 - Lista de benefícios: 3 itens com ícone check, texto branco
-- **Botão:** "Quero Ser Revendedor" — fundo `#c8f542`, classe CSS `.vh-abrir-revenda` (abre o popup)
+- **Botão:** "Quero Ser Revendedor" — fundo `#7618f1`, classe CSS `.vh-abrir-revenda` (abre o popup)
 
 ### 4.6 Galeria da Comunidade
 
@@ -448,7 +448,7 @@ Usar widget **Product Categories**, **Price Filter**, **Rating Filter** e **Acti
 ### 5.5 Paginação
 
 - Widget: **Post Navigation** / **Pagination**
-- Estilo: botões com border-radius `8px`, ativo com fundo `#c8f542` e texto branco
+- Estilo: botões com border-radius `8px`, ativo com fundo `#7618f1` e texto branco
 
 ### 5.6 Condição de Exibição
 
@@ -484,7 +484,7 @@ De cima para baixo:
 
 1. **Marca / Categoria:**
    - Widget: Product Meta ou texto dinâmico
-   - Estilo: `font-size: 14px`, cor `#c8f542`, `font-weight: 600`, `text-transform: uppercase`
+   - Estilo: `font-size: 14px`, cor `#7618f1`, `font-weight: 600`, `text-transform: uppercase`
 
 2. **Nome do Produto (H1):**
    - Widget: Product Title
@@ -493,11 +493,11 @@ De cima para baixo:
 3. **Preço:**
    - Widget: Product Price
    - Preço regular riscado: cor `#9a9a92`, `font-size: 18px`
-   - Preço com desconto: cor `#c8f542`, `font-size: 28px`, `font-weight: 700`
+   - Preço com desconto: cor `#7618f1`, `font-size: 28px`, `font-weight: 700`
 
 4. **Avaliações:**
    - Widget: Product Rating
-   - Estrelas em `#c8f542`
+   - Estrelas em `#7618f1`
 
 5. **Descrição Curta:**
    - Widget: Product Short Description
@@ -511,8 +511,8 @@ De cima para baixo:
 7. **Formulário de Variações + Add to Cart:**
    - Widget: Add to Cart (Elementor Pro)
    - Seletores de variação estilizados (dropdowns ou swatches se houver plugin)
-   - Botão: fundo `#c8f542`, texto branco, `font-weight: 700`, border-radius `12px`, full-width
-   - Hover: `#d6ff6a`
+   - Botão: fundo `#7618f1`, texto branco, `font-weight: 700`, border-radius `12px`, full-width
+   - Hover: `#5c10d0`
 
 8. **Calculadora de Frete:**
    - Shortcode do plugin de frete ou widget HTML customizado
@@ -523,7 +523,7 @@ De cima para baixo:
 
 - Widget: **Product Data Tabs** (Elementor Pro)
 - Abas: **Descrição** | **Avaliações**
-- Estilo das tabs: text buttons, aba ativa com borda inferior `#c8f542` e `font-weight: 700`
+- Estilo das tabs: text buttons, aba ativa com borda inferior `#7618f1` e `font-weight: 700`
 - Conteúdo: tipografia padrão do body
 
 ### 6.4 Produtos Relacionados
@@ -554,9 +554,9 @@ De cima para baixo:
 | Elemento          | Estilo                                           |
 | ----------------- | ------------------------------------------------ |
 | Menu lateral      | Background `#ffffff`, border `1px solid #2a2a2c`, border-radius `16px` |
-| Item ativo        | Background `#0a0a0b`, borda esquerda `3px solid #c8f542` |
+| Item ativo        | Background `#0a0a0b`, borda esquerda `3px solid #7618f1` |
 | Formulários       | Inputs com border-radius `12px`, border `1px solid #2a2a2c`, padding `12px 16px` |
-| Botões            | Background `#c8f542`, texto branco, border-radius `12px` |
+| Botões            | Background `#7618f1`, texto branco, border-radius `12px` |
 | Labels            | `font-weight: 600`, `font-size: 14px`, cor `#f4f1ea` |
 
 ### 7.3 Condição de Exibição
@@ -575,10 +575,10 @@ De cima para baixo:
 
 | Elemento       | Valor                                       |
 | -------------- | ------------------------------------------- |
-| Número grande  | **404** — `font-size: 120px`, `font-weight: 800`, cor `#c8f542` com opacidade |
+| Número grande  | **404** — `font-size: 120px`, `font-weight: 800`, cor `#7618f1` com opacidade |
 | Título H1      | "Esse peixe escapou!"                       |
 | Subtítulo      | "A página que você procura não existe ou foi movida." |
-| Botão          | "Voltar à Home" — fundo `#c8f542`, link para `/` |
+| Botão          | "Voltar à Home" — fundo `#7618f1`, link para `/` |
 
 - Layout: tudo centralizado, `text-align: center`
 - Altura mínima: `60vh`
@@ -621,7 +621,7 @@ De cima para baixo:
 | 3     | Campo: **Nome Completo** — input text, obrigatório |
 | 4     | Campo: **CPF ou CNPJ** — input text, obrigatório   |
 | 5     | Campo: **WhatsApp** — input tel, obrigatório        |
-| 6     | Botão: **Enviar** — full-width, fundo `#c8f542`    |
+| 6     | Botão: **Enviar** — full-width, fundo `#7618f1`    |
 
 - Widget de formulário: **Form** (Elementor Pro) ou shortcode do WPForms/Fluent Forms
 - Ação após envio: exibir mensagem de sucesso + enviar e-mail para o admin
@@ -657,7 +657,7 @@ Estilo de cada card:
 - Border: `1px solid #2a2a2c`
 - Border-radius: `16px`
 - Padding: `24px`
-- Ícone: `#c8f542`, tamanho 24px
+- Ícone: `#7618f1`, tamanho 24px
 - Título: `font-weight: 700`
 - Conteúdo: cor `#9a9a92`
 
@@ -697,7 +697,7 @@ Caso precise aplicar ajustes finos que o Elementor não oferece nativamente, use
 
 /* Badge de promoção nos cards de produto */
 .woocommerce span.onsale {
-  background-color: #c8f542;
+  background-color: #7618f1;
   color: #ffffff;
   border-radius: 8px;
   font-weight: 600;
@@ -720,7 +720,7 @@ select {
 /* Botão WooCommerce padronizado */
 .woocommerce .button,
 .woocommerce input.button {
-  background-color: #c8f542 !important;
+  background-color: #7618f1 !important;
   color: #ffffff !important;
   border-radius: 12px !important;
   font-weight: 700 !important;
@@ -730,7 +730,7 @@ select {
 
 .woocommerce .button:hover,
 .woocommerce input.button:hover {
-  background-color: #d6ff6a !important;
+  background-color: #5c10d0 !important;
 }
 ```
 

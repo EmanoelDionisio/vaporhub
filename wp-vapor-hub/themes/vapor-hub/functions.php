@@ -14,9 +14,10 @@ defined( 'ABSPATH' ) || exit;
 require_once get_stylesheet_directory() . '/includes/class-vh-loja-filtros.php';
 require_once get_stylesheet_directory() . '/includes/class-vh-seo.php';
 require_once get_stylesheet_directory() . '/includes/vh-performance.php';
+require_once get_stylesheet_directory() . '/includes/vh-home.php';
 
 /** Versão do tema — usada para cache-busting dos assets */
-define( 'VH_VERSION', '1.0.71' );
+define( 'VH_VERSION', '1.0.74' );
 
 /** Máximo de requisições de cálculo de frete (PDP) por IP por minuto. */
 define( 'VH_FRETE_PRODUTO_RATE_LIMIT', 30 );
@@ -55,13 +56,13 @@ function vh_identidade_visual_atual(): array {
 		'favicon_url'        => '',
 		'fonte_titulo'       => 'plus_jakarta',
 		'fonte_corpo'        => 'plus_jakarta',
-		'cor_primaria'       => '#c8f542',
-		'cor_primaria_hover' => '#d6ff6a',
-		'cor_fundo'          => '#0a0a0b',
-		'cor_superficie'     => '#141416',
-		'cor_texto'          => '#f4f1ea',
-		'cor_texto_suave'    => '#9a9a92',
-		'cor_borda'          => '#2a2a2c',
+		'cor_primaria'       => '#7618f1',
+		'cor_primaria_hover' => '#5c10d0',
+		'cor_fundo'          => '#f6f4fb',
+		'cor_superficie'     => '#ffffff',
+		'cor_texto'          => '#1a1228',
+		'cor_texto_suave'    => '#6b6680',
+		'cor_borda'          => '#e4dff0',
 		'estilo_card'        => 'suave',
 		'raio_card'          => '20',
 	);
@@ -131,7 +132,7 @@ add_filter( 'get_site_icon_url', 'vh_filtrar_site_icon_url', 10, 3 );
 /**
  * Converte cor hexadecimal (#RGB ou #RRGGBB) em componentes RGB 0–255.
  *
- * @param string $hex Cor sanitizada (ex.: #c8f542).
+ * @param string $hex Cor sanitizada (ex.: #7618f1).
  * @return array{0:int,1:int,2:int}|null
  */
 function vh_hex_para_rgb_componentes( string $hex ): ?array {
@@ -206,9 +207,12 @@ function vh_css_identidade_visual( array $identidade ): string {
 	if ( $rgb_prim ) {
 		$prim_leve  = sprintf( 'rgba(%d,%d,%d,0.1)', $rgb_prim[0], $rgb_prim[1], $rgb_prim[2] );
 		$prim_media = sprintf( 'rgba(%d,%d,%d,0.25)', $rgb_prim[0], $rgb_prim[1], $rgb_prim[2] );
+		$luma       = ( 0.299 * $rgb_prim[0] + 0.587 * $rgb_prim[1] + 0.114 * $rgb_prim[2] ) / 255;
+		$texto_inv  = $luma > 0.62 ? '#1a1228' : '#ffffff';
 	} else {
-		$prim_leve  = 'rgba(242, 127, 13, 0.1)';
-		$prim_media = 'rgba(242, 127, 13, 0.25)';
+		$prim_leve  = 'rgba(118, 24, 241, 0.1)';
+		$prim_media = 'rgba(118, 24, 241, 0.25)';
+		$texto_inv  = '#ffffff';
 	}
 
 	$estilo_card = isset( $identidade['estilo_card'] ) ? $identidade['estilo_card'] : 'suave';
@@ -222,8 +226,8 @@ function vh_css_identidade_visual( array $identidade ): string {
 			$sombra_card       = sprintf( '0 8px 18px rgba(%d,%d,%d,.14)', $rgb_prim[0], $rgb_prim[1], $rgb_prim[2] );
 			$sombra_card_hover = sprintf( '0 16px 34px rgba(%d,%d,%d,.28)', $rgb_prim[0], $rgb_prim[1], $rgb_prim[2] );
 		} else {
-			$sombra_card       = '0 8px 18px rgba(242,127,13,.14)';
-			$sombra_card_hover = '0 16px 34px rgba(242,127,13,.28)';
+			$sombra_card       = '0 8px 18px rgba(118,24,241,.14)';
+			$sombra_card_hover = '0 16px 34px rgba(118,24,241,.28)';
 		}
 	}
 
@@ -237,6 +241,7 @@ function vh_css_identidade_visual( array $identidade ): string {
 --vh-cor-superficie: {$identidade['cor_superficie']};
 --vh-cor-texto: {$identidade['cor_texto']};
 --vh-cor-texto-suave: {$identidade['cor_texto_suave']};
+--vh-cor-texto-invertido: {$texto_inv};
 --vh-cor-borda: {$identidade['cor_borda']};
 --vh-fonte-familia: {$fonte_corpo};
 --vh-fonte-titulos: {$fonte_titulo};

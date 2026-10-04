@@ -13,21 +13,21 @@
    ========================================================================= */
 
 :root {
-	/* --- Cores (vitrine preta / premium de vapor) --- */
-	--vh-cor-primaria: #c8f542;
-	--vh-cor-primaria-hover: #d6ff6a;
-	--vh-cor-primaria-leve: rgba(200, 245, 66, 0.12);
-	--vh-cor-primaria-media: rgba(200, 245, 66, 0.28);
+	/* --- Cores (marca Vapor Hub — violeta da logo) --- */
+	--vh-cor-primaria: #7618f1;
+	--vh-cor-primaria-hover: #5c10d0;
+	--vh-cor-primaria-leve: rgba(118, 24, 241, 0.12);
+	--vh-cor-primaria-media: rgba(118, 24, 241, 0.28);
 
-	--vh-cor-fundo: #0a0a0b;
-	--vh-cor-superficie: #141416;
+	--vh-cor-fundo: #f6f4fb;
+	--vh-cor-superficie: #ffffff;
 
-	--vh-cor-texto: #f4f1ea;
-	--vh-cor-texto-suave: #9a9a92;
-	--vh-cor-texto-invertido: #0a0a0b;
+	--vh-cor-texto: #1a1228;
+	--vh-cor-texto-suave: #6b6680;
+	--vh-cor-texto-invertido: #ffffff;
 
-	--vh-cor-borda: #2a2a2c;
-	--vh-cor-borda-forte: #3a3a3e;
+	--vh-cor-borda: #e4dff0;
+	--vh-cor-borda-forte: #cfc6e4;
 
 	/* Cores semânticas */
 	--vh-cor-sucesso: #22c55e;
@@ -121,6 +121,11 @@
 html {
 	scroll-behavior: smooth;
 	-webkit-text-size-adjust: 100%;
+	color-scheme: light;
+}
+
+html[data-vh-tema="escuro"] {
+	color-scheme: dark;
 }
 
 body {
@@ -234,7 +239,7 @@ strong, b {
 	outline-offset: 2px;
 }
 
-/* Primário — laranja sólido */
+/* Primário — sólido da marca */
 .vh-btn-primary {
 	background-color: var(--vh-cor-primaria);
 	color: var(--vh-cor-texto-invertido);
@@ -442,7 +447,7 @@ strong, b {
 	position: sticky;
 	top: 0;
 	z-index: var(--vh-z-header);
-	background-color: rgba(255, 255, 255, 0.85);
+	background-color: color-mix(in srgb, var(--vh-cor-superficie) 88%, var(--vh-cor-fundo));
 	backdrop-filter: blur(12px);
 	-webkit-backdrop-filter: blur(12px);
 	border-bottom: 1px solid var(--vh-cor-borda);
@@ -451,7 +456,7 @@ strong, b {
 
 .vh-header-scrolled {
 	box-shadow: var(--vh-sombra-md);
-	background-color: rgba(255, 255, 255, 0.95);
+	background-color: var(--vh-cor-superficie);
 }
 
 .vh-header-inner {
@@ -703,19 +708,39 @@ select option:checked {
 }
 
 /* =========================================================================
-   17. DARK MODE (preparado para uso futuro)
-   Descomente o bloco abaixo quando for implementar.
+   17. DARK MODE NATIVO
+   Só troca tokens. Layouts já consomem --vh-cor-*.
    ========================================================================= */
 
-/*
-@media (prefers-color-scheme: dark) {
-	:root {
-		--vh-cor-fundo: #0f0d0b;
-		--vh-cor-superficie: #1a1714;
-		--vh-cor-texto: #f5f0eb;
-		--vh-cor-texto-suave: #b8a08a;
-		--vh-cor-borda: #2e271f;
-		--vh-cor-borda-forte: #3d3428;
-	}
+html[data-vh-tema="escuro"] {
+	--vh-cor-fundo: #0e0b14;
+	--vh-cor-superficie: #17141f;
+	--vh-cor-texto: #f4f1fa;
+	--vh-cor-texto-suave: #9b94ab;
+	--vh-cor-texto-invertido: #ffffff;
+	--vh-cor-borda: #2c2738;
+	--vh-cor-borda-forte: #3d364d;
+	--vh-cor-primaria-leve: color-mix(in srgb, var(--vh-cor-primaria) 22%, transparent);
+	--vh-cor-primaria-media: color-mix(in srgb, var(--vh-cor-primaria) 40%, transparent);
+	--vh-cor-sucesso-fundo: #052e16;
+	--vh-cor-erro-fundo: #3f0d0d;
+	--vh-cor-info-fundo: #0b1f3a;
+	--vh-cor-alerta-fundo: #3a2a08;
 }
-*/
+
+.vh-tema-icone--sol {
+	display: none;
+}
+
+html[data-vh-tema="escuro"] .vh-tema-icone--lua {
+	display: none;
+}
+
+html[data-vh-tema="escuro"] .vh-tema-icone--sol {
+	display: block;
+}
+
+.vh-tema-toggle:focus-visible {
+	outline: 2px solid var(--vh-cor-primaria);
+	outline-offset: 2px;
+}

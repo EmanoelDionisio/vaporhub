@@ -77,6 +77,11 @@ if ( function_exists( 'WC' ) && WC()->cart ) {
 			</form>
 
 			<div class="vh-header-icones">
+				<button type="button" class="vh-header-icone vh-tema-toggle" data-vh-tema-toggle aria-pressed="false" aria-label="<?php esc_attr_e( 'Ativar modo escuro', 'vapor-hub' ); ?>" data-label-escuro="<?php esc_attr_e( 'Ativar modo escuro', 'vapor-hub' ); ?>" data-label-claro="<?php esc_attr_e( 'Ativar modo claro', 'vapor-hub' ); ?>">
+					<svg class="vh-tema-icone vh-tema-icone--lua" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg>
+					<svg class="vh-tema-icone vh-tema-icone--sol" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+				</button>
+
 				<a href="<?php echo esc_url( $carrinho_url ); ?>" class="vh-header-icone vh-header-carrinho" aria-label="<?php esc_attr_e( 'Carrinho', 'vapor-hub' ); ?>">
 					<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
 					<?php if ( $qtd_carrinho > 0 ) : ?>

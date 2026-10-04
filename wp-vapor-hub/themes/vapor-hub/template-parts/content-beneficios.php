@@ -12,28 +12,30 @@ defined( 'ABSPATH' ) || exit;
 
 $beneficios_salvos = get_option( 'vh_beneficios', array() );
 
-$beneficios_padrao = array(
-	array(
-		'icone'     => 'check-circle',
-		'titulo'    => 'Produção própria',
-		'descricao' => 'Qualidade garantida',
-	),
-	array(
-		'icone'     => 'settings',
-		'titulo'    => 'Totalmente personalizável',
-		'descricao' => 'Do seu jeito',
-	),
-	array(
-		'icone'     => 'truck',
-		'titulo'    => 'Envio em 24h',
-		'descricao' => 'Para todo o Brasil',
-	),
-	array(
-		'icone'     => 'users',
-		'titulo'    => 'Comunidade ativa',
-		'descricao' => 'Junte-se a nós',
-	),
-);
+$beneficios_padrao = class_exists( 'VH_Settings' )
+	? VH_Settings::beneficios_padrao()
+	: array(
+		array(
+			'icone'     => 'truck',
+			'titulo'    => 'Envio para todo o Brasil',
+			'descricao' => 'Calcule o CEP no produto',
+		),
+		array(
+			'icone'     => 'check-circle',
+			'titulo'    => 'PIX na hora',
+			'descricao' => 'Pagamento instantâneo',
+		),
+		array(
+			'icone'     => 'settings',
+			'titulo'    => 'Parcelamento',
+			'descricao' => 'No cartão, na vitrine',
+		),
+		array(
+			'icone'     => 'shield',
+			'titulo'    => 'Compra segura',
+			'descricao' => 'Site protegido',
+		),
+	);
 
 $beneficios = ! empty( $beneficios_salvos ) ? $beneficios_salvos : $beneficios_padrao;
 

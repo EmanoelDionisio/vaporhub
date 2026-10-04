@@ -4,16 +4,16 @@
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   
-  --color-primary: #c8f542;
-  --color-primary-hover: #d6ff6a;
+  --color-primary: #7618f1;
+  --color-primary-hover: #5c10d0;
   
-  --color-background: #0a0a0b;
-  --color-surface: #141416;
+  --color-background: #f6f4fb;
+  --color-surface: #ffffff;
   
-  --color-text-main: #f4f1ea;
-  --color-text-muted: #9a9a92;
+  --color-text-main: #1a1228;
+  --color-text-muted: #6b6680;
   
-  --color-border: #2a2a2c;
+  --color-border: #e4dff0;
 }
 
 @layer base {

@@ -417,10 +417,10 @@ class VH_Settings {
 
     public static function beneficios_padrao(): array {
         return [
+            [ 'icone' => 'truck',        'titulo' => 'Envio para todo o Brasil', 'descricao' => 'Calcule o CEP no produto' ],
             [ 'icone' => 'check-circle', 'titulo' => 'PIX na hora',              'descricao' => 'Pagamento instantâneo' ],
             [ 'icone' => 'settings',     'titulo' => 'Parcelamento',             'descricao' => 'No cartão, na vitrine' ],
-            [ 'icone' => 'truck',        'titulo' => 'Envio para o Brasil',      'descricao' => 'Calcule o CEP no produto' ],
-            [ 'icone' => 'users',        'titulo' => 'Atendimento no WhatsApp',  'descricao' => 'Pedido e pós-venda' ],
+            [ 'icone' => 'shield',       'titulo' => 'Compra segura',            'descricao' => 'Site protegido' ],
         ];
     }
 
@@ -476,16 +476,49 @@ class VH_Settings {
             'favicon_url'        => '',
             'fonte_titulo'       => 'plus_jakarta',
             'fonte_corpo'        => 'plus_jakarta',
-            'cor_primaria'       => '#c8f542',
-            'cor_primaria_hover' => '#d6ff6a',
-            'cor_fundo'          => '#0a0a0b',
-            'cor_superficie'     => '#141416',
-            'cor_texto'          => '#f4f1ea',
-            'cor_texto_suave'    => '#9a9a92',
-            'cor_borda'          => '#2a2a2c',
+            'cor_primaria'       => '#7618f1',
+            'cor_primaria_hover' => '#5c10d0',
+            'cor_fundo'          => '#f6f4fb',
+            'cor_superficie'     => '#ffffff',
+            'cor_texto'          => '#1a1228',
+            'cor_texto_suave'    => '#6b6680',
+            'cor_borda'          => '#e4dff0',
             'estilo_card'        => 'suave',
             'raio_card'          => '20',
         ];
+    }
+
+    /**
+     * Tokens de marca do painel (mesmo violeta da loja).
+     */
+    public static function css_tokens_marca(): string {
+        $id = self::obter( 'vh_identidade_visual', self::identidade_visual_padrao() );
+        if ( ! is_array( $id ) ) {
+            $id = array();
+        }
+        $id    = wp_parse_args( $id, self::identidade_visual_padrao() );
+        $prim  = sanitize_hex_color( (string) ( $id['cor_primaria'] ?? '' ) ) ?: '#7618f1';
+        $hover = sanitize_hex_color( (string) ( $id['cor_primaria_hover'] ?? '' ) ) ?: '#5c10d0';
+        $hex   = ltrim( strtolower( $prim ), '#' );
+        if ( 3 === strlen( $hex ) ) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        }
+        $leve = '#efe7fe';
+        if ( 6 === strlen( $hex ) && ctype_xdigit( $hex ) ) {
+            $leve = sprintf(
+                'rgba(%d,%d,%d,0.14)',
+                hexdec( substr( $hex, 0, 2 ) ),
+                hexdec( substr( $hex, 2, 2 ) ),
+                hexdec( substr( $hex, 4, 2 ) )
+            );
+        }
+
+        return sprintf(
+            ':root{--vh-primario:%s;--vh-primario-hover:%s;--vh-primario-light:%s;--vh-escuro:#1a1228;}',
+            $prim,
+            $hover,
+            $leve
+        );
     }
 
     /**

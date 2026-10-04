@@ -39,7 +39,7 @@ if ( taxonomy_exists( 'product_brand' ) ) {
 	$marcas = get_the_terms( $produto_id, 'product_brand' );
 	if ( ! is_wp_error( $marcas ) && ! empty( $marcas ) ) {
 		foreach ( $marcas as $marca ) {
-			if ( mb_strtolower( $marca->name ) === 'piscou afundou' ) {
+			if ( mb_strtolower( $marca->name ) === 'vapor hub' ) {
 				$eh_exclusivo = true;
 				break;
 			}

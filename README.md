@@ -34,9 +34,20 @@ npm run test
 npm run test:lint
 ```
 
-## Deploy
+## WordPress local (DockerPress isolado)
 
-Não rode deploy deste piloto ainda. Copie `.env.wp-deploy.example` quando o host/FTP/SSH forem passados.
+Stack **deste repo**, imagem DockerPress, HTTP **8083** — não usa as portas 8080/8081/8082 nem o Compose em `Sistemas/dockerpress/stacks/local`.
+
+```bash
+npm run wp:local        # sobe, instala Woo/tema/plugin, setup + CSV de amostra
+npm run wp:local:down   # para os containers (volumes permanecem)
+```
+
+Acesso: http://127.0.0.1:8083 — painel Minha Loja em `/minha-loja/`. Detalhes em [`docker/local/README.md`](docker/local/README.md).
+
+## Deploy online
+
+O piloto na internet **não** é este Compose. Quando houver host/FTP/SSH, copie `.env.wp-deploy.example` e use `npm run wp:deploy`.
 
 ---
 

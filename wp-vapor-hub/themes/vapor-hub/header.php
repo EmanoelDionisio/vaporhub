@@ -17,6 +17,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script>
+	(function(){try{var s=localStorage.getItem('vh-tema');var d=s==='escuro'||(s!=='claro'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;r.setAttribute('data-vh-tema',d?'escuro':'claro');r.style.colorScheme=d?'dark':'light';}catch(e){document.documentElement.setAttribute('data-vh-tema','claro');}})();
+	</script>
 	<?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>

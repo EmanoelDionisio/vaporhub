@@ -283,11 +283,11 @@ final class VH_SEO {
 		}
 		$cookie = esc_js( self::COOKIE_CONSENT );
 		?>
-<div id="vh-consent" role="dialog" aria-live="polite" aria-label="<?php esc_attr_e( 'Aviso de cookies', 'vapor-hub' ); ?>" style="position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;max-width:560px;margin:0 auto;background:#141416;color:#f4f1ea;border-radius:14px;padding:16px 18px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;font-size:14px;line-height:1.45">
+<div id="vh-consent" role="dialog" aria-live="polite" aria-label="<?php esc_attr_e( 'Aviso de cookies', 'vapor-hub' ); ?>" style="position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;max-width:560px;margin:0 auto;background:var(--vh-cor-superficie);color:var(--vh-cor-texto);border-radius:14px;padding:16px 18px;box-shadow:0 10px 30px rgba(26,18,40,.18);display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;font-size:14px;line-height:1.45">
 	<span style="flex:1 1 220px"><?php echo esc_html( $texto ); ?></span>
 	<span style="display:flex;gap:8px;flex:0 0 auto">
-		<button type="button" data-vh-consent="deny" style="cursor:pointer;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;border-radius:9px;padding:8px 14px;font-weight:600"><?php esc_html_e( 'Recusar', 'vapor-hub' ); ?></button>
-		<button type="button" data-vh-consent="grant" style="cursor:pointer;border:0;background:#c8f542;color:#0a0a0b;border-radius:9px;padding:8px 16px;font-weight:700"><?php esc_html_e( 'Aceitar', 'vapor-hub' ); ?></button>
+		<button type="button" data-vh-consent="deny" style="cursor:pointer;border:1px solid var(--vh-cor-borda);background:transparent;color:var(--vh-cor-texto);border-radius:9px;padding:8px 14px;font-weight:600"><?php esc_html_e( 'Recusar', 'vapor-hub' ); ?></button>
+		<button type="button" data-vh-consent="grant" style="cursor:pointer;border:0;background:var(--vh-cor-primaria);color:var(--vh-cor-texto-invertido);border-radius:9px;padding:8px 16px;font-weight:700"><?php esc_html_e( 'Aceitar', 'vapor-hub' ); ?></button>
 	</span>
 </div>
 <script>(function(){var b=document.getElementById('vh-consent');if(!b)return;function set(v){document.cookie='<?php echo $cookie; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>='+v+';path=/;max-age=15552000;SameSite=Lax';if(window.gtag){var s=v==='grant'?'granted':'denied';gtag('consent','update',{ad_storage:s,ad_user_data:s,ad_personalization:s,analytics_storage:s});}b.parentNode.removeChild(b);if(v==='grant'){setTimeout(function(){location.reload();},200);}}b.addEventListener('click',function(e){var t=e.target.closest('[data-vh-consent]');if(!t)return;set(t.getAttribute('data-vh-consent'));});})();</script>

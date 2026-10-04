@@ -20,6 +20,7 @@ $titulo     = $titulo_default;
 $subtitulo  = $subtitulo_default;
 $fotos      = array();
 $link_envio = '#';
+$somente_fotos = (bool) get_query_var( 'vh_comunidade_somente_fotos', false );
 
 /* Formato legado (associativo com fotos ou metadados). */
 if ( isset( $raw['titulo'] ) || isset( $raw['subtitulo'] ) || isset( $raw['fotos'] ) || isset( $raw['link_envio'] ) ) {
@@ -52,6 +53,10 @@ if ( isset( $raw['titulo'] ) || isset( $raw['subtitulo'] ) || isset( $raw['fotos
 			'link' => isset( $item['link'] ) ? $item['link'] : '',
 		);
 	}
+}
+
+if ( $somente_fotos && empty( $fotos ) ) {
+	return;
 }
 ?>
 

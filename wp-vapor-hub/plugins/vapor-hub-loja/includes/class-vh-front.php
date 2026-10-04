@@ -12,7 +12,7 @@ class VH_Front {
     public static function init(): void {
         add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue' ] );
         add_action( 'wp_footer', [ __CLASS__, 'imprimir_templates_midia' ], 5 );
-        add_filter( 'show_admin_bar', [ __CLASS__, 'ocultar_admin_bar' ] );
+        add_filter( 'show_admin_bar', [ __CLASS__, 'ocultar_admin_bar' ], 99 );
     }
 
     /**
@@ -56,6 +56,7 @@ class VH_Front {
             [ 'dashicons' ],
             VH_LOJA_VERSION
         );
+        wp_add_inline_style( 'vh-admin-css', VH_Settings::css_tokens_marca() );
         wp_enqueue_style(
             'vh-app-shell',
             VH_LOJA_ASSETS . 'css/app-shell.css',
@@ -314,6 +315,7 @@ class VH_Front {
             [],
             VH_LOJA_VERSION
         );
+        wp_add_inline_style( 'vh-login-css', VH_Settings::css_tokens_marca() );
         if ( $turnstile_ativo && $turnstile_site ) {
             wp_enqueue_script( 'cloudflare-turnstile', 'https://challenges.cloudflare.com/turnstile/v0/api.js', [], null, true );
         }
@@ -350,7 +352,7 @@ class VH_Front {
     }
 
     public static function ocultar_admin_bar( $mostrar ): bool {
-        if ( VH_Portal::eh_rota_portal() && VH_Roles::usuario_eh_gestor() ) {
+        if ( VH_Portal::eh_rota_portal() ) {
             return false;
         }
         return (bool) $mostrar;

@@ -48,6 +48,8 @@ wp-vapor-hub/
 
 ## Instalação passo a passo
 
+No desenvolvimento desta máquina, o caminho limpo é o DockerPress isolado na porta **8083** (`npm run wp:local` na raiz do repo). O mesmo tema/plugin/setup sobe depois no piloto online por FTP/SSH — não misture os dois.
+
 ### 1. WordPress e plugins obrigatórios
 
 Instale o WordPress 6.4+ com PHP 8.1+. Instale e ative:

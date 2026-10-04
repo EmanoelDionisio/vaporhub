@@ -153,6 +153,63 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	} )();
 
 	/* =====================================================================
+	   1b. TEMA — CLARO / ESCURO (nativo)
+	   ===================================================================== */
+
+	( function iniciarTema() {
+		var botao = document.querySelector( '[data-vh-tema-toggle]' );
+		var raiz  = document.documentElement;
+		var media = window.matchMedia ? window.matchMedia( '(prefers-color-scheme: dark)' ) : null;
+
+		function atual() {
+			return raiz.getAttribute( 'data-vh-tema' ) === 'escuro' ? 'escuro' : 'claro';
+		}
+
+		function aplicar( tema, persistir ) {
+			var escuro = tema === 'escuro';
+			raiz.setAttribute( 'data-vh-tema', escuro ? 'escuro' : 'claro' );
+			raiz.style.colorScheme = escuro ? 'dark' : 'light';
+			if ( persistir ) {
+				try {
+					localStorage.setItem( 'vh-tema', escuro ? 'escuro' : 'claro' );
+				} catch ( e ) { /* private mode */ }
+			}
+			if ( ! botao ) {
+				return;
+			}
+			botao.setAttribute( 'aria-pressed', escuro ? 'true' : 'false' );
+			var label = rotulo( escuro );
+			if ( label ) {
+				botao.setAttribute( 'aria-label', label );
+			}
+		}
+
+		function rotulo( escuro ) {
+			return escuro ? botao.getAttribute( 'data-label-claro' ) : botao.getAttribute( 'data-label-escuro' );
+		}
+
+		if ( botao ) {
+			aplicar( atual(), false );
+			botao.addEventListener( 'click', function () {
+				aplicar( atual() === 'escuro' ? 'claro' : 'escuro', true );
+			} );
+		}
+
+		if ( media && media.addEventListener ) {
+			media.addEventListener( 'change', function ( ev ) {
+				try {
+					if ( localStorage.getItem( 'vh-tema' ) ) {
+						return;
+					}
+				} catch ( e ) {
+					return;
+				}
+				aplicar( ev.matches ? 'escuro' : 'claro', false );
+			} );
+		}
+	} )();
+
+	/* =====================================================================
 	   2. MENU MOBILE
 	   ===================================================================== */
 

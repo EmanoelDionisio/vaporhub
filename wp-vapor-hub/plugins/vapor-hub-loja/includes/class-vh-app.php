@@ -76,6 +76,7 @@ class VH_App {
             [],
             VH_LOJA_VERSION
         );
+        wp_add_inline_style( 'vh-admin-css', VH_Settings::css_tokens_marca() );
         wp_enqueue_style(
             'vh-ds-loading',
             VH_LOJA_ASSETS . 'css/design-system-loading.css',
