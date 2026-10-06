@@ -17,7 +17,7 @@ require_once get_stylesheet_directory() . '/includes/vh-performance.php';
 require_once get_stylesheet_directory() . '/includes/vh-home.php';
 
 /** Versão do tema — usada para cache-busting dos assets */
-define( 'VH_VERSION', '1.0.75' );
+define( 'VH_VERSION', '1.0.84' );
 
 /** Máximo de requisições de cálculo de frete (PDP) por IP por minuto. */
 define( 'VH_FRETE_PRODUTO_RATE_LIMIT', 30 );

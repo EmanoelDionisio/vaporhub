@@ -1422,15 +1422,59 @@ body.woocommerce-account .elementor-section.elementor-section-boxed > .elementor
 
 .woocommerce-cart .woocommerce {
 	display: grid;
-	grid-template-columns: 1fr;
-	gap: var(--vh-espaco-10);
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--vh-espaco-6);
 	align-items: start;
+	width: 100%;
+}
+
+.woocommerce-cart .woocommerce > .woocommerce-notices-wrapper:empty {
+	display: none;
 }
 
 @media (min-width: 992px) {
-	.woocommerce-cart .woocommerce {
-		grid-template-columns: 2fr 1fr;
+	.woocommerce-cart .woocommerce:has(form.woocommerce-cart-form) {
+		grid-template-columns: minmax(0, 1fr) minmax(17rem, 22rem);
+		column-gap: clamp(1.25rem, 3vw, 2.5rem);
 	}
+
+	/* Avisos ocupam a faixa inteira. Sem isso o formulário cai na coluna estreita. */
+	.woocommerce-cart .woocommerce:has(form.woocommerce-cart-form) > :not(form.woocommerce-cart-form):not(.cart-collaterals) {
+		grid-column: 1 / -1;
+	}
+
+	.woocommerce-cart .woocommerce:has(form.woocommerce-cart-form) > form.woocommerce-cart-form,
+	.woocommerce-cart .woocommerce:has(form.woocommerce-cart-form) > .cart-collaterals {
+		min-width: 0;
+	}
+}
+
+/* Carrinho esvaziado: uma coluna no centro, no celular e no desktop. */
+.woocommerce-cart .woocommerce:not(:has(form.woocommerce-cart-form)) {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--vh-espaco-4);
+	width: min(36rem, 100%);
+	margin-inline: auto;
+	text-align: center;
+	padding-block: var(--vh-espaco-4) var(--vh-espaco-8);
+}
+
+.woocommerce-cart .woocommerce:not(:has(form.woocommerce-cart-form)) .woocommerce-notices-wrapper,
+.woocommerce-cart .woocommerce:not(:has(form.woocommerce-cart-form)) .return-to-shop,
+.woocommerce-cart .woocommerce:not(:has(form.woocommerce-cart-form)) .cart-empty {
+	width: 100%;
+}
+
+.woocommerce-cart .return-to-shop {
+	margin: 0;
+	text-align: center;
+}
+
+.woocommerce-cart .return-to-shop a {
+	font-weight: var(--vh-fonte-peso-semi);
+	color: var(--vh-cor-primaria);
 }
 
 .woocommerce-cart .cart-collaterals {
@@ -2430,8 +2474,12 @@ body.woocommerce-cart:not(:has(.woocommerce-cart-form)) .site-main .elementor-wi
 .vh-produto-descricao-curta {
 	font-size: 1rem;
 	line-height: 1.7;
-	color: var(--vh-cor-texto-suave);
+	color: var(--vh-cor-texto);
 	margin-bottom: var(--vh-espaco-6);
+}
+
+.vh-produto-descricao-curta :where(p, span, strong, li) {
+	color: var(--vh-cor-texto) !important;
 }
 
 .vh-produto-beneficios-mini {
@@ -2572,6 +2620,30 @@ body.woocommerce-cart:not(:has(.woocommerce-cart-form)) .site-main .elementor-wi
 	align-items: center;
 	justify-content: center;
 	gap: .5rem;
+}
+
+/* No celular o “mais um” fica na linha da quantidade e a compra ocupa a faixa de baixo. */
+@media (max-width: 767px) {
+	.vh-produto-form-cart form.cart:not(.variations_form),
+	.vh-produto-form-cart .woocommerce-variation-add-to-cart {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.vh-produto-form-cart .quantity.vh-quantity-control {
+		width: 100%;
+	}
+
+	.vh-produto-form-cart .quantity.vh-quantity-control .qty {
+		flex: 1 1 auto;
+		width: auto;
+	}
+
+	.vh-produto-form-cart .single_add_to_cart_button {
+		width: 100%;
+		flex: none;
+		white-space: nowrap;
+	}
 }
 
 @media (max-width: 359px) {
