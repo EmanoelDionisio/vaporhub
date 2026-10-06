@@ -64,6 +64,46 @@ class VH_REST_Tiny extends VH_REST_Controller {
 
 		register_rest_route(
 			self::NS,
+			'/' . $this->rest_base . '/importar/raizes',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'importar_raizes' ],
+				'permission_callback' => [ $this, 'permissao' ],
+			]
+		);
+
+		register_rest_route(
+			self::NS,
+			'/' . $this->rest_base . '/importar/previa',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'importar_previa' ],
+				'permission_callback' => [ $this, 'permissao' ],
+			]
+		);
+
+		register_rest_route(
+			self::NS,
+			'/' . $this->rest_base . '/importar/zerar',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'importar_zerar' ],
+				'permission_callback' => [ $this, 'permissao' ],
+			]
+		);
+
+		register_rest_route(
+			self::NS,
+			'/' . $this->rest_base . '/importar',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'importar_lote' ],
+				'permission_callback' => [ $this, 'permissao' ],
+			]
+		);
+
+		register_rest_route(
+			self::NS,
 			'/' . $this->rest_base . '/config',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -321,6 +361,18 @@ class VH_REST_Tiny extends VH_REST_Controller {
 
 		if ( null !== $request->get_param( 'receber_estoque_preco' ) ) {
 			$config['receber_estoque_preco'] = (bool) $request->get_param( 'receber_estoque_preco' );
+		}
+
+		foreach ( array_keys( VH_Tiny::travas_padrao() ) as $trava ) {
+			if ( null !== $request->get_param( $trava ) ) {
+				$config[ $trava ] = (bool) $request->get_param( $trava );
+			}
+		}
+		if ( null !== $request->get_param( 'import_raizes' ) ) {
+			$config['import_raizes'] = (array) $request->get_param( 'import_raizes' );
+		}
+		if ( null !== $request->get_param( 'import_marcas' ) ) {
+			$config['import_marcas'] = (string) $request->get_param( 'import_marcas' );
 		}
 
 		VH_Tiny::salvar_config( $config );
@@ -603,6 +655,42 @@ class VH_REST_Tiny extends VH_REST_Controller {
 		VH_Tiny_Sync_Service::processar_webhook( $body );
 
 		return $this->ok( [ 'recebido' => true ] );
+	}
+
+	public function importar_raizes(): WP_REST_Response {
+		$raizes = VH_Tiny_Importacao::raizes();
+		if ( is_wp_error( $raizes ) ) {
+			return $raizes;
+		}
+		return $this->ok( [ 'raizes' => $raizes ] );
+	}
+
+	public function importar_previa( WP_REST_Request $request ): WP_REST_Response {
+		$estado = VH_Tiny_Importacao::previa( (bool) $request->get_param( 'reiniciar' ) );
+		if ( is_wp_error( $estado ) ) {
+			return $estado;
+		}
+		return $this->ok( $estado );
+	}
+
+	public function importar_lote( WP_REST_Request $request ): WP_REST_Response {
+		$passo = VH_Tiny_Importacao::lote( (int) $request->get_param( 'gravar' ) );
+		if ( is_wp_error( $passo ) ) {
+			return $passo;
+		}
+		return $this->ok( $passo );
+	}
+
+	public function importar_zerar(): WP_REST_Response {
+		$resultado = VH_Tiny_Importacao::zerar();
+		if ( is_wp_error( $resultado ) ) {
+			return $resultado;
+		}
+		VH_Tiny_Log::warning(
+			VH_Tiny_Log::ORIGEM_CONFIG,
+			__( 'Catálogo importado do Tiny apagado para repetir a prova.', 'vapor-hub-loja' )
+		);
+		return $this->ok( $resultado );
 	}
 
 	private function redirect_painel( string $status, string $msg = '' ): WP_REST_Response {

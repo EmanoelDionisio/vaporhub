@@ -240,6 +240,36 @@ final class VH_Tiny {
 			$dados['loja_identificador'] = substr( $id, 0, 120 );
 		}
 
+		foreach ( array_keys( self::travas_padrao() ) as $trava ) {
+			if ( array_key_exists( $trava, $config ) ) {
+				$dados[ $trava ] = ! empty( $config[ $trava ] );
+			}
+		}
+
+		if ( array_key_exists( 'import_raizes', $config ) ) {
+			$ids = [];
+			foreach ( (array) $config['import_raizes'] as $id_raiz ) {
+				$id_raiz = absint( $id_raiz );
+				if ( $id_raiz > 0 ) {
+					$ids[] = $id_raiz;
+				}
+			}
+			$dados['import_raizes'] = array_values( array_unique( $ids ) );
+		}
+
+		if ( array_key_exists( 'import_marcas', $config ) ) {
+			$marcas = [];
+			$bruto  = $config['import_marcas'];
+			$lista  = is_array( $bruto ) ? $bruto : preg_split( '/\s*,\s*/', (string) $bruto );
+			foreach ( (array) $lista as $marca ) {
+				$marca = sanitize_text_field( (string) $marca );
+				if ( '' !== $marca ) {
+					$marcas[] = $marca;
+				}
+			}
+			$dados['import_marcas'] = array_values( array_unique( $marcas ) );
+		}
+
 		if ( array_key_exists( 'map_atributos', $config ) && is_array( $config['map_atributos'] ) ) {
 			$mapa = [];
 			foreach ( $config['map_atributos'] as $taxonomy => $rotulo ) {
@@ -266,9 +296,87 @@ final class VH_Tiny {
 	/**
 	 * Loja → Tiny está autorizado (envio).
 	 */
+	/**
+	 * Campos que a política deixa trafegar. Conteúdo nasce na importação e não volta.
+	 *
+	 * @return array<string, bool>
+	 */
+	public static function travas_padrao(): array {
+		return [
+			'entrada_nome'      => false,
+			'entrada_descricao' => false,
+			'entrada_categoria' => false,
+			'entrada_preco'     => false,
+			'entrada_imagem'    => false,
+			'entrada_grade'     => false,
+			'entrada_estoque'   => true,
+			'saida_nome'        => false,
+			'saida_descricao'   => false,
+			'saida_categoria'   => false,
+			'saida_preco'       => false,
+			'saida_imagem'      => false,
+			'saida_grade'       => false,
+			'saida_estoque'     => true,
+			'saida_pedido'      => true,
+		];
+	}
+
+	/**
+	 * A trava é do servidor. Chave explícita na opção vence. Sem ela, estoque e
+	 * pedido herdam os interruptores antigos; o restante do cadastro fica fechado.
+	 */
+	public static function campo_liberado( string $campo, string $sentido ): bool {
+		$campo   = sanitize_key( $campo );
+		$sentido = 'saida' === $sentido ? 'saida' : 'entrada';
+		$chave   = $sentido . '_' . $campo;
+		$bruto   = VH_Tiny_Client::obter();
+		$padrao  = self::travas_padrao();
+
+		if ( ! array_key_exists( $chave, $padrao ) ) {
+			return false;
+		}
+
+		if ( array_key_exists( $chave, $bruto ) ) {
+			return ! empty( $bruto[ $chave ] );
+		}
+
+		if ( 'entrada' === $sentido && in_array( $campo, [ 'estoque', 'preco' ], true ) ) {
+			if ( array_key_exists( 'receber_estoque_preco', $bruto ) ) {
+				return ! empty( $bruto['receber_estoque_preco'] );
+			}
+			return ! empty( $bruto['permitir_recebimento'] );
+		}
+
+		if ( 'saida' === $sentido && in_array( $campo, [ 'estoque', 'pedido' ], true ) && array_key_exists( 'permitir_envio', $bruto ) ) {
+			return ! empty( $bruto['permitir_envio'] );
+		}
+
+		return ! empty( $padrao[ $chave ] );
+	}
+
+	public static function pode_enviar_cadastro(): bool {
+		foreach ( [ 'nome', 'descricao', 'categoria', 'preco', 'imagem', 'grade' ] as $campo ) {
+			if ( self::campo_liberado( $campo, 'saida' ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static function pode_receber_vinculo(): bool {
+		foreach ( [ 'estoque', 'preco', 'nome', 'descricao', 'categoria', 'imagem', 'grade' ] as $campo ) {
+			if ( self::campo_liberado( $campo, 'entrada' ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Envio de cadastro. Estoque e pedido usam campo_liberado().
+	 */
 	public static function pode_enviar(): bool {
-		$dados = self::obter();
-		return ! empty( $dados['ativo'] ) && ! empty( $dados['permitir_envio'] );
+		return self::pode_enviar_cadastro();
 	}
 
 	/**
@@ -342,12 +450,12 @@ final class VH_Tiny {
 			$motivo = 'v2' === $modo
 				? __( 'Configure e teste o token da API v2 para conectar ao Tiny.', 'vapor-hub-loja' )
 				: __( 'Conecte a conta via OAuth (API v3) para enviar produtos ao Tiny.', 'vapor-hub-loja' );
-		} elseif ( ! self::pode_enviar() ) {
-			$motivo = __( 'O envio ao Tiny está desativado. Ative “Permitir envio” em Integrações → Tiny ERP.', 'vapor-hub-loja' );
+		} elseif ( ! self::pode_enviar_cadastro() ) {
+			$motivo = __( 'O envio de cadastro ao Tiny está travado. Estoque e pedido continuam nas travas próprias.', 'vapor-hub-loja' );
 		}
 
 		return [
-			'disponivel'  => $ativo && $conectado && self::pode_enviar(),
+			'disponivel'  => $ativo && $conectado && self::pode_enviar_cadastro(),
 			'modo'        => $modo,
 			'rotulo_modo' => $rotulo,
 			'motivo'      => $motivo,
@@ -389,6 +497,14 @@ final class VH_Tiny {
 		$status['conta_bloqueada']      = ! empty( $dados['conta_bloqueada'] );
 		$status['sinc_auto']            = ! empty( $dados['sinc_auto'] );
 		$status['permitir_envio']        = ! empty( $dados['permitir_envio'] );
+		$status['travas']               = [];
+		foreach ( array_keys( self::travas_padrao() ) as $trava ) {
+			$partes = explode( '_', $trava, 2 );
+			$status['travas'][ $trava ] = self::campo_liberado( $partes[1], $partes[0] );
+		}
+		$status['import_raizes']        = array_map( 'intval', (array) ( $dados['import_raizes'] ?? [] ) );
+		$status['import_marcas']        = array_values( (array) ( $dados['import_marcas'] ?? [] ) );
+		$status['import_offset']        = (int) get_option( 'vh_tiny_import_offset', 0 );
 		$status['receber_catalogo']     = self::interruptor_recebimento( 'receber_catalogo' );
 		$status['receber_estoque_preco'] = self::interruptor_recebimento( 'receber_estoque_preco' );
 		$status['permitir_recebimento'] = $status['receber_catalogo'] || $status['receber_estoque_preco'];

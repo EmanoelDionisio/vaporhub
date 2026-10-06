@@ -115,7 +115,7 @@ final class EstoqueLojaDonaTest extends VH_Test_Case {
 
 		self::assertTrue( true === $resultado );
 		self::assertSame( 0, VH_Fake_HTTP::contar( 'POST', 'estoque/' ) );
-		self::assertGreaterThan( 0, VH_Test_Env::contar_jobs( 'produto_push' ), 'Sem cadastro no ERP, o caminho é o envio completo.' );
+		self::assertSame( 0, VH_Test_Env::contar_jobs( 'produto_push' ), 'Sem vínculo, a loja não cria cadastro no hub.' );
 	}
 
 	public function testProdutoEmGuardaDeImportacaoNaoGeraPushDeSaldo(): void {

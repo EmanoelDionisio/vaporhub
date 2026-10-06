@@ -785,6 +785,16 @@ if ( ! class_exists( 'WC_Product_Attribute' ) ) {
 		/** @var array<int|string, mixed> */
 		private array $opcoes = [];
 		private bool $variacao = true;
+		private bool $visivel = true;
+		private int $id = 0;
+
+		public function set_id( int $id ): void {
+			$this->id = $id;
+		}
+
+		public function get_id(): int {
+			return $this->id;
+		}
 
 		public function set_name( string $nome ): void {
 			$this->nome = $nome;
@@ -806,6 +816,10 @@ if ( ! class_exists( 'WC_Product_Attribute' ) ) {
 
 		public function set_variation( bool $variacao ): void {
 			$this->variacao = $variacao;
+		}
+
+		public function set_visible( bool $visivel ): void {
+			$this->visivel = $visivel;
 		}
 
 		public function get_variation(): bool {

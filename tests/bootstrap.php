@@ -52,6 +52,7 @@ $vh_arquivos_plugin = [
 	'includes/services/class-vh-tiny-sku.php',
 	'includes/class-vh-tiny-queue.php',
 	'includes/services/class-vh-tiny-sync-service.php',
+	'includes/services/class-vh-tiny-importacao.php',
 	'includes/services/class-vh-tiny-category-sync.php',
 	'includes/class-vh-tiny-module.php',
 	'includes/rest/class-vh-rest-controller.php',

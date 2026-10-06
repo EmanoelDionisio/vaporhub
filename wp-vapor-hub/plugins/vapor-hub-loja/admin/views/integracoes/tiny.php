@@ -212,27 +212,49 @@ $tiny_msg      = isset( $_GET['tiny_msg'] ) ? sanitize_text_field( wp_unslash( r
 				<label for="vh-tiny-sinc-auto"><?php esc_html_e( 'Sincronização automática (hooks + cron)', 'vapor-hub-loja' ); ?></label>
 			</div>
 
+			<?php $vh_travas = is_array( $status['travas'] ?? null ) ? $status['travas'] : []; ?>
 			<fieldset class="vh-tiny-direcao" style="margin-top:16px;border:1px solid var(--vh-cinza-200);border-radius:8px;padding:14px">
-				<legend style="font-weight:600;padding:0 6px"><?php esc_html_e( 'Direções de sincronização', 'vapor-hub-loja' ); ?></legend>
-				<div class="vh-toggle-wrapper">
-					<input type="checkbox" class="vh-toggle" id="vh-tiny-permitir-envio" <?php checked( ! empty( $status['permitir_envio'] ) ); ?> />
-					<label for="vh-tiny-permitir-envio"><?php esc_html_e( 'Enviar da loja para o Tiny (loja → Tiny)', 'vapor-hub-loja' ); ?></label>
-				</div>
-				<div class="vh-toggle-wrapper" style="margin-top:10px">
-					<input type="checkbox" class="vh-toggle" id="vh-tiny-receber-catalogo" <?php checked( ! empty( $status['receber_catalogo'] ) ); ?> />
-					<label for="vh-tiny-receber-catalogo"><?php esc_html_e( 'Receber cadastro do Tiny (produto, imagem, categoria)', 'vapor-hub-loja' ); ?></label>
-				</div>
-				<div class="vh-toggle-wrapper" style="margin-top:10px">
-					<input type="checkbox" class="vh-toggle" id="vh-tiny-receber-estoque-preco" <?php checked( ! empty( $status['receber_estoque_preco'] ) ); ?> />
-					<label for="vh-tiny-receber-estoque-preco"><?php esc_html_e( 'Receber estoque e preço do Tiny', 'vapor-hub-loja' ); ?></label>
-				</div>
-				<p class="vh-form-descricao" style="margin-top:10px">
-					<?php esc_html_e( 'Controle qual direção é aplicada automaticamente (hooks, cron, webhook e “Sincronizar agora”). O botão “Salvar e enviar ao Tiny” em um produto continua disponível como envio manual pontual.', 'vapor-hub-loja' ); ?>
-				</p>
-				<p class="vh-form-descricao">
-					<strong><?php esc_html_e( 'O Tiny é o hub do catálogo.', 'vapor-hub-loja' ); ?></strong>
-					<?php esc_html_e( 'A loja piloto nasce vazia e recebe produto só com recorte: SKU desta loja, situação ativa e categoria já mapeada. Ligar “receber cadastro” atualiza itens vinculados e pode criar simples nesse recorte — não despeja a conta Tiny inteira (o mesmo ERP serve várias lojas). Não envie a loja vazia em massa para o Tiny. Produto variável (sabor, puffs, nicotina) ainda não é criado no pull.', 'vapor-hub-loja' ); ?>
-				</p>
+				<legend style="font-weight:600;padding:0 6px"><?php esc_html_e( 'O que volta do Tiny depois da importação', 'vapor-hub-loja' ); ?></legend>
+				<?php
+				$vh_entrada = [
+					'entrada_estoque'   => __( 'Estoque', 'vapor-hub-loja' ),
+					'entrada_preco'     => __( 'Preço', 'vapor-hub-loja' ),
+					'entrada_nome'      => __( 'Nome', 'vapor-hub-loja' ),
+					'entrada_descricao' => __( 'Descrição', 'vapor-hub-loja' ),
+					'entrada_categoria' => __( 'Categoria', 'vapor-hub-loja' ),
+					'entrada_imagem'    => __( 'Imagens', 'vapor-hub-loja' ),
+					'entrada_grade'     => __( 'Grade e variações', 'vapor-hub-loja' ),
+				];
+				foreach ( $vh_entrada as $vh_chave => $vh_rotulo ) :
+					?>
+					<div class="vh-toggle-wrapper" style="margin-top:8px">
+						<input type="checkbox" class="vh-toggle" data-trava="<?php echo esc_attr( $vh_chave ); ?>" id="vh-trava-<?php echo esc_attr( $vh_chave ); ?>" <?php checked( ! empty( $vh_travas[ $vh_chave ] ) ); ?> />
+						<label for="vh-trava-<?php echo esc_attr( $vh_chave ); ?>"><?php echo esc_html( $vh_rotulo ); ?></label>
+					</div>
+				<?php endforeach; ?>
+				<p class="vh-form-descricao" style="margin-top:10px"><?php esc_html_e( 'Nome, descrição, categoria, preço, imagens e grade entram na importação inicial. Estas travas valem para a sincronização seguinte.', 'vapor-hub-loja' ); ?></p>
+			</fieldset>
+			<fieldset class="vh-tiny-direcao" style="margin-top:16px;border:1px solid var(--vh-cinza-200);border-radius:8px;padding:14px">
+				<legend style="font-weight:600;padding:0 6px"><?php esc_html_e( 'O que sai da loja para o Tiny', 'vapor-hub-loja' ); ?></legend>
+				<?php
+				$vh_saida = [
+					'saida_estoque'   => __( 'Estoque', 'vapor-hub-loja' ),
+					'saida_pedido'    => __( 'Status do pedido', 'vapor-hub-loja' ),
+					'saida_nome'      => __( 'Nome', 'vapor-hub-loja' ),
+					'saida_descricao' => __( 'Descrição', 'vapor-hub-loja' ),
+					'saida_categoria' => __( 'Categoria', 'vapor-hub-loja' ),
+					'saida_preco'     => __( 'Preço', 'vapor-hub-loja' ),
+					'saida_imagem'    => __( 'Imagens', 'vapor-hub-loja' ),
+					'saida_grade'     => __( 'Grade e variações', 'vapor-hub-loja' ),
+				];
+				foreach ( $vh_saida as $vh_chave => $vh_rotulo ) :
+					?>
+					<div class="vh-toggle-wrapper" style="margin-top:8px">
+						<input type="checkbox" class="vh-toggle" data-trava="<?php echo esc_attr( $vh_chave ); ?>" id="vh-trava-<?php echo esc_attr( $vh_chave ); ?>" <?php checked( ! empty( $vh_travas[ $vh_chave ] ) ); ?> />
+						<label for="vh-trava-<?php echo esc_attr( $vh_chave ); ?>"><?php echo esc_html( $vh_rotulo ); ?></label>
+					</div>
+				<?php endforeach; ?>
+				<p class="vh-form-descricao" style="margin-top:10px"><?php esc_html_e( 'Título, descrição e preço editados na loja não voltam ao hub. O identificador abaixo marca só o pedido.', 'vapor-hub-loja' ); ?></p>
 			</fieldset>
 
 			<div class="vh-form-grupo" style="margin-top:16px">
@@ -246,47 +268,33 @@ $tiny_msg      = isset( $_GET['tiny_msg'] ) ? sanitize_text_field( wp_unslash( r
 					maxlength="120"
 					autocomplete="off"
 				/>
-				<p class="vh-form-descricao"><?php esc_html_e( 'Usado para prefixar pedidos no Tiny (multi-loja). Ex.: piloto.example', 'vapor-hub-loja' ); ?></p>
-			</div>
-
-			<div class="vh-form-grupo" style="margin-top:16px">
-				<label for="vh-tiny-sku-prefixo"><?php esc_html_e( 'Prefixo de SKU da loja', 'vapor-hub-loja' ); ?></label>
-				<input
-					type="text"
-					id="vh-tiny-sku-prefixo"
-					name="sku_prefixo"
-					value="<?php echo esc_attr( (string) ( $status['sku_prefixo'] ?? '' ) ); ?>"
-					placeholder="VH-"
-					maxlength="12"
-					autocomplete="off"
-				/>
-				<p class="vh-form-descricao">
-					<?php esc_html_e( 'Assinatura dos códigos gerados pela loja. Ao enviar, um produto do Tiny com código igual só é adotado se o SKU tiver este prefixo; fora do padrão, a loja cria cadastro próprio em vez de escrever em produto de outra operação. Deixe vazio para casar por SKU puro.', 'vapor-hub-loja' ); ?>
-				</p>
+				<p class="vh-form-descricao"><?php esc_html_e( 'Vai no pedido enviado ao Tiny. Não altera SKU nem separa o cadastro do produto.', 'vapor-hub-loja' ); ?></p>
 			</div>
 			<div class="vh-form-grupo" style="margin-top:16px">
-				<label for="vh-tiny-categoria-raiz"><?php esc_html_e( 'Categoria raiz no Tiny', 'vapor-hub-loja' ); ?></label>
+				<label for="vh-tiny-import-marcas"><?php esc_html_e( 'Marcas permitidas na importação', 'vapor-hub-loja' ); ?></label>
 				<input
 					type="text"
-					id="vh-tiny-categoria-raiz"
-					name="categoria_raiz"
-					value="<?php echo esc_attr( (string) ( $status['categoria_raiz'] ?? '' ) ); ?>"
-					placeholder="Loja Vapor Hub"
-					maxlength="80"
+					id="vh-tiny-import-marcas"
+					value="<?php echo esc_attr( implode( ', ', (array) ( $status['import_marcas'] ?? [] ) ) ); ?>"
+					placeholder="<?php esc_attr_e( 'Vazio importa todas', 'vapor-hub-loja' ); ?>"
 					autocomplete="off"
 				/>
-				<p class="vh-form-descricao">
-					<?php esc_html_e( 'As categorias da loja são criadas dentro dela no ERP, separadas das categorias de outras operações da conta. Criada automaticamente na primeira categoria enviada. Deixe vazio para criar as categorias no topo da árvore.', 'vapor-hub-loja' ); ?>
-				</p>
 			</div>
-
+			<div class="vh-form-grupo" id="vh-tiny-raizes" style="margin-top:16px" data-selecionadas="<?php echo esc_attr( implode( ',', array_map( 'strval', (array) ( $status['import_raizes'] ?? [] ) ) ) ); ?>">
+				<label><?php esc_html_e( 'Raízes de categoria permitidas', 'vapor-hub-loja' ); ?></label>
+				<p class="vh-form-descricao"><?php esc_html_e( 'Vazio usa a árvore dos produtos com estoque. Marque uma raiz para limitar esta loja.', 'vapor-hub-loja' ); ?></p>
+			</div>
 			<p class="vh-form-descricao" style="margin-top:12px">
-				<?php esc_html_e( 'Com recorte: produto simples novo no Tiny (SKU da loja + categoria mapeada) pode ser criado aqui. Não envie a loja vazia em massa. Variações ainda não nascem no pull.', 'vapor-hub-loja' ); ?>
+				<?php esc_html_e( 'A importação inicial traz só produto principal ativo com estoque, com categoria, grade e variações. O cron seguinte não repete esse cadastro.', 'vapor-hub-loja' ); ?>
 			</p>
 			<div class="vh-form-acoes">
 				<button type="submit" class="vh-btn vh-btn--secundario"><?php esc_html_e( 'Salvar configuração', 'vapor-hub-loja' ); ?></button>
 				<button type="button" id="vh-tiny-sincronizar" class="vh-btn vh-btn--primario"><?php esc_html_e( 'Sincronizar agora', 'vapor-hub-loja' ); ?></button>
+				<button type="button" id="vh-tiny-importar-previa" class="vh-btn vh-btn--secundario"><?php esc_html_e( 'Contar recorte', 'vapor-hub-loja' ); ?></button>
+				<button type="button" id="vh-tiny-importar" class="vh-btn vh-btn--primario"><?php esc_html_e( 'Importar lote', 'vapor-hub-loja' ); ?></button>
+				<button type="button" id="vh-tiny-importar-zerar" class="vh-btn vh-btn--ghost"><?php esc_html_e( 'Apagar catálogo importado', 'vapor-hub-loja' ); ?></button>
 			</div>
+			<p class="vh-form-descricao" id="vh-tiny-import-status" aria-live="polite"></p>
 		</form>
 
 		<div class="vh-form-grupo" style="margin-top:20px">

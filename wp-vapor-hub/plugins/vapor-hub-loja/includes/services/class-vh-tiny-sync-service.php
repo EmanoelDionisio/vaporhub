@@ -24,6 +24,21 @@ class VH_Tiny_Sync_Service {
 		return self::$suprimir_push_loja;
 	}
 
+	/**
+	 * @template T
+	 * @param callable(): T $callback
+	 * @return T
+	 */
+	public static function sem_push( callable $callback ) {
+		$anterior = self::$suprimir_push_loja;
+		self::$suprimir_push_loja = true;
+		try {
+			return $callback();
+		} finally {
+			self::$suprimir_push_loja = $anterior;
+		}
+	}
+
 	public static function contar_pendencias(): int {
 		global $wpdb;
 		$meta_tiny = esc_sql( VH_Tiny_Map::META_TINY_ID );
@@ -318,11 +333,11 @@ class VH_Tiny_Sync_Service {
 			return new WP_Error( 'vh_tiny_inativo', __( 'Integração Tiny inativa.', 'vapor-hub-loja' ) );
 		}
 
-		if ( ! VH_Tiny::pode_enviar() ) {
-			return new WP_Error(
-				'vh_tiny_envio_desligado',
-				__( 'O envio ao Tiny está desativado nas configurações.', 'vapor-hub-loja' )
-			);
+		if ( ! VH_Tiny::pode_enviar_cadastro() ) {
+			if ( VH_Tiny::campo_liberado( 'estoque', 'saida' ) ) {
+				return self::empurrar_estoque( $produto_id );
+			}
+			return true;
 		}
 
 		$produto = wc_get_product( $produto_id );
@@ -524,10 +539,10 @@ class VH_Tiny_Sync_Service {
 			return new WP_Error( 'vh_tiny_inativo', __( 'Integração Tiny inativa.', 'vapor-hub-loja' ) );
 		}
 
-		if ( ! VH_Tiny::pode_enviar() ) {
+		if ( ! VH_Tiny::campo_liberado( 'estoque', 'saida' ) ) {
 			return new WP_Error(
 				'vh_tiny_envio_desligado',
-				__( 'O envio ao Tiny está desativado nas configurações.', 'vapor-hub-loja' )
+				__( 'O envio de estoque ao Tiny está desativado nas configurações.', 'vapor-hub-loja' )
 			);
 		}
 
@@ -543,10 +558,6 @@ class VH_Tiny_Sync_Service {
 
 		$tiny_id = (int) get_post_meta( $produto_id, VH_Tiny_Map::META_TINY_ID, true );
 		if ( $tiny_id <= 0 ) {
-			$alvo = $produto->is_type( 'variation' ) ? (int) $produto->get_parent_id() : $produto_id;
-			if ( $alvo > 0 ) {
-				VH_Tiny_Queue::enfileirar( 'produto_push', 'wc_' . $alvo, [ 'produto_id' => $alvo ] );
-			}
 			return true;
 		}
 
@@ -905,7 +916,10 @@ class VH_Tiny_Sync_Service {
 		}
 
 		if ( $produto_id <= 0 ) {
-			return self::importar_produto_de_tiny( $canonico, $tiny_id );
+			return new WP_Error(
+				'vh_tiny_so_importacao',
+				__( 'Produto sem vínculo. O cadastro entra só pela importação inicial.', 'vapor-hub-loja' )
+			);
 		}
 
 		$produto = wc_get_product( $produto_id );
@@ -944,7 +958,7 @@ class VH_Tiny_Sync_Service {
 					if ( $tid_var > 0 ) {
 						update_post_meta( $vid, VH_Tiny_Map::META_TINY_ID, $tid_var );
 					}
-					$financeiro = VH_Tiny_Map::tiny_para_wc_financeiro( $var_tiny, $var_prod );
+					$financeiro = self::financeiro_permitido( VH_Tiny_Map::tiny_para_wc_financeiro( $var_tiny, $var_prod ) );
 					if ( $financeiro ) {
 						VH_Products_Service::atualizar_variacao( $vid, $financeiro );
 						$atualizou = true;
@@ -969,9 +983,9 @@ class VH_Tiny_Sync_Service {
 		self::ativar_guarda( $produto_id );
 		update_post_meta( $produto_id, VH_Tiny_Map::META_TINY_ID, $tiny_id );
 
-		$financeiro = VH_Tiny_Map::tiny_para_wc_financeiro( $canonico, $produto );
+		$financeiro = self::financeiro_permitido( VH_Tiny_Map::tiny_para_wc_financeiro( $canonico, $produto ) );
 
-		if ( ! isset( $canonico['estoque'] ) ) {
+		if ( ! isset( $canonico['estoque'] ) && VH_Tiny::campo_liberado( 'estoque', 'entrada' ) ) {
 			$est_resp = $driver->obter_estoque( $tiny_id );
 			if ( ! is_wp_error( $est_resp ) && is_array( $est_resp ) ) {
 				$financeiro = array_merge( $financeiro, VH_Tiny_Map::tiny_estoque_para_wc( $est_resp ) );
@@ -1003,122 +1017,22 @@ class VH_Tiny_Sync_Service {
 	 * @param array<string, mixed> $canonico
 	 * @return true|WP_Error
 	 */
+	private static function financeiro_permitido( array $financeiro ): array {
+		if ( ! VH_Tiny::campo_liberado( 'preco', 'entrada' ) ) {
+			unset( $financeiro['preco_regular'], $financeiro['preco_promo'] );
+		}
+		if ( ! VH_Tiny::campo_liberado( 'estoque', 'entrada' ) ) {
+			unset( $financeiro['estoque'], $financeiro['gerencia_estoque'] );
+		}
+		return $financeiro;
+	}
+
 	private static function importar_produto_de_tiny( array $canonico, int $tiny_id ) {
-		$sku = trim( (string) ( $canonico['sku'] ?? '' ) );
-		if ( '' === $sku ) {
-			return new WP_Error(
-				'vh_tiny_sem_sku',
-				__( 'Produto Tiny sem SKU: não entra na loja.', 'vapor-hub-loja' )
-			);
-		}
-
-		if ( class_exists( 'VH_Tiny_SKU' ) && ! VH_Tiny_SKU::da_loja( $sku ) ) {
-			VH_Tiny_Log::warning(
-				VH_Tiny_Log::ORIGEM_SYNC,
-				sprintf(
-					/* translators: 1: tiny product id, 2: sku */
-					__( 'Produto Tiny #%1$d (SKU %2$s) fora do recorte desta loja (prefixo de SKU).', 'vapor-hub-loja' ),
-					$tiny_id,
-					$sku
-				),
-				'tiny_' . $tiny_id,
-				[ 'tiny_id' => $tiny_id, 'sku' => $sku, 'motivo' => 'sku_fora_do_recorte' ]
-			);
-			return new WP_Error(
-				'vh_tiny_sku_fora_do_recorte',
-				__( 'SKU não pertence a esta loja (prefixo). O mesmo Tiny atende várias operações: este item não entra na vitrine.', 'vapor-hub-loja' )
-			);
-		}
-
-		$situacao = strtoupper( (string) ( $canonico['situacao'] ?? 'A' ) );
-		if ( '' !== $situacao && 'A' !== $situacao ) {
-			return new WP_Error(
-				'vh_tiny_situacao_inativa',
-				__( 'Produto inativo ou excluído no Tiny: nada criado na loja.', 'vapor-hub-loja' )
-			);
-		}
-
-		$term_ids = VH_Tiny_Map::categorias_tiny_para_wc_ids( $canonico );
-		if ( ! $term_ids ) {
-			VH_Tiny_Log::warning(
-				VH_Tiny_Log::ORIGEM_SYNC,
-				sprintf(
-					/* translators: 1: tiny product id, 2: sku */
-					__( 'Produto Tiny #%1$d (SKU %2$s) ignorado: categoria Tiny sem vínculo na loja.', 'vapor-hub-loja' ),
-					$tiny_id,
-					$sku
-				),
-				'tiny_' . $tiny_id,
-				[ 'tiny_id' => $tiny_id, 'sku' => $sku, 'motivo' => 'categoria_nao_mapeada' ]
-			);
-			return new WP_Error(
-				'vh_tiny_categoria_nao_mapeada',
-				__( 'Categoria do Tiny ainda não está mapeada nesta loja. Vincule no mapeamento antes de importar — o ERP não é despejado inteiro na vitrine.', 'vapor-hub-loja' )
-			);
-		}
-
-		$eh_variavel = ! empty( $canonico['variacoes'] ) || 'variavel' === ( $canonico['tipo'] ?? '' );
-		if ( $eh_variavel ) {
-			return new WP_Error(
-				'vh_tiny_variavel_pendente',
-				__( 'Pull de produto variável ainda não cria pai e variações. Próximo marco: grade sabor/puffs/nicotina a partir do Tiny.', 'vapor-hub-loja' )
-			);
-		}
-
-		if ( function_exists( 'wc_get_product_id_by_sku' ) && wc_get_product_id_by_sku( $sku ) > 0 ) {
-			return new WP_Error(
-				'vh_tiny_sku_duplicado',
-				__( 'Já existe produto na loja com este SKU.', 'vapor-hub-loja' )
-			);
-		}
-
-		$dados = [
-			'nome'       => (string) ( $canonico['nome'] ?? $sku ),
-			'sku'        => $sku,
-			'tipo'       => 'simple',
-			'status'     => ! empty( $canonico['publicado'] ) ? 'publish' : 'draft',
-			'categorias' => $term_ids,
-		];
-		if ( isset( $canonico['descricao'] ) ) {
-			$dados['descricao'] = (string) $canonico['descricao'];
-		}
-		if ( isset( $canonico['descricao_curta'] ) ) {
-			$dados['descricao_curta'] = (string) $canonico['descricao_curta'];
-		}
-
-		$financeiro = VH_Tiny_Map::tiny_para_wc_financeiro( $canonico, new WC_Product_Simple() );
-		$dados      = array_merge( $dados, $financeiro );
-
-		self::$suprimir_push_loja = true;
-		try {
-			$id = VH_Products_Service::criar( $dados );
-			if ( is_wp_error( $id ) ) {
-				return $id;
-			}
-			$produto_id = (int) $id;
-			update_post_meta( $produto_id, VH_Tiny_Map::META_TINY_ID, $tiny_id );
-			$produto = wc_get_product( $produto_id );
-			if ( $produto instanceof WC_Product ) {
-				update_post_meta( $produto_id, VH_Tiny_Map::META_SYNC_HASH, VH_Tiny_Map::hash_produto_wc( $produto ) );
-			}
-			update_post_meta( $produto_id, VH_Tiny_Map::META_LAST_SYNC, VH_DateTime::agora_utc() );
-		} finally {
-			self::$suprimir_push_loja = false;
-		}
-
-		VH_Tiny_Log::success(
-			VH_Tiny_Log::ORIGEM_SYNC,
-			sprintf(
-				/* translators: 1: sku, 2: tiny id */
-				__( 'Produto SKU %1$s criado a partir do Tiny #%2$d (recorte mapeado).', 'vapor-hub-loja' ),
-				$sku,
-				$tiny_id
-			),
-			'tiny_' . $tiny_id,
-			[ 'tiny_id' => $tiny_id, 'sku' => $sku, 'produto_id' => $produto_id ]
+		unset( $canonico, $tiny_id );
+		return new WP_Error(
+			'vh_tiny_so_importacao',
+			__( 'Produto sem vínculo. O cadastro entra só pela importação inicial.', 'vapor-hub-loja' )
 		);
-
-		return true;
 	}
 
 	/**
@@ -1138,7 +1052,7 @@ class VH_Tiny_Sync_Service {
 				$sku_var = (string) ( $var_tiny['sku'] ?? '' );
 				$tid     = (int) ( $var_tiny['tiny_id'] ?? $var_tiny['id_tiny'] ?? 0 );
 				if ( ( $tid > 0 && $tid === $tiny_id ) || ( '' !== $sku_var && 0 === strcasecmp( $sku_var, $sku_local ) ) ) {
-					$financeiro = VH_Tiny_Map::tiny_para_wc_financeiro( $var_tiny, $variacao );
+					$financeiro = self::financeiro_permitido( VH_Tiny_Map::tiny_para_wc_financeiro( $var_tiny, $variacao ) );
 					if ( $tid > 0 ) {
 						update_post_meta( $vid, VH_Tiny_Map::META_TINY_ID, $tid );
 					}
@@ -1330,38 +1244,28 @@ class VH_Tiny_Sync_Service {
 		}
 
 		/* Tiny → Loja (puxar): só enfileira se o recebimento estiver autorizado. */
-		if ( VH_Tiny::pode_receber() ) {
+		if ( VH_Tiny::pode_receber_vinculo() ) {
 			if ( 'v2' === $driver->versao() ) {
 				self::puxar_atualizacoes_v2( $driver );
 			}
 			self::reconciliar_vinculos( $driver );
 		}
 
-		/* Loja → Tiny (enviar): enfileira todos os produtos locais com SKU. */
-		if ( VH_Tiny::pode_enviar() ) {
-			$pagina = 1;
-			do {
-				$produtos = wc_get_products(
-					[
-						'limit'  => 100,
-						'page'   => $pagina,
-						'status' => [ 'publish', 'draft' ],
-						'return' => 'ids',
-						'type'   => [ 'simple', 'variable' ],
-					]
-				);
-				if ( ! $produtos ) {
-					break;
-				}
-				foreach ( $produtos as $pid ) {
-					$produto = wc_get_product( $pid );
-					if ( ! $produto || '' === $produto->get_sku() ) {
-						continue;
-					}
-					VH_Tiny_Queue::enfileirar( 'produto_push', 'wc_' . $pid, [ 'produto_id' => (int) $pid ] );
-				}
-				++$pagina;
-			} while ( count( $produtos ) >= 100 );
+		/* Loja → Tiny: só saldo de item já vinculado. Não varre a conta nem cria cadastro. */
+		if ( VH_Tiny::campo_liberado( 'estoque', 'saida' ) ) {
+			global $wpdb;
+			$meta_tiny = esc_sql( VH_Tiny_Map::META_TINY_ID );
+			$ids       = $wpdb->get_col(
+				"SELECT pm.post_id FROM {$wpdb->postmeta} pm
+				INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				WHERE p.post_type IN ('product','product_variation')
+				AND p.post_status IN ('publish','draft','private')
+				AND pm.meta_key = '{$meta_tiny}' AND pm.meta_value != '' AND pm.meta_value != '0'
+				LIMIT 500"
+			);
+			foreach ( (array) $ids as $pid ) {
+				VH_Tiny_Queue::enfileirar( 'estoque_push', 'estoque_' . (int) $pid, [ 'produto_id' => (int) $pid ] );
+			}
 		}
 
 		VH_Tiny::marcar_reconciliacao();

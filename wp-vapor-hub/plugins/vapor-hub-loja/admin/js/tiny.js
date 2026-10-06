@@ -34,9 +34,26 @@
             opcoes.body = JSON.stringify(body);
         }
         return fetch(APP.restUrl + path.replace(/^\//, ''), opcoes).then(function (r) {
-            return r.json().then(function (j) {
-                if (!r.ok) {
-                    throw new Error((j && j.message) || APP.i18n.erroGenerico);
+            return r.text().then(function (texto) {
+                var j = null;
+                if (texto) {
+                    try {
+                        j = JSON.parse(texto);
+                    } catch (e) {
+                        j = null;
+                    }
+                }
+                if (!r.ok || !j) {
+                    var msg = (j && (j.message || (j.dados && j.dados.message))) || '';
+                    if (!msg && r.status === 409) {
+                        msg = 'Já existe uma importação em andamento.';
+                    }
+                    if (!msg) {
+                        msg = 'A importação não respondeu (' + r.status + '). Tente de novo.';
+                    }
+                    var erro = new Error(msg);
+                    erro.status = r.status;
+                    throw erro;
                 }
                 return j;
             });
@@ -241,6 +258,132 @@
         });
     }
 
+    function raizesSelecionadas() {
+        var box = document.getElementById('vh-tiny-raizes');
+        if (!box) {
+            return [];
+        }
+        return Array.prototype.map.call(box.querySelectorAll('input[type="checkbox"]:checked'), function (el) {
+            return parseInt(el.value, 10);
+        }).filter(function (id) { return id > 0; });
+    }
+
+    function initRaizes() {
+        var box = document.getElementById('vh-tiny-raizes');
+        if (!box) {
+            return;
+        }
+        var marcadas = (box.getAttribute('data-selecionadas') || '').split(',').filter(Boolean);
+        rest('tiny/importar/raizes', 'GET').then(function (resp) {
+            var itens = (resp.dados && resp.dados.raizes) || [];
+            itens.forEach(function (raiz) {
+                var id = 'vh-raiz-' + raiz.id;
+                var wrap = document.createElement('div');
+                wrap.className = 'vh-toggle-wrapper';
+                wrap.style.marginTop = '8px';
+                var input = document.createElement('input');
+                input.type = 'checkbox';
+                input.className = 'vh-toggle';
+                input.id = id;
+                input.value = String(raiz.id);
+                input.checked = marcadas.indexOf(String(raiz.id)) !== -1;
+                var label = document.createElement('label');
+                label.htmlFor = id;
+                label.textContent = raiz.nome;
+                wrap.appendChild(input);
+                wrap.appendChild(label);
+                box.appendChild(wrap);
+            });
+        }).catch(function (err) {
+            statusImportacao(err.message || 'Não foi possível carregar as raízes de categoria.', true);
+        });
+    }
+
+    function statusImportacao(msg, ehErro) {
+        var el = document.getElementById('vh-tiny-import-status');
+        if (el) {
+            el.textContent = msg;
+        }
+        if (ehErro) {
+            feedback(msg, 'erro');
+        }
+    }
+
+    function textoLote(d, total) {
+        var msg = 'Importando… ' + total + ' produto(s) nesta sequência. Posição ' + (d.offset || 0) + ' de ' + (d.total || '?') + '.';
+        if (d.ultimo_erro && d.ultimo_erro.mensagem) {
+            msg += ' Último problema: ' + d.ultimo_erro.mensagem;
+        }
+        return msg;
+    }
+
+    function initImportacao() {
+        var previa = document.getElementById('vh-tiny-importar-previa');
+        var lote = document.getElementById('vh-tiny-importar');
+        var zerar = document.getElementById('vh-tiny-importar-zerar');
+        if (previa) {
+            previa.addEventListener('click', function () {
+                previa.disabled = true;
+                statusImportacao('Contando o recorte…');
+                rest('tiny/importar/previa', 'POST', {}).then(function (resp) {
+                    var d = resp.dados || {};
+                    statusImportacao('Com estoque nesta fatia: ' + (d.com_estoque || 0) + (d.concluida ? '. Contagem fechada.' : '. Clique de novo para continuar a contagem.'));
+                }).catch(function (err) {
+                    statusImportacao(err.message || 'Falha ao contar.', true);
+                }).finally(function () { previa.disabled = false; });
+            });
+        }
+        if (lote) {
+            lote.addEventListener('click', function () {
+                var total = 0;
+                var rodadas = 0;
+                lote.disabled = true;
+                statusImportacao('Importando…');
+                function passo() {
+                    rodadas += 1;
+                    return rest('tiny/importar', 'POST', { gravar: 1 }).then(function (resp) {
+                        var d = resp.dados || {};
+                        total += d.gravados || 0;
+                        if (d.concluida) {
+                            statusImportacao('Importação concluída. Produtos gravados nesta sequência: ' + total + '.');
+                            lote.disabled = false;
+                            return;
+                        }
+                        statusImportacao(textoLote(d, total));
+                        if (rodadas >= 8) {
+                            var fim = total + ' produto(s) gravados nesta sequência. Clique de novo para continuar.';
+                            if (d.ultimo_erro && d.ultimo_erro.mensagem) {
+                                fim += ' Último problema: ' + d.ultimo_erro.mensagem;
+                            }
+                            statusImportacao(fim);
+                            lote.disabled = false;
+                            return;
+                        }
+                        return passo();
+                    }).catch(function (err) {
+                        statusImportacao(err.message || 'Falha na importação.', true);
+                        lote.disabled = false;
+                    });
+                }
+                passo();
+            });
+        }
+        if (zerar) {
+            zerar.addEventListener('click', function () {
+                if (!window.confirm('Apagar produtos, categorias e atributos criados pela importação? A conexão com o Tiny permanece.')) {
+                    return;
+                }
+                zerar.disabled = true;
+                rest('tiny/importar/zerar', 'POST', {}).then(function (resp) {
+                    var d = resp.dados || {};
+                    statusImportacao('Catálogo importado apagado. Produtos: ' + (d.produtos || 0) + '.');
+                }).catch(function (err) {
+                    statusImportacao(err.message || 'Falha ao apagar.', true);
+                }).finally(function () { zerar.disabled = false; });
+            });
+        }
+    }
+
     function initConfig() {
         var form = document.getElementById('vh-form-tiny-config');
         if (!form) {
@@ -249,21 +392,18 @@
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             var lojaInput = document.getElementById('vh-tiny-loja-id');
-            var prefixoInput = document.getElementById('vh-tiny-sku-prefixo');
-            var raizInput = document.getElementById('vh-tiny-categoria-raiz');
-            var envioEl = document.getElementById('vh-tiny-permitir-envio');
-            var catalogoEl = document.getElementById('vh-tiny-receber-catalogo');
-            var estoquePrecoEl = document.getElementById('vh-tiny-receber-estoque-preco');
-            rest('tiny/config', 'POST', {
+            var marcasInput = document.getElementById('vh-tiny-import-marcas');
+            var payload = {
                 ativo: document.getElementById('vh-tiny-ativo').checked,
                 sinc_auto: document.getElementById('vh-tiny-sinc-auto').checked,
-                permitir_envio: envioEl ? envioEl.checked : true,
-                receber_catalogo: catalogoEl ? catalogoEl.checked : false,
-                receber_estoque_preco: estoquePrecoEl ? estoquePrecoEl.checked : false,
                 loja_identificador: lojaInput ? lojaInput.value.trim() : '',
-                sku_prefixo: prefixoInput ? prefixoInput.value.trim() : undefined,
-                categoria_raiz: raizInput ? raizInput.value.trim() : undefined,
-            }).then(function () {
+                import_marcas: marcasInput ? marcasInput.value.trim() : '',
+                import_raizes: raizesSelecionadas()
+            };
+            form.querySelectorAll('[data-trava]').forEach(function (el) {
+                payload[el.getAttribute('data-trava')] = el.checked;
+            });
+            rest('tiny/config', 'POST', payload).then(function () {
                 feedback(I18N.configOk || 'Configuração salva.', 'sucesso');
             }).catch(function (err) {
                 feedback(err.message, 'erro');
@@ -1152,6 +1292,8 @@
         initLiberarTrava();
         initRotacionarWebhook();
         initConfig();
+        initRaizes();
+        initImportacao();
         initSincronizar();
         initMapeamento();
         initLogs();

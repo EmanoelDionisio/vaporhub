@@ -19,7 +19,17 @@ final class BaselineFilaTest extends VH_Test_Case {
 		$produto = VH_Test_Env::produto_simples();
 		VH_Tiny_Queue::enfileirar( 'produto_push', 'wc_' . $produto->get_id(), [ 'produto_id' => $produto->get_id() ] );
 
-		VH_Test_Env::atualizar_config( [ 'permitir_envio' => false ] );
+		VH_Test_Env::atualizar_config(
+			[
+				'permitir_envio'   => false,
+				'saida_nome'       => false,
+				'saida_descricao'  => false,
+				'saida_categoria'  => false,
+				'saida_preco'      => false,
+				'saida_imagem'     => false,
+				'saida_grade'      => false,
+			]
+		);
 
 		$resultado = VH_Tiny_Queue::processar_lote();
 
@@ -29,15 +39,25 @@ final class BaselineFilaTest extends VH_Test_Case {
 		self::assertSame( 0, VH_Fake_HTTP::contar( 'POST', 'produtos' ), 'Nada pode sair para o ERP com o envio desligado.' );
 	}
 
-	public function testEnvioLigadoProcessaProdutoPushEMarcaConcluido(): void {
+	public function testEnvioDeCadastroDesligadoNaoCriaProdutoNoErp(): void {
+		VH_Test_Env::atualizar_config(
+			[
+				'saida_nome'      => false,
+				'saida_descricao' => false,
+				'saida_categoria' => false,
+				'saida_preco'     => false,
+				'saida_imagem'    => false,
+				'saida_grade'     => false,
+			]
+		);
 		$produto = VH_Test_Env::produto_simples();
 		VH_Tiny_Queue::enfileirar( 'produto_push', 'wc_' . $produto->get_id(), [ 'produto_id' => $produto->get_id() ] );
 
 		$resultado = VH_Tiny_Queue::processar_lote();
 
-		self::assertSame( 1, $resultado['processados'] );
-		self::assertSame( 'done', VH_Test_Env::jobs( 'produto_push' )[0]['status'] );
-		self::assertSame( 1, VH_Fake_HTTP::contar( 'POST', 'produtos' ) );
+		self::assertSame( 0, $resultado['processados'] );
+		self::assertSame( 'pending', VH_Test_Env::jobs( 'produto_push' )[0]['status'] );
+		self::assertSame( 0, VH_Fake_HTTP::contar( 'POST', 'produtos' ), 'Cadastro da loja não nasce no hub.' );
 	}
 
 	public function testRecebimentoDesligadoRecusaProdutoPullEEstoquePull(): void {
@@ -64,10 +84,10 @@ final class BaselineFilaTest extends VH_Test_Case {
 
 		VH_Tiny_Sync_Service::reconciliar();
 
-		$jobs = VH_Test_Env::jobs( 'produto_push' );
-		self::assertCount( 1, $jobs, 'Só produto com SKU é sincronizável.' );
-		self::assertSame( 'wc_' . $com_sku->get_id(), $jobs[0]['referencia'] );
+		self::assertSame( 0, VH_Test_Env::contar_jobs( 'produto_push' ), 'Reconciliação não empurra cadastro.' );
+		self::assertSame( 0, VH_Test_Env::contar_jobs( 'estoque_push' ), 'Sem vínculo no Tiny não há saldo a enviar.' );
 		self::assertSame( 0, VH_Test_Env::contar_jobs( 'produto_pull' ), 'Recebimento desligado não puxa nada.' );
+		unset( $com_sku );
 	}
 
 	public function testReconciliacaoRegistraDataDaUltimaExecucao(): void {

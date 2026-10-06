@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 /* ───────────────────────────────────────────────
  * Constantes
  * ─────────────────────────────────────────────── */
-define( 'VH_LOJA_VERSION', '3.16.6' );
+define( 'VH_LOJA_VERSION', '3.16.8' );
 define( 'VH_LOJA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VH_LOJA_URL', plugin_dir_url( __FILE__ ) );
 define( 'VH_LOJA_ASSETS', VH_LOJA_URL . 'admin/' );
@@ -84,6 +84,7 @@ require_once VH_LOJA_DIR . 'includes/services/class-vh-tiny-sku.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-tiny-category-sync.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-tiny-mapping-service.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-tiny-sync-service.php';
+require_once VH_LOJA_DIR . 'includes/services/class-vh-tiny-importacao.php';
 require_once VH_LOJA_DIR . 'includes/class-vh-tiny-module.php';
 
 require_once VH_LOJA_DIR . 'includes/rest/class-vh-rest-controller.php';

@@ -50,7 +50,8 @@ final class ReconciliacaoEscopoTest extends VH_Test_Case {
 			static fn( array $req ): bool => 'produtos' === $req['endpoint']
 		);
 		self::assertCount( 0, $listagens, 'Não pagina o catálogo do ERP.' );
-		self::assertSame( 2, VH_Test_Env::contar_jobs( 'produto_push' ), 'Os dois produtos locais continuam sendo enviados.' );
+		self::assertSame( 0, VH_Test_Env::contar_jobs( 'produto_push' ), 'Reconciliação não empurra cadastro.' );
+		self::assertSame( 1, VH_Test_Env::contar_jobs( 'estoque_push' ), 'Só o item vinculado devolve saldo.' );
 		unset( $solto );
 	}
 
@@ -92,7 +93,7 @@ final class ReconciliacaoEscopoTest extends VH_Test_Case {
 		$resultado = VH_Tiny_Sync_Service::puxar_produto( $tiny_id );
 
 		self::assertTrue( is_wp_error( $resultado ) );
-		self::assertSame( 'vh_tiny_sku_fora_do_recorte', $resultado->get_error_code() );
+		self::assertSame( 'vh_tiny_so_importacao', $resultado->get_error_code() );
 		self::assertSame( 0, wc_get_product_id_by_sku( 'ALHEIO-99' ), 'Nada de produto órfão na vitrine.' );
 	}
 
@@ -114,10 +115,17 @@ final class ReconciliacaoEscopoTest extends VH_Test_Case {
 
 		$resultado = VH_Tiny_Sync_Service::puxar_produto( $tiny_id );
 
-		self::assertTrue( true === $resultado );
+		self::assertTrue( is_wp_error( $resultado ) );
+		self::assertSame( 'vh_tiny_so_importacao', $resultado->get_error_code() );
+
+		$gravado = VH_Tiny::driver()->obter_produto( $tiny_id );
+		self::assertTrue( is_array( $gravado ) );
+		$gravado['estoque'] = 4;
+		self::assertTrue( true === VH_Tiny_Importacao::gravar( $gravado, $tiny_id ) );
 		$wc_id = wc_get_product_id_by_sku( 'VH-IMP-001' );
 		self::assertGreaterThan( 0, $wc_id );
 		self::assertSame( $tiny_id, (int) get_post_meta( $wc_id, VH_Tiny_Map::META_TINY_ID, true ) );
+		self::assertSame( '1', (string) get_post_meta( $wc_id, VH_Tiny_Importacao::META_IMPORTADO, true ) );
 	}
 
 	public function testPullDeVariavelSemParNaoCriaPai(): void {
@@ -138,8 +146,62 @@ final class ReconciliacaoEscopoTest extends VH_Test_Case {
 		$resultado = VH_Tiny_Sync_Service::puxar_produto( $tiny_id );
 
 		self::assertTrue( is_wp_error( $resultado ) );
-		self::assertSame( 'vh_tiny_variavel_pendente', $resultado->get_error_code() );
+		self::assertSame( 'vh_tiny_so_importacao', $resultado->get_error_code() );
 		self::assertSame( 0, wc_get_product_id_by_sku( 'VH-VAR-IMP' ) );
+	}
+
+	public function testImportacaoCriaPaiComVariacaoESkuOriginal(): void {
+		$term_id  = VH_Test_Env::categoria( 'POD Descartável' );
+		$tiny_cat = VH_Fake_Tiny_ERP::seed_categoria( 'POD Descartável' );
+		update_term_meta( $term_id, VH_Tiny_Map::META_TINY_CAT_ID, $tiny_cat );
+
+		$tiny_id = VH_Fake_Tiny_ERP::seed_produto(
+			[
+				'sku'       => 'PAI-ESTOQUE',
+				'descricao' => 'Pod com grade',
+				'tipo'      => 'V',
+				'categoria' => [ 'id' => $tiny_cat ],
+				'variacoes' => [
+					[
+						'id'      => 88001,
+						'sku'     => 'PAI-ESTOQUE-30-3',
+						'precos'  => [ 'preco' => 45 ],
+						'estoque' => [ 'quantidade' => 6, 'controlar' => true ],
+						'grade'   => [
+							[ 'chave' => 'Ml', 'valor' => '30ML' ],
+							[ 'chave' => 'Nicotina', 'valor' => '3MG' ],
+						],
+					],
+				],
+			]
+		);
+
+		$gravado = VH_Tiny::driver()->obter_produto( $tiny_id );
+		self::assertTrue( is_array( $gravado ) );
+		self::assertTrue( true === VH_Tiny_Importacao::gravar( $gravado, $tiny_id ) );
+
+		$pai = wc_get_product_id_by_sku( 'PAI-ESTOQUE' );
+		$filha = wc_get_product_id_by_sku( 'PAI-ESTOQUE-30-3' );
+		self::assertGreaterThan( 0, $pai );
+		self::assertGreaterThan( 0, $filha );
+		self::assertSame( 6, (int) wc_get_product( $filha )->get_stock_quantity() );
+		self::assertSame( 'PAI-ESTOQUE-30-3', wc_get_product( $filha )->get_sku() );
+	}
+
+	public function testImportacaoSemEstoqueNaoCriaProduto(): void {
+		$tiny_id = VH_Fake_Tiny_ERP::seed_produto(
+			[
+				'sku'      => 'SEM-SALDO',
+				'descricao'=> 'Sem saldo',
+				'situacao' => 'A',
+			]
+		);
+		$gravado = VH_Tiny::driver()->obter_produto( $tiny_id );
+		self::assertTrue( is_array( $gravado ) );
+		$resultado = VH_Tiny_Importacao::gravar( $gravado, $tiny_id );
+		self::assertTrue( is_wp_error( $resultado ) );
+		self::assertSame( 'vh_tiny_sem_estoque', $resultado->get_error_code() );
+		self::assertSame( 0, wc_get_product_id_by_sku( 'SEM-SALDO' ) );
 	}
 
 	public function testWebhookDeIdDesconhecidoNaoGeraJob(): void {

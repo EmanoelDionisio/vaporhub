@@ -1235,6 +1235,7 @@ final class VH_Tiny_Driver_V3 implements VH_Tiny_Driver_Interface {
 				'id_tiny'          => VH_Tiny_Map::extrair_tiny_id( $raw ),
 				'sku'              => VH_Tiny_Map::extrair_sku( $raw ),
 				'nome'             => (string) ( $raw['descricao'] ?? $raw['nome'] ?? '' ),
+				'marca'            => is_array( $raw['marca'] ?? null ) ? (string) ( $raw['marca']['nome'] ?? '' ) : (string) ( $raw['marca'] ?? '' ),
 				'descricao'        => (string) ( $raw['descricaoComplementar'] ?? $raw['descricao'] ?? '' ),
 				'descricao_curta'  => (string) ( $raw['observacoes'] ?? $raw['obs'] ?? $raw['descricao_curta'] ?? '' ),
 				'peso'             => (float) ( $raw['dimensoes']['pesoBruto'] ?? $raw['pesoBruto'] ?? $raw['peso'] ?? 0 ),
@@ -1281,7 +1282,7 @@ final class VH_Tiny_Driver_V3 implements VH_Tiny_Driver_Interface {
 			foreach ( (array) ( $var['grade'] ?? [] ) as $g ) {
 				if ( is_array( $g ) ) {
 					$grade[] = [
-						'chave' => (string) ( $g['descricao'] ?? $g['nome'] ?? '' ),
+						'chave' => (string) ( $g['chave'] ?? $g['descricao'] ?? $g['nome'] ?? '' ),
 						'valor' => (string) ( $g['valor'] ?? '' ),
 					];
 				}

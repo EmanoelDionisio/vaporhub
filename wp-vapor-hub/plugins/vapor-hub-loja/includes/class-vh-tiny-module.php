@@ -109,7 +109,7 @@ final class VH_Tiny_Module {
 			return;
 		}
 		$dados_cfg = VH_Tiny::obter();
-		if ( empty( $dados_cfg['sinc_auto'] ) || ! VH_Tiny::pode_enviar() ) {
+		if ( empty( $dados_cfg['sinc_auto'] ) || ! VH_Tiny::pode_enviar_cadastro() ) {
 			return;
 		}
 
@@ -147,7 +147,7 @@ final class VH_Tiny_Module {
 		}
 
 		$dados_cfg = VH_Tiny::obter();
-		if ( empty( $dados_cfg['sinc_auto'] ) || ! VH_Tiny::pode_enviar() ) {
+		if ( empty( $dados_cfg['sinc_auto'] ) || ! VH_Tiny::campo_liberado( 'estoque', 'saida' ) ) {
 			return;
 		}
 
@@ -178,7 +178,7 @@ final class VH_Tiny_Module {
 			return;
 		}
 		$dados_cfg = VH_Tiny::obter();
-		if ( empty( $dados_cfg['sinc_auto'] ) || ! VH_Tiny::pode_enviar() ) {
+		if ( empty( $dados_cfg['sinc_auto'] ) || ! VH_Tiny::campo_liberado( 'categoria', 'saida' ) ) {
 			return;
 		}
 		VH_Tiny_Queue::enfileirar( 'categoria_push', 'cat_' . $term_id, [ 'term_id' => $term_id ] );
@@ -205,7 +205,7 @@ final class VH_Tiny_Module {
 			return;
 		}
 		$dados = VH_Tiny::obter();
-		if ( empty( $dados['sinc_auto'] ) || ! VH_Tiny::pode_enviar() ) {
+		if ( empty( $dados['sinc_auto'] ) || ! VH_Tiny::campo_liberado( 'pedido', 'saida' ) ) {
 			return;
 		}
 		VH_Tiny_Queue::enfileirar( 'pedido_push', 'order_' . $pedido_id, [ 'pedido_id' => $pedido_id ] );

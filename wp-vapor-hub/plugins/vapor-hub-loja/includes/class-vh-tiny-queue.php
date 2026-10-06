@@ -235,26 +235,37 @@ class VH_Tiny_Queue {
 	 * @return true|WP_Error
 	 */
 	public static function direcao_autorizada( string $tipo ) {
-		$push = [ 'produto_push', 'categoria_push', 'pedido_push', 'estoque_push' ];
-		if ( in_array( $tipo, $push, true ) && ! VH_Tiny::pode_enviar() ) {
+		if ( in_array( $tipo, [ 'produto_push', 'categoria_push' ], true ) && ! VH_Tiny::pode_enviar_cadastro() ) {
 			return new WP_Error(
 				'vh_tiny_direcao_pausada',
-				__( 'Envio ao Tiny desativado.', 'vapor-hub-loja' ),
+				__( 'Envio de cadastro ao Tiny desativado.', 'vapor-hub-loja' ),
+				[ 'vh_requeue' => true ]
+			);
+		}
+		if ( 'estoque_push' === $tipo && ! VH_Tiny::campo_liberado( 'estoque', 'saida' ) ) {
+			return new WP_Error(
+				'vh_tiny_direcao_pausada',
+				__( 'Envio de estoque ao Tiny desativado.', 'vapor-hub-loja' ),
+				[ 'vh_requeue' => true ]
+			);
+		}
+		if ( 'pedido_push' === $tipo && ! VH_Tiny::campo_liberado( 'pedido', 'saida' ) ) {
+			return new WP_Error(
+				'vh_tiny_direcao_pausada',
+				__( 'Envio de pedido ao Tiny desativado.', 'vapor-hub-loja' ),
 				[ 'vh_requeue' => true ]
 			);
 		}
 
-		/* Saldo do ERP só entra na loja com o interruptor de estoque/preço ligado. */
-		if ( 'estoque_pull' === $tipo && ! VH_Tiny::pode_receber_estoque_preco() ) {
+		if ( 'estoque_pull' === $tipo && ! VH_Tiny::campo_liberado( 'estoque', 'entrada' ) ) {
 			return new WP_Error(
 				'vh_tiny_direcao_pausada',
-				__( 'Recebimento de estoque e preço do Tiny desativado.', 'vapor-hub-loja' ),
+				__( 'Recebimento de estoque do Tiny desativado.', 'vapor-hub-loja' ),
 				[ 'vh_requeue' => true ]
 			);
 		}
 
-		/* produto_pull mexe em cadastro e em financeiro: basta uma das entradas. */
-		if ( 'produto_pull' === $tipo && ! VH_Tiny::pode_receber() ) {
+		if ( 'produto_pull' === $tipo && ! VH_Tiny::pode_receber_vinculo() ) {
 			return new WP_Error(
 				'vh_tiny_direcao_pausada',
 				__( 'Recebimento do Tiny desativado.', 'vapor-hub-loja' ),
