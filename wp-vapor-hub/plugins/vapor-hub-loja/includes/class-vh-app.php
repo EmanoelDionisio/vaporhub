@@ -69,6 +69,7 @@ class VH_App {
         }
 
         wp_enqueue_script( 'jquery' );
+        VH_Front::editor_produto();
 
         wp_enqueue_style(
             'vh-admin-css',

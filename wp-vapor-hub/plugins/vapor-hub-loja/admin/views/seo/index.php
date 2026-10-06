@@ -20,9 +20,99 @@ $redirect_uri = VH_SEO_Google::redirect_uri();
 $sitemap_url = home_url( '/wp-sitemap.xml' );
 $robots_url  = home_url( '/robots.txt' );
 $home_url    = home_url( '/' );
+$vh_links    = class_exists( 'VH_Permalinks' ) ? VH_Permalinks::estado() : null;
+$vh_modos    = [
+    'caminho'        => [
+        __( 'Caminho completo', 'vapor-hub-loja' ),
+        __( 'Pai, filho e produto, sem o prefixo product/. É o endereço desta loja.', 'vapor-hub-loja' ),
+    ],
+    'padrao'         => [
+        __( 'Padrão do WooCommerce', 'vapor-hub-loja' ),
+        __( 'product/nome-do-produto/', 'vapor-hub-loja' ),
+    ],
+    'loja'           => [
+        __( 'Base da loja', 'vapor-hub-loja' ),
+        __( 'Usa o slug da página da loja.', 'vapor-hub-loja' ),
+    ],
+    'loja_categoria' => [
+        __( 'Base da loja com uma categoria', 'vapor-hub-loja' ),
+        __( 'Uma categoria só, como o WooCommerce já faz.', 'vapor-hub-loja' ),
+    ],
+    'personalizada'  => [
+        __( 'Base personalizada', 'vapor-hub-loja' ),
+        __( 'O slug informado abaixo, no lugar de product.', 'vapor-hub-loja' ),
+    ],
+];
 ?>
 
 <div class="vh-admin-wrap">
+
+    <?php if ( is_array( $vh_links ) ) : ?>
+    <form id="vh-form-permalinks" class="vh-rest-form" data-endpoint="seo/permalinks" data-method="PUT" data-reload="1">
+        <div class="vh-admin-section">
+            <h2><?php esc_html_e( 'Endereços da loja', 'vapor-hub-loja' ); ?></h2>
+            <p class="vh-form-descricao" style="margin-bottom:18px">
+                <?php esc_html_e( 'O WordPress continua dono dos links em Configurações → Links permanentes. Aqui cada loja grava as mesmas opções. O caminho completo segue a trilha: categoria, subcategoria e, no produto, o nome.', 'vapor-hub-loja' ); ?>
+            </p>
+            <p class="vh-form-descricao" style="margin-bottom:18px">
+                <code>/e-liquidos/nicsalt/</code>
+                <code>/e-liquidos/nicsalt/nome-do-produto/</code>
+            </p>
+
+            <?php foreach ( $vh_modos as $vh_modo => $vh_rotulo ) : ?>
+                <label class="vh-switch-linha" style="margin-bottom:8px">
+                    <input type="radio" name="modo" value="<?php echo esc_attr( $vh_modo ); ?>" <?php checked( $vh_links['modo'], $vh_modo ); ?> />
+                    <span class="vh-switch-texto">
+                        <strong><?php echo esc_html( $vh_rotulo[0] ); ?></strong>
+                        <small><?php echo esc_html( $vh_rotulo[1] ); ?></small>
+                    </span>
+                </label>
+            <?php endforeach; ?>
+
+            <h3 style="margin:22px 0 10px;font-size:15px"><?php esc_html_e( 'Endereço da categoria', 'vapor-hub-loja' ); ?></h3>
+            <label class="vh-switch-linha" style="margin-bottom:8px">
+                <input type="radio" name="modo_categoria" value="caminho" <?php checked( $vh_links['modo_categoria'], 'caminho' ); ?> />
+                <span class="vh-switch-texto">
+                    <strong><?php esc_html_e( 'Caminho da trilha', 'vapor-hub-loja' ); ?></strong>
+                    <small><?php esc_html_e( 'O mesmo lugar do breadcrumb, sem product-category. Padrão de cada loja nova.', 'vapor-hub-loja' ); ?></small>
+                </span>
+            </label>
+            <label class="vh-switch-linha" style="margin-bottom:8px">
+                <input type="radio" name="modo_categoria" value="base" <?php checked( $vh_links['modo_categoria'], 'base' ); ?> />
+                <span class="vh-switch-texto">
+                    <strong><?php esc_html_e( 'Base do WooCommerce', 'vapor-hub-loja' ); ?></strong>
+                    <small><?php esc_html_e( 'Usa o slug informado em Base da categoria, como product-category.', 'vapor-hub-loja' ); ?></small>
+                </span>
+            </label>
+
+            <div class="vh-form-grupo" style="margin-top:18px">
+                <label for="vh-permalink-produto"><?php esc_html_e( 'Base personalizada do produto', 'vapor-hub-loja' ); ?></label>
+                <input type="text" id="vh-permalink-produto" name="base_produto" value="<?php echo esc_attr( $vh_links['base_produto'] ); ?>" placeholder="product" />
+            </div>
+            <div class="vh-form-grupo">
+                <label for="vh-permalink-categoria"><?php esc_html_e( 'Base da categoria', 'vapor-hub-loja' ); ?></label>
+                <input type="text" id="vh-permalink-categoria" name="base_categoria" value="<?php echo esc_attr( $vh_links['base_categoria'] ); ?>" placeholder="product-category" />
+                <p class="vh-form-descricao"><?php esc_html_e( 'No caminho da trilha, este prefixo fica só no endereço antigo, que redireciona.', 'vapor-hub-loja' ); ?></p>
+            </div>
+            <div class="vh-form-grupo">
+                <label for="vh-permalink-tag"><?php esc_html_e( 'Base da tag', 'vapor-hub-loja' ); ?></label>
+                <input type="text" id="vh-permalink-tag" name="base_tag" value="<?php echo esc_attr( $vh_links['base_tag'] ); ?>" placeholder="product-tag" />
+            </div>
+            <div class="vh-form-grupo">
+                <label for="vh-permalink-atributo"><?php esc_html_e( 'Base do atributo', 'vapor-hub-loja' ); ?></label>
+                <input type="text" id="vh-permalink-atributo" name="base_atributo" value="<?php echo esc_attr( $vh_links['base_atributo'] ); ?>" placeholder="<?php esc_attr_e( 'vazio usa o padrão do WooCommerce', 'vapor-hub-loja' ); ?>" />
+            </div>
+            <div class="vh-form-grupo">
+                <label for="vh-permalink-marca"><?php esc_html_e( 'Base da marca', 'vapor-hub-loja' ); ?></label>
+                <input type="text" id="vh-permalink-marca" name="base_marca" value="<?php echo esc_attr( $vh_links['base_marca'] ); ?>" placeholder="marca" />
+            </div>
+
+            <p style="margin-top:20px">
+                <button type="submit" class="vh-btn vh-btn--primario"><?php esc_html_e( 'Salvar endereços', 'vapor-hub-loja' ); ?></button>
+            </p>
+        </div>
+    </form>
+    <?php endif; ?>
 
     <form id="vh-form-seo" class="vh-rest-form" data-endpoint="settings/seo" data-method="PUT">
 

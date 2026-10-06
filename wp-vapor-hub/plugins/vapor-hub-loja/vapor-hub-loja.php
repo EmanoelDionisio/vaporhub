@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 /* ───────────────────────────────────────────────
  * Constantes
  * ─────────────────────────────────────────────── */
-define( 'VH_LOJA_VERSION', '3.16.8' );
+define( 'VH_LOJA_VERSION', '3.16.16' );
 define( 'VH_LOJA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VH_LOJA_URL', plugin_dir_url( __FILE__ ) );
 define( 'VH_LOJA_ASSETS', VH_LOJA_URL . 'admin/' );
@@ -57,6 +57,7 @@ require_once VH_LOJA_DIR . 'includes/class-vh-datetime.php';
 
 require_once VH_LOJA_DIR . 'includes/services/class-vh-orders-service.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-products-service.php';
+require_once VH_LOJA_DIR . 'includes/services/class-vh-permalinks.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-personalizacao-service.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-categories-service.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-customers-service.php';
@@ -177,6 +178,7 @@ final class VH_Loja {
         $this->talvez_atualizar();
 
         VH_Settings::registrar_opcoes();
+        VH_Permalinks::init();
         VH_Media::init();
         VH_Admin::init();
         VH_Shortcodes::registrar();

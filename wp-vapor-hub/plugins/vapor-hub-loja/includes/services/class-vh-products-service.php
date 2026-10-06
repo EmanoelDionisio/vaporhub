@@ -192,6 +192,7 @@ class VH_Products_Service {
             'unidade'        => (string) get_post_meta( $id, self::META_UNIDADE, true ),
             'marca'          => (string) get_post_meta( $id, self::META_MARCA, true ),
             'categorias'     => $produto->get_category_ids(),
+            'cat_principal'  => (int) $produto->get_meta( '_vh_cat_principal' ),
             'tags'           => $tags_atuais,
             'imagem_id'      => $produto->get_image_id(),
             'imagem_url'     => wp_get_attachment_image_url( $produto->get_image_id(), 'thumbnail' ) ?: '',
@@ -631,6 +632,18 @@ class VH_Products_Service {
         if ( isset( $dados['categorias'] ) ) {
             $ids = array_map( 'absint', (array) $dados['categorias'] );
             $produto->set_category_ids( array_filter( $ids ) );
+        }
+
+        if ( array_key_exists( 'cat_principal', $dados ) ) {
+            $atuais  = isset( $dados['categorias'] )
+                ? array_values( array_filter( array_map( 'absint', (array) $dados['categorias'] ) ) )
+                : array_map( 'absint', $produto->get_category_ids() );
+            $escolha = absint( $dados['cat_principal'] );
+            if ( $escolha && in_array( $escolha, $atuais, true ) ) {
+                $produto->update_meta_data( '_vh_cat_principal', $escolha );
+            } else {
+                $produto->delete_meta_data( '_vh_cat_principal' );
+            }
         }
 
         if ( isset( $dados['imagem_id'] ) ) {

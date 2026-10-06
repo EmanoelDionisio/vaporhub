@@ -720,6 +720,28 @@ final class VH_SEO {
 	}
 
 	/**
+	 * @param array<int, array<string, mixed>> $itens
+	 * @param WP_Term[]                        $termos
+	 */
+	private static function anexar_termos( array &$itens, int &$pos, array $termos ): void {
+		foreach ( $termos as $termo ) {
+			if ( ! $termo instanceof WP_Term ) {
+				continue;
+			}
+			$link = get_term_link( $termo );
+			if ( is_wp_error( $link ) ) {
+				continue;
+			}
+			$itens[] = array(
+				'@type'    => 'ListItem',
+				'position' => $pos++,
+				'name'     => $termo->name,
+				'item'     => $link,
+			);
+		}
+	}
+
+	/**
 	 * BreadcrumbList para produto, loja e taxonomias.
 	 *
 	 * @return array<string, mixed>|null
@@ -744,18 +766,12 @@ final class VH_SEO {
 				'item'     => $loja,
 			);
 
-			$cats = get_the_terms( get_queried_object_id(), 'product_cat' );
-			if ( ! is_wp_error( $cats ) && ! empty( $cats ) ) {
-				$cat = $cats[0];
-				$link = get_term_link( $cat );
-				if ( ! is_wp_error( $link ) ) {
-					$itens[] = array(
-						'@type'    => 'ListItem',
-						'position' => $pos++,
-						'name'     => $cat->name,
-						'item'     => $link,
-					);
-				}
+			$produto   = function_exists( 'wc_get_product' ) ? wc_get_product( get_queried_object_id() ) : null;
+			$principal = ( $produto instanceof WC_Product && class_exists( 'VH_Permalinks' ) )
+				? VH_Permalinks::categoria_principal( $produto )
+				: null;
+			if ( $principal instanceof WP_Term ) {
+				self::anexar_termos( $itens, $pos, VH_Permalinks::cadeia_categoria( $principal ) );
 			}
 
 			$itens[] = array(
@@ -774,15 +790,8 @@ final class VH_SEO {
 			);
 			$termo = get_queried_object();
 			if ( $termo instanceof WP_Term ) {
-				$link = get_term_link( $termo );
-				if ( ! is_wp_error( $link ) ) {
-					$itens[] = array(
-						'@type'    => 'ListItem',
-						'position' => $pos++,
-						'name'     => $termo->name,
-						'item'     => $link,
-					);
-				}
+				$cadeia = class_exists( 'VH_Permalinks' ) ? VH_Permalinks::cadeia_categoria( $termo ) : array( $termo );
+				self::anexar_termos( $itens, $pos, $cadeia );
 			}
 		} elseif ( function_exists( 'is_shop' ) && is_shop() ) {
 			$itens[] = array(

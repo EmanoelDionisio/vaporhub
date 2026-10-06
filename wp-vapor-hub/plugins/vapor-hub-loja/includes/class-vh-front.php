@@ -256,6 +256,36 @@ class VH_Front {
                 ],
             ] );
         }
+
+        self::editor_produto();
+    }
+
+    /**
+     * Editor visual só no formulário do produto. O script do WordPress não entra nas outras telas.
+     */
+    public static function editor_produto(): void {
+        if ( 'produtos' !== VH_Router::secao_atual() ) {
+            return;
+        }
+        $acao = VH_Router::acao_atual();
+        if ( ! in_array( $acao, [ 'novo', 'editar' ], true ) ) {
+            return;
+        }
+
+        wp_enqueue_editor();
+        wp_enqueue_script(
+            'vh-editor',
+            VH_LOJA_ASSETS . 'js/editor.js',
+            [ 'editor' ],
+            VH_LOJA_VERSION,
+            true
+        );
+        wp_localize_script( 'vh-editor', 'paEditor', [
+            'i18n' => [
+                'ampliar'  => __( 'Ampliar', 'vapor-hub-loja' ),
+                'recolher' => __( 'Recolher', 'vapor-hub-loja' ),
+            ],
+        ] );
     }
 
     /**

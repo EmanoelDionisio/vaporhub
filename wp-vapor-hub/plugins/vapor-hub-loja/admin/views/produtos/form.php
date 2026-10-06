@@ -28,6 +28,7 @@ $vh_dados = wp_parse_args(
         'largura' => '', 'altura' => '', 'comprimento' => '',
         'volumes' => 0, 'embalagem_tipo' => 0,
         'ncm' => '', 'gtin' => '', 'unidade' => '', 'marca' => '',
+        'cat_principal' => 0,
     ]
 );
 
@@ -119,15 +120,49 @@ $vh_tiny_ctx    = class_exists( 'VH_Tiny' ) ? VH_Tiny::contexto_envio_produto() 
                         <input type="text" name="nome" value="<?php echo esc_attr( $vh_dados['nome'] ); ?>" required />
                     </div>
 
-                    <div class="vh-form-grupo">
-                        <label><?php esc_html_e( 'Descrição curta', 'vapor-hub-loja' ); ?></label>
-                        <textarea name="descricao_curta" rows="3"><?php echo esc_textarea( $vh_dados['descricao_curta'] ); ?></textarea>
-                    </div>
-
-                    <div class="vh-form-grupo">
-                        <label><?php esc_html_e( 'Descrição completa', 'vapor-hub-loja' ); ?></label>
-                        <textarea name="descricao" rows="6"><?php echo esc_textarea( $vh_dados['descricao'] ); ?></textarea>
-                    </div>
+                    <?php
+                    $vh_editor = static function ( string $id, string $nome, string $rotulo, string $valor, int $altura, int $teto, bool $opcional = false ): void {
+                        ?>
+                        <div class="vh-form-grupo vh-editor" data-vh-editor
+                             data-vh-editor-altura="<?php echo esc_attr( (string) $altura ); ?>"
+                             data-vh-editor-teto="<?php echo esc_attr( (string) $teto ); ?>"
+                             <?php echo $opcional ? 'data-vh-editor-opcional="1"' : ''; ?>>
+                            <div class="vh-editor-topo">
+                                <label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $rotulo ); ?></label>
+                                <div class="vh-editor-acoes">
+                                    <?php if ( $opcional ) : ?>
+                                        <button type="button" class="vh-editor-abrir"><?php esc_html_e( 'Adicionar', 'vapor-hub-loja' ); ?></button>
+                                    <?php endif; ?>
+                                    <button type="button" class="vh-editor-limpar" title="<?php esc_attr_e( 'Tira cores e fontes coladas na importação. O texto permanece.', 'vapor-hub-loja' ); ?>">
+                                        <?php esc_html_e( 'Limpar estilos', 'vapor-hub-loja' ); ?>
+                                    </button>
+                                    <button type="button" class="vh-editor-ampliar" aria-expanded="false" aria-label="<?php esc_attr_e( 'Ampliar', 'vapor-hub-loja' ); ?>">
+                                        <span class="dashicons dashicons-fullscreen-alt" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea id="<?php echo esc_attr( $id ); ?>" class="vh-editor-campo" name="<?php echo esc_attr( $nome ); ?>" rows="6"><?php echo esc_textarea( $valor ); ?></textarea>
+                        </div>
+                        <?php
+                    };
+                    $vh_editor(
+                        'vh-descricao-curta',
+                        'descricao_curta',
+                        __( 'Descrição curta', 'vapor-hub-loja' ),
+                        (string) $vh_dados['descricao_curta'],
+                        96,
+                        180,
+                        true
+                    );
+                    $vh_editor(
+                        'vh-descricao',
+                        'descricao',
+                        __( 'Descrição completa', 'vapor-hub-loja' ),
+                        (string) $vh_dados['descricao'],
+                        180,
+                        260
+                    );
+                    ?>
                 </div>
 
                 <div class="vh-admin-section" id="vh-secao-tipo">
@@ -506,6 +541,52 @@ $vh_tiny_ctx    = class_exists( 'VH_Tiny' ) ? VH_Tiny::contexto_envio_produto() 
                         </div>
                     <?php else : ?>
                         <p style="color:var(--vh-cinza-500);font-size:13px"><?php esc_html_e( 'Nenhuma categoria cadastrada ainda.', 'vapor-hub-loja' ); ?></p>
+                    <?php endif; ?>
+                    <?php
+                    $vh_termos_principal = get_terms( [ 'taxonomy' => 'product_cat', 'hide_empty' => false ] );
+                    $vh_lista_principal  = [];
+                    if ( is_array( $vh_termos_principal ) ) {
+                        foreach ( $vh_termos_principal as $vh_termo_principal ) {
+                            if ( $vh_termo_principal instanceof WP_Term && ! in_array( $vh_termo_principal->slug, [ 'uncategorized', 'sem-categoria' ], true ) ) {
+                                $vh_lista_principal[] = $vh_termo_principal;
+                            }
+                        }
+                    }
+                    if ( $vh_lista_principal ) :
+                        usort(
+                            $vh_lista_principal,
+                            static function ( WP_Term $a, WP_Term $b ): int {
+                                return strcasecmp( $a->name, $b->name );
+                            }
+                        );
+                        $vh_por_id = [];
+                        foreach ( $vh_lista_principal as $vh_termo_principal ) {
+                            $vh_por_id[ $vh_termo_principal->term_id ] = $vh_termo_principal;
+                        }
+                        ?>
+                        <div class="vh-form-grupo" style="margin-top:16px">
+                            <label for="vh-cat-principal"><?php esc_html_e( 'Categoria do endereço', 'vapor-hub-loja' ); ?></label>
+                            <p class="vh-form-descricao">
+                                <?php esc_html_e( 'Se o produto estiver em mais de um ramo, este é o caminho que entra no link. Sem escolha, vale o ramo mais profundo.', 'vapor-hub-loja' ); ?>
+                            </p>
+                            <select id="vh-cat-principal" name="cat_principal">
+                                <option value="0" <?php selected( (int) $vh_dados['cat_principal'], 0 ); ?>><?php esc_html_e( 'Automático (ramo mais profundo)', 'vapor-hub-loja' ); ?></option>
+                                <?php foreach ( $vh_lista_principal as $vh_termo_principal ) :
+                                    $vh_prof = 0;
+                                    $vh_cursor = $vh_termo_principal;
+                                    $vh_guarda = 0;
+                                    while ( $vh_cursor->parent && isset( $vh_por_id[ $vh_cursor->parent ] ) && $vh_guarda < 8 ) {
+                                        ++$vh_prof;
+                                        $vh_cursor = $vh_por_id[ $vh_cursor->parent ];
+                                        ++$vh_guarda;
+                                    }
+                                    ?>
+                                    <option value="<?php echo esc_attr( (string) $vh_termo_principal->term_id ); ?>" <?php selected( (int) $vh_dados['cat_principal'], (int) $vh_termo_principal->term_id ); ?>>
+                                        <?php echo esc_html( str_repeat( '— ', $vh_prof ) . $vh_termo_principal->name ); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     <?php endif; ?>
                 </div>
 

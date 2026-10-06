@@ -83,6 +83,25 @@ class VH_REST_SEO extends VH_REST_Controller {
 				],
 			]
 		);
+
+		register_rest_route(
+			self::NS,
+			'/' . $this->rest_base . '/permalinks',
+			[
+				'methods'             => WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'salvar_permalinks' ],
+				'permission_callback' => [ $this, 'permissao' ],
+			]
+		);
+	}
+
+	public function salvar_permalinks( WP_REST_Request $request ) {
+		$params    = $request->get_json_params();
+		$resultado = VH_Permalinks::salvar( is_array( $params ) ? $params : [] );
+		if ( is_wp_error( $resultado ) ) {
+			return $resultado;
+		}
+		return $this->ok( VH_Permalinks::estado() );
 	}
 
 	/**

@@ -59,14 +59,35 @@ $categoria_slug  = ! empty( $filtros['categoria'] ) ? $filtros['categoria'] : ''
 
 		<?php
 		$trail_final = __( 'Todos os produtos', 'vapor-hub' );
+		$vh_trilha   = array();
 		if ( is_product_taxonomy() ) {
-			$trail_final = single_term_title( '', false );
+			$vh_termo = get_queried_object();
+			if ( $vh_termo instanceof WP_Term && class_exists( 'VH_Permalinks' ) ) {
+				$vh_cadeia = VH_Permalinks::cadeia_categoria( $vh_termo );
+				$vh_folha  = array_pop( $vh_cadeia );
+				foreach ( $vh_cadeia as $vh_ancestral ) {
+					$vh_link = get_term_link( $vh_ancestral );
+					if ( ! is_wp_error( $vh_link ) ) {
+						$vh_trilha[] = array(
+							'nome' => $vh_ancestral->name,
+							'url'  => $vh_link,
+						);
+					}
+				}
+				$trail_final = $vh_folha instanceof WP_Term ? $vh_folha->name : single_term_title( '', false );
+			} else {
+				$trail_final = single_term_title( '', false );
+			}
 		}
 		?>
 		<nav class="vh-breadcrumb-mvp vh-text-sm" aria-label="<?php esc_attr_e( 'Trilha de navegação', 'vapor-hub' ); ?>">
 			<a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Início', 'vapor-hub' ); ?></a>
 			<span class="vh-breadcrumb-sep">/</span>
 			<a href="<?php echo esc_url( $loja_url ); ?>"><?php esc_html_e( 'Loja', 'vapor-hub' ); ?></a>
+			<?php foreach ( $vh_trilha as $vh_passo ) : ?>
+				<span class="vh-breadcrumb-sep">/</span>
+				<a href="<?php echo esc_url( $vh_passo['url'] ); ?>"><?php echo esc_html( $vh_passo['nome'] ); ?></a>
+			<?php endforeach; ?>
 			<span class="vh-breadcrumb-sep">/</span>
 			<span class="vh-breadcrumb-atual"><?php echo esc_html( $trail_final ); ?></span>
 		</nav>

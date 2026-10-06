@@ -48,6 +48,7 @@ $vh_arquivos_plugin = [
 	'includes/integrations/tiny/class-vh-tiny-driver-v3.php',
 	'includes/integrations/tiny/class-vh-tiny.php',
 	'includes/services/class-vh-products-service.php',
+	'includes/services/class-vh-permalinks.php',
 	'includes/services/class-vh-tiny-map.php',
 	'includes/services/class-vh-tiny-sku.php',
 	'includes/class-vh-tiny-queue.php',
