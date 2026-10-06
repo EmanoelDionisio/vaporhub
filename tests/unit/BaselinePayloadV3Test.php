@@ -82,6 +82,49 @@ final class BaselinePayloadV3Test extends VH_Test_Case {
 		self::assertSame( 0.28, $dimensoes['pesoLiquido'] );
 	}
 
+	public function testPrecoEImagemVemDoCadastroTiny(): void {
+		$tiny_id = VH_Fake_Tiny_ERP::seed_produto(
+			[
+				'sku'       => 'VIDRO-1',
+				'descricao' => 'Tubo de vidro',
+				'preco'     => 0,
+				'precos'    => [
+					'preco'            => 29.9,
+					'precoPromocional' => 0,
+				],
+				'anexos'    => [
+					[ 'url' => 'https://anexos.tiny.com.br/erp/tubo.jpg' ],
+				],
+				'variacoes' => [
+					[
+						'id'      => 9001,
+						'codigo'  => 'VIDRO-1-AZUL',
+						'preco'   => 0,
+						'precos'  => [
+							'preco'            => 359,
+							'precoPromocional' => 269.9,
+						],
+						'grade'   => [
+							[ 'chave' => 'Cor', 'valor' => 'BLUE' ],
+						],
+						'estoque' => [
+							'controlar'  => true,
+							'quantidade' => 22,
+						],
+					],
+				],
+			]
+		);
+
+		$canonico = VH_Tiny::driver()->obter_produto( $tiny_id );
+
+		self::assertSame( '29.9', $canonico['preco_regular'] );
+		self::assertArrayNotHasKey( 'preco_promo', $canonico );
+		self::assertSame( [ 'https://anexos.tiny.com.br/erp/tubo.jpg' ], $canonico['imagens'] );
+		self::assertSame( '359', $canonico['variacoes'][0]['preco_regular'] );
+		self::assertSame( '269.9', $canonico['variacoes'][0]['preco_promo'] );
+	}
+
 	public function testSituacaoExcluidaChegaNoCanonicoComoNaoPublicado(): void {
 		$tiny_id = VH_Fake_Tiny_ERP::seed_produto(
 			[

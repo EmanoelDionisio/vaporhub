@@ -1206,21 +1206,83 @@ final class VH_Tiny_Driver_V3 implements VH_Tiny_Driver_Interface {
 	 * @param array<string, mixed> $raw
 	 * @return array<string, mixed>
 	 */
-	private static function resposta_para_canonico( array $raw ): array {
-		$preco = null;
-		foreach ( [ 'preco', 'precoVenda', 'valor' ] as $chave ) {
-			if ( isset( $raw[ $chave ] ) && '' !== (string) $raw[ $chave ] ) {
-				$preco = wc_format_decimal( (string) $raw[ $chave ] );
-				break;
+	/**
+	 * O cadastro v3 guarda o valor em `precos.preco`. Um `preco` solto igual a zero
+	 * não pode ganhar desse campo, senão a loja grava R$ 0 e a variação deixa de ser comprável.
+	 *
+	 * @param array<string, mixed> $raw
+	 * @return array{preco_regular:?string,preco_promo:?string}
+	 */
+	private static function precos_resposta( array $raw ): array {
+		$fontes = [];
+		if ( is_array( $raw['precos'] ?? null ) ) {
+			$fontes[] = $raw['precos'];
+		}
+		$fontes[] = $raw;
+
+		$regular = null;
+		foreach ( $fontes as $fonte ) {
+			foreach ( [ 'preco', 'precoVenda', 'valor' ] as $chave ) {
+				$regular = self::decimal_positivo( $fonte[ $chave ] ?? null );
+				if ( null !== $regular ) {
+					break 2;
+				}
 			}
 		}
+
 		$promo = null;
-		foreach ( [ 'precoPromocional', 'preco_promocional' ] as $chave ) {
-			if ( isset( $raw[ $chave ] ) && '' !== (string) $raw[ $chave ] ) {
-				$promo = wc_format_decimal( (string) $raw[ $chave ] );
-				break;
+		foreach ( $fontes as $fonte ) {
+			foreach ( [ 'precoPromocional', 'preco_promocional' ] as $chave ) {
+				$promo = self::decimal_positivo( $fonte[ $chave ] ?? null );
+				if ( null !== $promo ) {
+					break 2;
+				}
 			}
 		}
+		if ( null !== $promo && null !== $regular && (float) $promo >= (float) $regular ) {
+			$promo = null;
+		}
+
+		return [
+			'preco_regular' => $regular,
+			'preco_promo'   => $promo,
+		];
+	}
+
+	private static function decimal_positivo( mixed $valor ): ?string {
+		if ( null === $valor || '' === (string) $valor || ! is_numeric( $valor ) || (float) $valor <= 0 ) {
+			return null;
+		}
+		$texto = wc_format_decimal( (string) $valor );
+		return '' === $texto ? null : $texto;
+	}
+
+	/**
+	 * @param array<string, mixed> $raw
+	 * @return array<int, string>
+	 */
+	private static function urls_anexo( array $raw ): array {
+		$urls = [];
+		foreach ( (array) ( $raw['anexos'] ?? [] ) as $anexo ) {
+			if ( ! is_array( $anexo ) ) {
+				continue;
+			}
+			$url = trim( (string) ( $anexo['url'] ?? '' ) );
+			if ( '' === $url || ! preg_match( '#^https?://#i', $url ) ) {
+				continue;
+			}
+			if ( function_exists( 'wp_http_validate_url' ) && ! wp_http_validate_url( $url ) ) {
+				continue;
+			}
+			$urls[] = $url;
+		}
+		return $urls;
+	}
+
+	private static function resposta_para_canonico( array $raw ): array {
+		$precos = self::precos_resposta( $raw );
+		$preco  = $precos['preco_regular'];
+		$promo  = $precos['preco_promo'];
 
 		$tipo = 'simples';
 		if ( ! empty( $raw['variacoes'] ) || ( isset( $raw['tipoVariacao'] ) && 'P' === (string) $raw['tipoVariacao'] ) ) {
@@ -1261,6 +1323,17 @@ final class VH_Tiny_Driver_V3 implements VH_Tiny_Driver_Interface {
 			$canon['categorias'] = $cats;
 		}
 
+		$urls = self::urls_anexo( $raw );
+		foreach ( (array) ( $raw['variacoes'] ?? [] ) as $var ) {
+			if ( is_array( $var ) ) {
+				$urls = array_merge( $urls, self::urls_anexo( $var ) );
+			}
+		}
+		$urls = array_values( array_unique( $urls ) );
+		if ( $urls ) {
+			$canon['imagens'] = $urls;
+		}
+
 		return $canon;
 	}
 
@@ -1287,13 +1360,15 @@ final class VH_Tiny_Driver_V3 implements VH_Tiny_Driver_Interface {
 					];
 				}
 			}
-			$var_est = self::extrair_estoque_do_produto_v3( $var );
-			$saida[] = array_filter(
+			$var_est   = self::extrair_estoque_do_produto_v3( $var );
+			$var_preco = self::precos_resposta( $var );
+			$saida[]   = array_filter(
 				[
 					'tiny_id'          => VH_Tiny_Map::extrair_tiny_id( $var ),
 					'sku'              => VH_Tiny_Map::extrair_sku( $var ),
 					'grade'            => $grade,
-					'preco_regular'    => isset( $var['preco'] ) ? wc_format_decimal( (string) $var['preco'] ) : null,
+					'preco_regular'    => $var_preco['preco_regular'],
+					'preco_promo'      => $var_preco['preco_promo'],
 					'gerencia_estoque' => $var_est['gerencia_estoque'],
 					'estoque'          => $var_est['estoque'],
 				],

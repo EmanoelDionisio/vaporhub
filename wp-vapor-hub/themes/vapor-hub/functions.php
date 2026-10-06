@@ -17,7 +17,7 @@ require_once get_stylesheet_directory() . '/includes/vh-performance.php';
 require_once get_stylesheet_directory() . '/includes/vh-home.php';
 
 /** Versão do tema — usada para cache-busting dos assets */
-define( 'VH_VERSION', '1.0.74' );
+define( 'VH_VERSION', '1.0.75' );
 
 /** Máximo de requisições de cálculo de frete (PDP) por IP por minuto. */
 define( 'VH_FRETE_PRODUTO_RATE_LIMIT', 30 );
@@ -927,10 +927,10 @@ add_filter( 'woocommerce_proceed_to_checkout_button_html', 'vh_botao_finalizar_c
  * Resolve a cor (hex) de um termo de atributo para os swatches da loja.
  *
  * Prioridade: meta _vh_cor_hex (configurável no painel Minha Loja) → mapa por
- * slug/nome → cinza neutro.
+ * slug/nome. Sem cor conhecida, devolve vazio para a opção virar texto.
  *
  * @param WP_Term $termo Termo do atributo.
- * @return string Cor em formato #rrggbb.
+ * @return string Cor em formato #rrggbb, ou vazio.
  */
 function vh_cor_termo_hex( $termo ) {
 	$meta = (string) get_term_meta( $termo->term_id, '_vh_cor_hex', true );
@@ -942,17 +942,37 @@ function vh_cor_termo_hex( $termo ) {
 		'laranja'          => '#f27f0d',
 		'laranja-vibrante' => '#f27f0d',
 		'verde'            => '#22c55e',
+		'green'            => '#22c55e',
 		'vermelho'         => '#ef4444',
+		'red'              => '#ef4444',
 		'azul'             => '#3b82f6',
+		'blue'             => '#3b82f6',
 		'preto'            => '#1c1917',
-		'branco'           => '#ffffff',
+		'black'            => '#1c1917',
+		'matte-black'      => '#1c1917',
+		'matte-full-black' => '#111111',
+		'branco'           => '#f5f5f4',
+		'white'            => '#f5f5f4',
 		'amarelo'          => '#facc15',
+		'yellow'           => '#facc15',
 		'roxo'             => '#a855f7',
+		'purple'           => '#a855f7',
 		'rosa'             => '#ec4899',
+		'pink'             => '#ec4899',
 		'cinza'            => '#6b7280',
+		'grey'             => '#6b7280',
+		'gray'             => '#6b7280',
+		'gun-metal'        => '#4b5563',
+		'gunmetal'         => '#4b5563',
 		'marrom'           => '#92400e',
 		'dourado'          => '#d4af37',
+		'gold'             => '#d4af37',
 		'prata'            => '#c0c0c0',
+		'silver'           => '#c0c0c0',
+		'ss'               => '#d1d5db',
+		'matte-ss'         => '#9ca3af',
+		'stainless'        => '#d1d5db',
+		'stainless-ss'     => '#d1d5db',
 	);
 
 	if ( isset( $mapa[ $termo->slug ] ) ) {
@@ -962,7 +982,7 @@ function vh_cor_termo_hex( $termo ) {
 	if ( isset( $mapa[ $nome ] ) ) {
 		return $mapa[ $nome ];
 	}
-	return '#c0c0c0';
+	return '';
 }
 
 /**
@@ -1040,6 +1060,22 @@ function vh_config_personalizacao( $product ) {
 
 		if ( empty( $termos ) ) {
 			continue;
+		}
+
+		if ( 'cor' === $tipo ) {
+			$todas_conhecidas = true;
+			foreach ( $termos as $vh_termo_cor ) {
+				if ( '' === (string) $vh_termo_cor['cor'] ) {
+					$todas_conhecidas = false;
+					break;
+				}
+			}
+			if ( ! $todas_conhecidas ) {
+				$tipo = 'texto';
+				foreach ( $termos as $vh_indice_cor => $vh_termo_cor ) {
+					$termos[ $vh_indice_cor ]['cor'] = '';
+				}
+			}
 		}
 
 		$config[] = array(

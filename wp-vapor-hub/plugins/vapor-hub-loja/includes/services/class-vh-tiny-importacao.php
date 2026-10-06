@@ -334,10 +334,7 @@ final class VH_Tiny_Importacao {
 		if ( $eh_variavel ) {
 			$variacoes = self::preparar_grade( $produto, (array) $canonico['variacoes'] );
 		} else {
-			$produto->set_regular_price( wc_format_decimal( (string) ( $canonico['preco_regular'] ?? '0' ) ) );
-			if ( ! empty( $canonico['preco_promo'] ) ) {
-				$produto->set_sale_price( wc_format_decimal( (string) $canonico['preco_promo'] ) );
-			}
+			self::preencher_preco( $produto, $canonico );
 			$produto->set_manage_stock( true );
 			$produto->set_stock_quantity( max( 0, (int) ( $canonico['estoque'] ?? 0 ) ) );
 		}
@@ -355,6 +352,7 @@ final class VH_Tiny_Importacao {
 		if ( $eh_variavel ) {
 			WC_Product_Variable::sync( $id );
 		}
+		self::anexar_imagens( $id, (array) ( $canonico['imagens'] ?? [] ) );
 
 		return true;
 	}
@@ -429,12 +427,7 @@ final class VH_Tiny_Importacao {
 		$variacao->set_sku( $sku );
 		$variacao->set_attributes( (array) ( $var['attrs'] ?? [] ) );
 		$variacao->set_status( 'publish' );
-		if ( isset( $var['preco_regular'] ) && '' !== (string) $var['preco_regular'] ) {
-			$variacao->set_regular_price( wc_format_decimal( (string) $var['preco_regular'] ) );
-		}
-		if ( ! empty( $var['preco_promo'] ) ) {
-			$variacao->set_sale_price( wc_format_decimal( (string) $var['preco_promo'] ) );
-		}
+		self::preencher_preco( $variacao, $var );
 		$variacao->set_manage_stock( true );
 		$variacao->set_stock_quantity( max( 0, (int) ( $var['estoque'] ?? 0 ) ) );
 		$vid = $variacao->save();
@@ -734,6 +727,194 @@ final class VH_Tiny_Importacao {
 			)
 		);
 		return $achou > 0;
+	}
+
+	/**
+	 * Preenche preço só quando o Tiny trouxe um valor maior que zero.
+	 * Não apaga um preço que a loja já tenha.
+	 *
+	 * @param array<string, mixed> $fonte
+	 */
+	private static function preencher_preco( WC_Product $produto, array $fonte ): bool {
+		$regular = (string) ( $fonte['preco_regular'] ?? '' );
+		if ( '' === $regular || (float) $regular <= 0 ) {
+			return false;
+		}
+		$mudou = false;
+		if ( (float) $produto->get_regular_price() <= 0 ) {
+			$produto->set_regular_price( wc_format_decimal( $regular ) );
+			$mudou = true;
+		}
+		$promo = (string) ( $fonte['preco_promo'] ?? '' );
+		$base  = (float) $produto->get_regular_price();
+		if ( '' !== $promo && (float) $promo > 0 && $base > 0 && (float) $promo < $base && '' === (string) $produto->get_sale_price() ) {
+			$produto->set_sale_price( wc_format_decimal( $promo ) );
+			$mudou = true;
+		}
+		return $mudou;
+	}
+
+	/**
+	 * Baixa as fotos do Tiny só quando o produto ainda não tem imagem.
+	 * Uma falha de download não desfaz o produto.
+	 *
+	 * @param array<int, mixed> $urls
+	 */
+	private static function anexar_imagens( int $product_id, array $urls ): bool {
+		$produto = wc_get_product( $product_id );
+		if ( ! $produto || $produto->get_image_id() ) {
+			return false;
+		}
+		$validas = [];
+		foreach ( $urls as $url ) {
+			$url = trim( (string) $url );
+			if ( '' !== $url && preg_match( '#^https?://#i', $url ) ) {
+				$validas[] = $url;
+			}
+		}
+		$validas = array_slice( array_values( array_unique( $validas ) ), 0, 6 );
+		if ( ! $validas ) {
+			return false;
+		}
+		if ( ! function_exists( 'media_sideload_image' ) && ! file_exists( ABSPATH . 'wp-admin/includes/media.php' ) ) {
+			return false;
+		}
+		require_once ABSPATH . 'wp-admin/includes/media.php';
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		$ids = [];
+		foreach ( $validas as $url ) {
+			$anexo = media_sideload_image( $url, $product_id, null, 'id' );
+			if ( ! is_wp_error( $anexo ) && (int) $anexo > 0 ) {
+				$ids[] = (int) $anexo;
+			}
+		}
+		if ( ! $ids ) {
+			return false;
+		}
+		$produto = wc_get_product( $product_id );
+		if ( ! $produto ) {
+			return false;
+		}
+		$produto->set_image_id( $ids[0] );
+		if ( count( $ids ) > 1 ) {
+			$produto->set_gallery_image_ids( array_slice( $ids, 1 ) );
+		}
+		$produto->save();
+		return true;
+	}
+
+	/**
+	 * Completa preço e foto dos produtos já importados, sem recriar o catálogo.
+	 *
+	 * @return array<string, mixed>|WP_Error
+	 */
+	public static function completar_precos_imagens() {
+		$driver = VH_Tiny::driver();
+		if ( ! $driver->conectado() ) {
+			return new WP_Error( 'vh_tiny_desconectado', __( 'Tiny ERP não conectado.', 'vapor-hub-loja' ), [ 'status' => 400 ] );
+		}
+
+		$ids = get_posts(
+			[
+				'post_type'      => 'product',
+				'post_status'    => [ 'publish', 'private', 'draft' ],
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'meta_key'       => VH_Tiny_Map::META_TINY_ID,
+			]
+		);
+
+		$resumo = [
+			'vistos'  => 0,
+			'precos'  => 0,
+			'imagens' => 0,
+			'falhas'  => [],
+		];
+
+		foreach ( $ids as $id ) {
+			$id      = (int) $id;
+			$produto = wc_get_product( $id );
+			if ( ! $produto || $produto->get_parent_id() > 0 ) {
+				continue;
+			}
+			$tiny = (int) get_post_meta( $id, VH_Tiny_Map::META_TINY_ID, true );
+			if ( $tiny <= 0 ) {
+				continue;
+			}
+			++$resumo['vistos'];
+			$canonico = $driver->obter_produto( $tiny );
+			if ( is_wp_error( $canonico ) || ! is_array( $canonico ) ) {
+				$resumo['falhas'][] = $tiny;
+				continue;
+			}
+			if ( self::aplicar_precos_existente( $produto, $canonico ) ) {
+				++$resumo['precos'];
+			}
+			if ( self::anexar_imagens( $id, (array) ( $canonico['imagens'] ?? [] ) ) ) {
+				++$resumo['imagens'];
+			}
+		}
+
+		return $resumo;
+	}
+
+	/**
+	 * @param array<string, mixed> $canonico
+	 */
+	private static function aplicar_precos_existente( WC_Product $produto, array $canonico ): bool {
+		if ( $produto->is_type( 'simple' ) ) {
+			if ( ! self::preencher_preco( $produto, $canonico ) ) {
+				return false;
+			}
+			$produto->save();
+			return true;
+		}
+		if ( ! $produto->is_type( 'variable' ) ) {
+			return false;
+		}
+
+		$por_sku  = [];
+		$por_tiny = [];
+		foreach ( (array) ( $canonico['variacoes'] ?? [] ) as $var ) {
+			if ( ! is_array( $var ) ) {
+				continue;
+			}
+			$sku = trim( (string) ( $var['sku'] ?? '' ) );
+			if ( '' !== $sku ) {
+				$por_sku[ $sku ] = $var;
+			}
+			$tiny_var = (int) ( $var['tiny_id'] ?? 0 );
+			if ( $tiny_var > 0 ) {
+				$por_tiny[ $tiny_var ] = $var;
+			}
+		}
+
+		$mudou = false;
+		foreach ( $produto->get_children() as $child_id ) {
+			$child = wc_get_product( (int) $child_id );
+			if ( ! $child ) {
+				continue;
+			}
+			$var = $por_sku[ $child->get_sku() ] ?? null;
+			if ( ! is_array( $var ) ) {
+				$tiny_var = (int) get_post_meta( (int) $child_id, VH_Tiny_Map::META_TINY_ID, true );
+				$var      = $por_tiny[ $tiny_var ] ?? null;
+			}
+			if ( ! is_array( $var ) || ! self::preencher_preco( $child, $var ) ) {
+				continue;
+			}
+			$child->save();
+			$mudou = true;
+		}
+		if ( $mudou ) {
+			WC_Product_Variable::sync( $produto->get_id() );
+			if ( function_exists( 'wc_delete_product_transients' ) ) {
+				wc_delete_product_transients( $produto->get_id() );
+			}
+		}
+		return $mudou;
 	}
 
 	/**

@@ -90,9 +90,7 @@ if ( $product->is_on_sale() ) {
 			<!-- Linha superior MVP: série / categoria + avaliação -->
 			<div class="vh-produto-linha-eyebrow">
 				<div class="vh-produto-eyebrow-esq">
-					<?php if ( $product->is_type( 'variable' ) ) : ?>
-						<span class="vh-produto-serie"><?php esc_html_e( 'Série Custom', 'vapor-hub' ); ?></span>
-					<?php elseif ( ! empty( $marca ) ) : ?>
+					<?php if ( ! empty( $marca ) ) : ?>
 						<span class="vh-produto-marca"><?php echo esc_html( $marca ); ?></span>
 					<?php elseif ( ! is_wp_error( $categorias ) && ! empty( $categorias ) ) : ?>
 						<a href="<?php echo esc_url( get_term_link( $categorias[0] ) ); ?>" class="vh-produto-categoria-link">
@@ -139,34 +137,6 @@ if ( $product->is_on_sale() ) {
 				</div>
 			<?php endif; ?>
 
-			<!-- Grade 2x2 de benefícios mini -->
-			<div class="vh-produto-beneficios-mini">
-				<div class="vh-produto-beneficio-item">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-					</svg>
-					<span><?php esc_html_e( 'Resistência máxima', 'vapor-hub' ); ?></span>
-				</div>
-				<div class="vh-produto-beneficio-item">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
-					</svg>
-					<span><?php esc_html_e( 'Aerodinâmica pro', 'vapor-hub' ); ?></span>
-				</div>
-				<div class="vh-produto-beneficio-item">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-					</svg>
-					<span><?php esc_html_e( 'Anti-corrosão', 'vapor-hub' ); ?></span>
-				</div>
-				<div class="vh-produto-beneficio-item">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-					</svg>
-					<span><?php esc_html_e( 'Testado por profissionais', 'vapor-hub' ); ?></span>
-				</div>
-			</div>
-
 			<!-- Formulário de variações / Add to cart -->
 			<div class="vh-produto-form-cart">
 				<?php
@@ -179,7 +149,7 @@ if ( $product->is_on_sale() ) {
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 							<path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>
 						</svg>
-						<?php esc_html_e( 'Monte a Sua', 'vapor-hub' ); ?>
+						<?php esc_html_e( 'Opções', 'vapor-hub' ); ?>
 					</h3>
 
 					<?php foreach ( $vh_config as $vh_indice => $vh_attr ) : ?>
@@ -243,7 +213,7 @@ if ( $product->is_on_sale() ) {
 							<svg class="vh-cfg-icone-pronto" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
 						</span>
 						<span class="vh-cfg-resumo-corpo">
-							<span class="vh-cfg-resumo-titulo"><?php esc_html_e( 'Sua Configuração', 'vapor-hub' ); ?></span>
+							<span class="vh-cfg-resumo-titulo"><?php esc_html_e( 'Sua escolha', 'vapor-hub' ); ?></span>
 							<span class="vh-cfg-resumo-texto"
 								data-pendente="<?php esc_attr_e( 'Selecione todas as opções para continuar', 'vapor-hub' ); ?>"
 								data-pronto="<?php esc_attr_e( 'Tudo certo! Você já pode adicionar ao carrinho.', 'vapor-hub' ); ?>"><?php esc_html_e( 'Selecione todas as opções para continuar', 'vapor-hub' ); ?></span>
