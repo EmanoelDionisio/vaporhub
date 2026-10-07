@@ -162,11 +162,17 @@ if ( $product->is_on_sale() ) {
 							</div>
 							<div class="vh-cfg-opcoes vh-cfg-opcoes--<?php echo esc_attr( $vh_attr['tipo'] ); ?>">
 								<?php foreach ( $vh_attr['termos'] as $vh_termo ) : ?>
+									<?php
+									$vh_aviso = empty( $vh_termo['compravel'] )
+										? __( 'Esta opção está sem preço no Tiny e não pode ser comprada.', 'vapor-hub' )
+										: '';
+									?>
 									<?php if ( 'cor' === $vh_attr['tipo'] ) : ?>
 										<button type="button" class="vh-cfg-opcao vh-cfg-swatch"
 											data-tax="<?php echo esc_attr( $vh_attr['taxonomy'] ); ?>"
 											data-valor="<?php echo esc_attr( $vh_termo['slug'] ); ?>"
 											data-nome="<?php echo esc_attr( $vh_termo['nome'] ); ?>"
+											data-aviso="<?php echo esc_attr( $vh_aviso ); ?>"
 											style="--vh-swatch: <?php echo esc_attr( $vh_termo['cor'] ); ?>;"
 											aria-pressed="false"
 											aria-label="<?php echo esc_attr( $vh_termo['nome'] ); ?>"
@@ -176,6 +182,7 @@ if ( $product->is_on_sale() ) {
 											data-tax="<?php echo esc_attr( $vh_attr['taxonomy'] ); ?>"
 											data-valor="<?php echo esc_attr( $vh_termo['slug'] ); ?>"
 											data-nome="<?php echo esc_attr( $vh_termo['nome'] ); ?>"
+											data-aviso="<?php echo esc_attr( $vh_aviso ); ?>"
 											aria-pressed="false">
 											<?php if ( ! empty( $vh_termo['imagem_url'] ) ) : ?>
 												<img class="vh-cfg-card-img" src="<?php echo esc_url( $vh_termo['imagem_url'] ); ?>" alt="<?php echo esc_attr( $vh_termo['nome'] ); ?>" loading="lazy" decoding="async" />
@@ -189,6 +196,7 @@ if ( $product->is_on_sale() ) {
 											data-tax="<?php echo esc_attr( $vh_attr['taxonomy'] ); ?>"
 											data-valor="<?php echo esc_attr( $vh_termo['slug'] ); ?>"
 											data-nome="<?php echo esc_attr( $vh_termo['nome'] ); ?>"
+											data-aviso="<?php echo esc_attr( $vh_aviso ); ?>"
 											aria-pressed="false">
 											<span class="vh-cfg-forma vh-cfg-forma--padrao" aria-hidden="true"></span>
 											<span class="vh-cfg-card-nome"><?php echo esc_html( $vh_termo['nome'] ); ?></span>
@@ -198,6 +206,7 @@ if ( $product->is_on_sale() ) {
 											data-tax="<?php echo esc_attr( $vh_attr['taxonomy'] ); ?>"
 											data-valor="<?php echo esc_attr( $vh_termo['slug'] ); ?>"
 											data-nome="<?php echo esc_attr( $vh_termo['nome'] ); ?>"
+											data-aviso="<?php echo esc_attr( $vh_aviso ); ?>"
 											aria-pressed="false">
 											<?php echo esc_html( $vh_termo['nome'] ); ?>
 										</button>

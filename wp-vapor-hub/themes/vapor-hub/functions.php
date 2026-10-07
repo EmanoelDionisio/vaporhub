@@ -17,7 +17,7 @@ require_once get_stylesheet_directory() . '/includes/vh-performance.php';
 require_once get_stylesheet_directory() . '/includes/vh-home.php';
 
 /** Versão do tema — usada para cache-busting dos assets */
-define( 'VH_VERSION', '1.0.85' );
+define( 'VH_VERSION', '1.0.86' );
 
 /** Máximo de requisições de cálculo de frete (PDP) por IP por minuto. */
 define( 'VH_FRETE_PRODUTO_RATE_LIMIT', 30 );
@@ -1005,6 +1005,13 @@ function vh_config_personalizacao( $product ) {
 
 	$product_id = $product->get_id();
 	$config     = array();
+	$filhas     = array();
+	foreach ( $product->get_children() as $vh_filha_id ) {
+		$vh_filha = wc_get_product( $vh_filha_id );
+		if ( $vh_filha instanceof WC_Product_Variation ) {
+			$filhas[] = $vh_filha;
+		}
+	}
 
 	foreach ( $product->get_attributes() as $attr ) {
 		if ( ! $attr instanceof WC_Product_Attribute || ! $attr->get_variation() || ! $attr->is_taxonomy() ) {
@@ -1025,9 +1032,22 @@ function vh_config_personalizacao( $product ) {
 				? (int) VH_Personalizacao_Service::imagem_termo( $termo )['id']
 				: 0;
 
+			$compravel = false;
+			foreach ( $filhas as $vh_filha ) {
+				if ( '' === (string) $vh_filha->get_price() ) {
+					continue;
+				}
+				$valor_attr = (string) ( $vh_filha->get_attributes()[ $taxonomy ] ?? '' );
+				if ( '' === $valor_attr || $valor_attr === $termo->slug ) {
+					$compravel = true;
+					break;
+				}
+			}
+
 			$termos[] = array(
 				'slug'        => $termo->slug,
 				'nome'        => $termo->name,
+				'compravel'   => $compravel,
 				'cor'         => ( 'cor' === $tipo ) ? vh_cor_termo_hex( $termo ) : '',
 				'imagem_id'   => $img_id,
 				'imagem_url'  => $img_id ? ( wp_get_attachment_image_url( $img_id, 'medium' ) ?: '' ) : '',

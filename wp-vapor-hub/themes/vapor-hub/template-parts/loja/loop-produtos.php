@@ -47,6 +47,7 @@ woocommerce_product_loop_end();
 
 if ( ! empty( $max_paginas ) && $max_paginas > 1 && ! empty( $pagina_atual ) ) {
 	$base_pag = ! empty( $paginacao_base ) ? $paginacao_base : remove_query_arg( 'paged' );
+	echo '<nav class="woocommerce-pagination" aria-label="' . esc_attr__( 'Paginação de produtos', 'vapor-hub' ) . '">';
 	echo paginate_links( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		array(
 			'base'      => esc_url_raw( add_query_arg( 'paged', '%#%', $base_pag ) ),
@@ -58,4 +59,5 @@ if ( ! empty( $max_paginas ) && $max_paginas > 1 && ! empty( $pagina_atual ) ) {
 			'next_text' => '&rarr;',
 		)
 	);
+	echo '</nav>';
 }

@@ -1774,9 +1774,38 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			botao.addEventListener( 'click', function () {
 				var tax   = botao.getAttribute( 'data-tax' );
 				var valor = botao.getAttribute( 'data-valor' );
+				var aviso = botao.getAttribute( 'data-aviso' ) || '';
 				var sel   = selectDe( tax );
+				if ( aviso ) {
+					if ( sel ) {
+						sel.value = '';
+						dispararMudanca( sel );
+					}
+					window.setTimeout( function () {
+						marcarAtivo( tax, valor );
+						raiz.classList.remove( 'vh-configurador--completo' );
+						var texto = raiz.querySelector( '.vh-cfg-resumo-texto' );
+						if ( texto ) {
+							texto.textContent = aviso;
+						}
+						var status = raiz.querySelector( '.vh-cfg-status' );
+						if ( status ) {
+							status.textContent = status.getAttribute( 'data-pendente' ) || '';
+						}
+					}, 0 );
+					return;
+				}
 				if ( ! sel ) {
 					return;
+				}
+				var option = null;
+				Array.prototype.forEach.call( sel.options, function ( item ) {
+					if ( item.value === valor ) {
+						option = item;
+					}
+				} );
+				if ( option && option.disabled ) {
+					option.disabled = false;
 				}
 				sel.value = valor;
 				dispararMudanca( sel );
