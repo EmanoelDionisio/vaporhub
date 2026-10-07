@@ -309,18 +309,183 @@
         }
     }
 
-    function textoLote(d, total) {
-        var msg = 'Importando… ' + total + ' produto(s) nesta sequência. Posição ' + (d.offset || 0) + ' de ' + (d.total || '?') + '.';
-        if (d.ultimo_erro && d.ultimo_erro.mensagem) {
-            msg += ' Último problema: ' + d.ultimo_erro.mensagem;
+    function textoCorrida(c) {
+        if (!c) {
+            return '';
         }
-        return msg;
+        var pos = c.offset || 0;
+        var total = c.total || 0;
+        var pct = total ? Math.round((pos / total) * 1000) / 10 : (c.percentual || 0);
+        var base = (c.gravados || 0) + ' gravados. Lista: ' + pos + (total ? ' de ' + total : '') + ' (' + pct + '%). Sem estoque: ' + (c.sem_estoque || 0) + '. Fora do filtro: ' + (c.fora || 0) + '.';
+        if (c.concluida) {
+            return 'Importação concluída. ' + base;
+        }
+        return 'Importando… ' + base;
+    }
+
+    function pintarCorrida(c) {
+        var box = document.getElementById('vh-tiny-import-progresso');
+        var barra = box ? box.querySelector('.vh-import-progresso-barra') : null;
+        var trilha = box ? box.querySelector('.vh-import-progresso-trilha') : null;
+        var lista = document.getElementById('vh-tiny-import-erros');
+        if (!c) {
+            return;
+        }
+        if (box) {
+            box.hidden = false;
+        }
+        var pct = Math.max(0, Math.min(100, Number(c.percentual) || 0));
+        if (c.total) {
+            pct = Math.round(((c.offset || 0) / c.total) * 1000) / 10;
+        }
+        if (!c.concluida && (c.offset || 0) > 0 && pct < 1) {
+            pct = 1;
+        }
+        if (barra) {
+            barra.style.width = pct + '%';
+        }
+        if (trilha) {
+            trilha.setAttribute('aria-valuenow', String(pct));
+        }
+        statusImportacao(textoCorrida(c), false);
+        if (!lista) {
+            return;
+        }
+        lista.textContent = '';
+        var erros = c.erros || [];
+        if (!erros.length) {
+            lista.hidden = true;
+            return;
+        }
+        erros.forEach(function (erro) {
+            var item = document.createElement('li');
+            item.textContent = (erro.tiny_id ? 'Tiny ' + erro.tiny_id + ': ' : '') + (erro.mensagem || erro.codigo || 'Falha');
+            lista.appendChild(item);
+        });
+        lista.hidden = false;
     }
 
     function initImportacao() {
         var previa = document.getElementById('vh-tiny-importar-previa');
         var lote = document.getElementById('vh-tiny-importar');
+        var pausa = document.getElementById('vh-tiny-importar-pausa');
         var zerar = document.getElementById('vh-tiny-importar-zerar');
+        var progresso = document.getElementById('vh-tiny-import-progresso');
+        var seguir = false;
+        var rotuloImportar = lote ? lote.textContent : 'Importar catálogo';
+
+        if (progresso) {
+            try {
+                var inicial = JSON.parse(progresso.getAttribute('data-corrida') || '{}');
+                if (inicial && (inicial.gravados || inicial.status === 'andamento' || inicial.concluida)) {
+                    pintarCorrida(inicial);
+                    if (lote && inicial.status === 'andamento' && !inicial.concluida) {
+                        lote.textContent = 'Continuar importação';
+                    }
+                }
+            } catch (e) {
+                /* estado ausente não impede a importação */
+            }
+        }
+
+        function travar(ativo) {
+            if (previa) {
+                previa.disabled = ativo;
+            }
+            if (zerar) {
+                zerar.disabled = ativo;
+            }
+            if (lote) {
+                lote.disabled = ativo;
+            }
+            if (pausa) {
+                pausa.hidden = !ativo;
+                pausa.disabled = false;
+            }
+        }
+
+        function esperar(ms) {
+            return new Promise(function (resolve) {
+                window.setTimeout(resolve, ms);
+            });
+        }
+
+        function ligacaoCaiu(err) {
+            var msg = (err && err.message) ? String(err.message) : '';
+            var status = err && err.status;
+            return msg === 'Failed to fetch'
+                || msg.indexOf('NetworkError') !== -1
+                || status === 499
+                || status === 502
+                || status === 504;
+        }
+
+        function passo(tentativaLock, tentativaRede) {
+            tentativaRede = tentativaRede || 0;
+            if (!seguir) {
+                travar(false);
+                if (lote) {
+                    lote.textContent = 'Continuar importação';
+                }
+                statusImportacao('Importação pausada. O ponto ficou salvo. Clique em Continuar importação quando quiser.', false);
+                return Promise.resolve();
+            }
+            return rest('tiny/importar', 'POST', { gravar: 1 }).then(function (resp) {
+                var d = resp.dados || {};
+                var corrida = d.corrida || {
+                    offset: d.offset,
+                    total: d.total,
+                    percentual: d.total ? Math.round((d.offset / d.total) * 1000) / 10 : 0,
+                    gravados: d.gravados,
+                    sem_estoque: d.sem_estoque,
+                    fora: d.fora,
+                    concluida: d.concluida,
+                    erros: d.ultimo_erro ? [d.ultimo_erro] : []
+                };
+                pintarCorrida(corrida);
+                if (d.aguardar) {
+                    var seg = Math.max(5, parseInt(d.aguardar, 10) || 20);
+                    statusImportacao('O Tiny limitou as consultas. A importação pausa ' + seg + 's e continua no mesmo produto.', false);
+                    return esperar(seg * 1000).then(function () {
+                        return passo(0, 0);
+                    });
+                }
+                if (d.concluida || corrida.concluida) {
+                    seguir = false;
+                    travar(false);
+                    if (lote) {
+                        lote.textContent = rotuloImportar;
+                    }
+                    return;
+                }
+                return passo(0, 0);
+            }).catch(function (err) {
+                var msg = (err && err.message) ? err.message : 'Falha na importação.';
+                if (tentativaLock < 8 && msg.indexOf('andamento') !== -1) {
+                    statusImportacao('Outro lote ainda está fechando. Tentando de novo…', false);
+                    return esperar(2000).then(function () {
+                        return passo(tentativaLock + 1, tentativaRede);
+                    });
+                }
+                if (seguir && ligacaoCaiu(err) && tentativaRede < 5) {
+                    statusImportacao('A ligação caiu no meio do lote. Tentando de novo…', false);
+                    return esperar(2000 * (tentativaRede + 1)).then(function () {
+                        return passo(0, tentativaRede + 1);
+                    });
+                }
+                seguir = false;
+                travar(false);
+                if (lote) {
+                    lote.textContent = 'Continuar importação';
+                }
+                if (ligacaoCaiu(err)) {
+                    msg = 'A ligação caiu no meio do lote.';
+                }
+                msg = msg.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+                statusImportacao(msg + ' O ponto ficou salvo. Clique em Continuar importação.', true);
+            });
+        }
+
         if (previa) {
             previa.addEventListener('click', function () {
                 previa.disabled = true;
@@ -335,37 +500,17 @@
         }
         if (lote) {
             lote.addEventListener('click', function () {
-                var total = 0;
-                var rodadas = 0;
-                lote.disabled = true;
+                seguir = true;
+                travar(true);
                 statusImportacao('Importando…');
-                function passo() {
-                    rodadas += 1;
-                    return rest('tiny/importar', 'POST', { gravar: 1 }).then(function (resp) {
-                        var d = resp.dados || {};
-                        total += d.gravados || 0;
-                        if (d.concluida) {
-                            statusImportacao('Importação concluída. Produtos gravados nesta sequência: ' + total + '.');
-                            lote.disabled = false;
-                            return;
-                        }
-                        statusImportacao(textoLote(d, total));
-                        if (rodadas >= 8) {
-                            var fim = total + ' produto(s) gravados nesta sequência. Clique de novo para continuar.';
-                            if (d.ultimo_erro && d.ultimo_erro.mensagem) {
-                                fim += ' Último problema: ' + d.ultimo_erro.mensagem;
-                            }
-                            statusImportacao(fim);
-                            lote.disabled = false;
-                            return;
-                        }
-                        return passo();
-                    }).catch(function (err) {
-                        statusImportacao(err.message || 'Falha na importação.', true);
-                        lote.disabled = false;
-                    });
-                }
-                passo();
+                passo(0);
+            });
+        }
+        if (pausa) {
+            pausa.addEventListener('click', function () {
+                seguir = false;
+                pausa.disabled = true;
+                statusImportacao('Pausando ao fim deste lote…');
             });
         }
         if (zerar) {
@@ -373,10 +518,17 @@
                 if (!window.confirm('Apagar produtos, categorias e atributos criados pela importação? A conexão com o Tiny permanece.')) {
                     return;
                 }
+                seguir = false;
                 zerar.disabled = true;
                 rest('tiny/importar/zerar', 'POST', {}).then(function (resp) {
                     var d = resp.dados || {};
                     statusImportacao('Catálogo importado apagado. Produtos: ' + (d.produtos || 0) + '.');
+                    if (progresso) {
+                        progresso.hidden = true;
+                    }
+                    if (lote) {
+                        lote.textContent = rotuloImportar;
+                    }
                 }).catch(function (err) {
                     statusImportacao(err.message || 'Falha ao apagar.', true);
                 }).finally(function () { zerar.disabled = false; });

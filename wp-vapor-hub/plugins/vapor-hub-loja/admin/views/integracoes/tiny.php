@@ -291,8 +291,28 @@ $tiny_msg      = isset( $_GET['tiny_msg'] ) ? sanitize_text_field( wp_unslash( r
 				<button type="submit" class="vh-btn vh-btn--secundario"><?php esc_html_e( 'Salvar configuração', 'vapor-hub-loja' ); ?></button>
 				<button type="button" id="vh-tiny-sincronizar" class="vh-btn vh-btn--primario"><?php esc_html_e( 'Sincronizar agora', 'vapor-hub-loja' ); ?></button>
 				<button type="button" id="vh-tiny-importar-previa" class="vh-btn vh-btn--secundario"><?php esc_html_e( 'Contar recorte', 'vapor-hub-loja' ); ?></button>
-				<button type="button" id="vh-tiny-importar" class="vh-btn vh-btn--primario"><?php esc_html_e( 'Importar lote', 'vapor-hub-loja' ); ?></button>
+				<button type="button" id="vh-tiny-importar" class="vh-btn vh-btn--primario"><?php esc_html_e( 'Importar catálogo', 'vapor-hub-loja' ); ?></button>
+				<button type="button" id="vh-tiny-importar-pausa" class="vh-btn vh-btn--secundario" hidden><?php esc_html_e( 'Pausar', 'vapor-hub-loja' ); ?></button>
 				<button type="button" id="vh-tiny-importar-zerar" class="vh-btn vh-btn--ghost"><?php esc_html_e( 'Apagar catálogo importado', 'vapor-hub-loja' ); ?></button>
+			</div>
+			<?php $vh_import_corrida = class_exists( 'VH_Tiny_Importacao' ) ? VH_Tiny_Importacao::corrida() : []; ?>
+			<div
+				id="vh-tiny-import-progresso"
+				class="vh-import-progresso"
+				<?php echo ( (int) ( $vh_import_corrida['gravados'] ?? 0 ) > 0 || 'andamento' === ( $vh_import_corrida['status'] ?? '' ) ) ? '' : 'hidden'; ?>
+				data-corrida="<?php echo esc_attr( wp_json_encode( $vh_import_corrida ) ); ?>"
+			>
+				<div
+					class="vh-import-progresso-trilha"
+					role="progressbar"
+					aria-valuemin="0"
+					aria-valuemax="100"
+					aria-valuenow="<?php echo esc_attr( (string) (int) ( $vh_import_corrida['percentual'] ?? 0 ) ); ?>"
+					aria-label="<?php esc_attr_e( 'Progresso da importação', 'vapor-hub-loja' ); ?>"
+				>
+					<span class="vh-import-progresso-barra" style="width:<?php echo esc_attr( (string) (int) ( $vh_import_corrida['percentual'] ?? 0 ) ); ?>%"></span>
+				</div>
+				<ul class="vh-import-erros" id="vh-tiny-import-erros" hidden></ul>
 			</div>
 			<p class="vh-form-descricao" id="vh-tiny-import-status" aria-live="polite"></p>
 		</form>

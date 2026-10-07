@@ -657,7 +657,7 @@ class VH_REST_Tiny extends VH_REST_Controller {
 		return $this->ok( [ 'recebido' => true ] );
 	}
 
-	public function importar_raizes(): WP_REST_Response {
+	public function importar_raizes(): WP_REST_Response|WP_Error {
 		$raizes = VH_Tiny_Importacao::raizes();
 		if ( is_wp_error( $raizes ) ) {
 			return $raizes;
@@ -665,7 +665,7 @@ class VH_REST_Tiny extends VH_REST_Controller {
 		return $this->ok( [ 'raizes' => $raizes ] );
 	}
 
-	public function importar_previa( WP_REST_Request $request ): WP_REST_Response {
+	public function importar_previa( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$estado = VH_Tiny_Importacao::previa( (bool) $request->get_param( 'reiniciar' ) );
 		if ( is_wp_error( $estado ) ) {
 			return $estado;
@@ -673,7 +673,7 @@ class VH_REST_Tiny extends VH_REST_Controller {
 		return $this->ok( $estado );
 	}
 
-	public function importar_lote( WP_REST_Request $request ): WP_REST_Response {
+	public function importar_lote( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$passo = VH_Tiny_Importacao::lote( (int) $request->get_param( 'gravar' ) );
 		if ( is_wp_error( $passo ) ) {
 			return $passo;
@@ -681,7 +681,7 @@ class VH_REST_Tiny extends VH_REST_Controller {
 		return $this->ok( $passo );
 	}
 
-	public function importar_zerar(): WP_REST_Response {
+	public function importar_zerar(): WP_REST_Response|WP_Error {
 		$resultado = VH_Tiny_Importacao::zerar();
 		if ( is_wp_error( $resultado ) ) {
 			return $resultado;

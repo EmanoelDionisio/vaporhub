@@ -17,6 +17,8 @@ final class VH_Tiny_Client {
 	private const API_BASE   = 'https://api.tiny.com.br/public-api/v3';
 
 	private const MAX_RETRIES = 2;
+	private const INTERVALO   = 2;
+	private const PROXIMA     = 'vh_tiny_api_proxima';
 
 	/**
 	 * @return array<string, mixed>
@@ -460,6 +462,11 @@ final class VH_Tiny_Client {
 			return $token;
 		}
 
+		$janela = self::reservar_janela();
+		if ( is_wp_error( $janela ) ) {
+			return $janela;
+		}
+
 		$url = self::API_BASE . '/' . ltrim( $endpoint, '/' );
 
 		$req = [
@@ -488,13 +495,22 @@ final class VH_Tiny_Client {
 		$code = (int) wp_remote_retrieve_response_code( $resp );
 		$body = json_decode( wp_remote_retrieve_body( $resp ), true );
 
-		if ( 429 === $code && $tentativa < self::MAX_RETRIES ) {
+		if ( 429 === $code ) {
 			$retry = (int) wp_remote_retrieve_header( $resp, 'retry-after' );
 			if ( $retry <= 0 ) {
-				$retry = min( 30, ( 2 ** $tentativa ) * 3 );
+				$retry = 20;
 			}
-			sleep( min( 30, $retry ) );
-			return self::requisicao( $metodo, $endpoint, $args, $tentativa + 1 );
+			$retry = min( 60, max( 5, $retry ) );
+			set_transient( self::PROXIMA, time() + $retry, $retry + 5 );
+			return new WP_Error(
+				'vh_tiny_limite',
+				sprintf(
+					/* translators: %d: seconds to wait */
+					__( 'O Tiny limitou as consultas. A importação pausa %d segundos e continua no mesmo produto.', 'vapor-hub-loja' ),
+					$retry
+				),
+				[ 'status' => 429, 'retry_after' => $retry ]
+			);
 		}
 
 		if ( 401 === $code && 0 === $tentativa ) {
@@ -514,6 +530,33 @@ final class VH_Tiny_Client {
 
 		self::limpar_erro();
 		return is_array( $body ) ? $body : [];
+	}
+
+	/**
+	 * Uma consulta a cada 2 segundos. Se o Tiny já pediu uma pausa maior, devolve a espera sem chamar a API.
+	 *
+	 * @return true|WP_Error
+	 */
+	private static function reservar_janela(): true|WP_Error {
+		$espera = (int) get_transient( self::PROXIMA ) - time();
+		if ( $espera > self::INTERVALO ) {
+			return new WP_Error(
+				'vh_tiny_limite',
+				sprintf(
+					/* translators: %d: seconds to wait */
+					__( 'O Tiny limitou as consultas. A importação pausa %d segundos e continua no mesmo produto.', 'vapor-hub-loja' ),
+					$espera
+				),
+				[ 'status' => 429, 'retry_after' => $espera ]
+			);
+		}
+		if ( $espera > 0 && ! defined( 'VH_TEST' ) ) {
+			sleep( $espera );
+		}
+		if ( ! defined( 'VH_TEST' ) ) {
+			set_transient( self::PROXIMA, time() + self::INTERVALO, 30 );
+		}
+		return true;
 	}
 
 	/**

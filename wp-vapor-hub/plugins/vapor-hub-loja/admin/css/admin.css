@@ -3975,3 +3975,34 @@ body.vh-editor-aberto {
         left: 12px;
     }
 }
+
+#vh-tiny-importar-pausa[hidden] {
+    display: none !important;
+}
+
+.vh-import-progresso {
+    margin-top: 14px;
+}
+
+.vh-import-progresso-trilha {
+    height: 8px;
+    background: var(--vh-cinza-200);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.vh-import-progresso-barra {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--vh-primario);
+    border-radius: 99px;
+    transition: width var(--vh-transicao);
+}
+
+.vh-import-erros {
+    margin: 8px 0 0;
+    padding-left: 18px;
+    color: var(--vh-perigo);
+    font-size: 13px;
+}

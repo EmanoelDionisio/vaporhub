@@ -8,7 +8,9 @@
  * @package VaporHubLoja\Tests
  */
 
-define( 'VH_TESTS_DIR', __DIR__ );
+if ( ! defined( 'VH_TEST' ) ) {
+	define( 'VH_TEST', true );
+}
 define( 'VH_PLUGIN_DIR', dirname( __DIR__ ) . '/wp-vapor-hub/plugins/vapor-hub-loja' );
 
 if ( ! defined( 'ABSPATH' ) ) {

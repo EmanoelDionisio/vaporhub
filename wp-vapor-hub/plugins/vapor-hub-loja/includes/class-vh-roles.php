@@ -18,6 +18,8 @@ class VH_Roles {
     public const CAP   = 'gerenciar_vh_loja';
     public const ROLE  = 'gestor_loja';
 
+    private static bool $criar_agendado = false;
+
     /**
      * Capacidades mínimas do Gestor da Loja (princípio do menor privilégio).
      *
@@ -41,6 +43,18 @@ class VH_Roles {
      * Cria a role gestor_loja na ativação do plugin.
      */
     public static function criar(): void {
+        /*
+         * A atualização do plugin chama isto em plugins_loaded. Traduzir o nome
+         * da função antes do init faz o WordPress 6.7 avisar na primeira tela.
+         */
+        if ( ! did_action( 'init' ) ) {
+            if ( ! self::$criar_agendado ) {
+                self::$criar_agendado = true;
+                add_action( 'init', [ __CLASS__, 'criar' ], 1 );
+            }
+            return;
+        }
+
         /* Administradores precisam da mesma capacidade para ver o app "Minha Loja". */
         $admin = get_role( 'administrator' );
         if ( $admin && ! $admin->has_cap( self::CAP ) ) {

@@ -15,6 +15,7 @@ final class VH_Tiny_Importacao {
 	public const META_CRIADA    = '_vh_tiny_criada';
 	public const OPTION_OFFSET  = 'vh_tiny_import_offset';
 	public const OPTION_PREVIA  = 'vh_tiny_import_previa';
+	public const OPTION_CORRIDA = 'vh_tiny_import_corrida';
 	private const LOCK           = 'vh_tiny_import_lock';
 	private const ARVORE         = 'vh_tiny_arvore_import';
 
@@ -78,6 +79,9 @@ final class VH_Tiny_Importacao {
 	public static function lote( int $gravar = 5 ) {
 		$gravar = max( 1, min( 10, $gravar ) );
 		$offset = (int) get_option( self::OPTION_OFFSET, 0 );
+		if ( 0 === $offset ) {
+			self::abrir_corrida();
+		}
 		$passo  = self::com_trava(
 			static function () use ( $offset, $gravar ) {
 				return self::percorrer( $offset, $gravar, false );
@@ -90,7 +94,41 @@ final class VH_Tiny_Importacao {
 		if ( ! empty( $passo['concluida'] ) ) {
 			update_option( self::OPTION_OFFSET, 0, false );
 		}
+		$passo['corrida'] = self::somar_corrida( $passo );
 		return $passo;
+	}
+
+	/**
+	 * Progresso acumulado da importação em curso. A tela só lê.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function corrida(): array {
+		$dados = get_option( self::OPTION_CORRIDA, [] );
+		$dados = is_array( $dados ) ? $dados : [];
+		$erros = [];
+		foreach ( (array) ( $dados['erros'] ?? [] ) as $erro ) {
+			if ( is_array( $erro ) ) {
+				$erros[] = [
+					'tiny_id'  => (int) ( $erro['tiny_id'] ?? 0 ),
+					'codigo'   => (string) ( $erro['codigo'] ?? '' ),
+					'mensagem' => (string) ( $erro['mensagem'] ?? '' ),
+				];
+			}
+		}
+
+		return [
+			'status'      => (string) ( $dados['status'] ?? 'ociosa' ),
+			'offset'      => (int) ( $dados['offset'] ?? 0 ),
+			'total'       => (int) ( $dados['total'] ?? 0 ),
+			'percentual'  => (float) ( $dados['percentual'] ?? 0 ),
+			'gravados'    => (int) ( $dados['gravados'] ?? 0 ),
+			'sem_estoque' => (int) ( $dados['sem_estoque'] ?? 0 ),
+			'fora'        => (int) ( $dados['fora'] ?? 0 ),
+			'pulados'     => (int) ( $dados['pulados'] ?? 0 ),
+			'concluida'   => ! empty( $dados['concluida'] ),
+			'erros'       => $erros,
+		];
 	}
 
 	/**
@@ -181,6 +219,7 @@ final class VH_Tiny_Importacao {
 
 				update_option( self::OPTION_OFFSET, 0, false );
 				delete_option( self::OPTION_PREVIA );
+				delete_option( self::OPTION_CORRIDA );
 				delete_transient( self::ARVORE );
 
 				return [
@@ -210,7 +249,10 @@ final class VH_Tiny_Importacao {
 		$total       = 0;
 		$concluida   = false;
 		$ultimo_erro = null;
-		$teto_lista  = $so_contar ? 40 : 25;
+		$erros       = [];
+		$detalhes    = 0;
+		$teto_lista    = $so_contar ? 40 : 25;
+		$teto_detalhes = $so_contar ? 8 : 1;
 
 		while ( $vistos < $teto_lista && ( $so_contar || $gravados < $gravar ) ) {
 			$resp = VH_Tiny_Client::requisicao(
@@ -219,6 +261,9 @@ final class VH_Tiny_Importacao {
 				[ 'query' => [ 'limit' => 20, 'offset' => $offset, 'situacao' => 'A' ] ]
 			);
 			if ( is_wp_error( $resp ) ) {
+				if ( self::e_limite( $resp ) ) {
+					return self::passo_pausa( $offset, $total, $resp, compact( 'com_estoque', 'sem_estoque', 'fora', 'gravados', 'pulados' ) );
+				}
 				return $resp;
 			}
 			$itens = $resp['itens'] ?? [];
@@ -228,32 +273,67 @@ final class VH_Tiny_Importacao {
 			}
 			$total = (int) ( $resp['paginacao']['total'] ?? $total );
 
+			$consumidos = 0;
+			$parar      = false;
 			foreach ( $itens as $item ) {
+				++$consumidos;
 				++$vistos;
 				if ( ! is_array( $item ) || ! self::e_principal( $item ) ) {
+					if ( $vistos >= $teto_lista ) {
+						$parar = true;
+						break;
+					}
 					continue;
 				}
 				$id = (int) ( $item['id'] ?? 0 );
-				if ( $id <= 0 ) {
+				if ( $id <= 0 || self::ja_importado( $id ) ) {
+					if ( self::ja_importado( $id ) ) {
+						++$pulados;
+					}
+					if ( $vistos >= $teto_lista ) {
+						$parar = true;
+						break;
+					}
 					continue;
 				}
-				if ( self::ja_importado( $id ) ) {
-					++$pulados;
-					continue;
+				if ( $detalhes >= $teto_detalhes ) {
+					--$consumidos;
+					--$vistos;
+					$parar = true;
+					break;
 				}
+				++$detalhes;
 				if ( ! defined( 'VH_TEST' ) ) {
 					usleep( 200000 );
 				}
 				$canonico = $driver->obter_produto( $id );
+				if ( is_wp_error( $canonico ) && self::e_limite( $canonico ) ) {
+					--$consumidos;
+					--$vistos;
+					return self::passo_pausa(
+						$offset + $consumidos,
+						$total,
+						$canonico,
+						compact( 'com_estoque', 'sem_estoque', 'fora', 'gravados', 'pulados' )
+					);
+				}
 				if ( is_wp_error( $canonico ) || ! is_array( $canonico ) ) {
 					++$fora;
 					if ( is_wp_error( $canonico ) ) {
-						$ultimo_erro = self::anotar_falha( $id, $canonico );
+						$ultimo_erro = self::registrar_erro_passo( $erros, $id, $canonico );
+					}
+					if ( $vistos >= $teto_lista ) {
+						$parar = true;
+						break;
 					}
 					continue;
 				}
 				if ( self::quantidade( $canonico ) <= 0 ) {
 					++$sem_estoque;
+					if ( $vistos >= $teto_lista ) {
+						$parar = true;
+						break;
+					}
 					continue;
 				}
 				++$com_estoque;
@@ -264,22 +344,28 @@ final class VH_Tiny_Importacao {
 				if ( is_wp_error( $resultado ) ) {
 					++$fora;
 					if ( ! self::e_recorte( $resultado ) ) {
-						$ultimo_erro = self::anotar_falha( $id, $resultado );
+						$ultimo_erro = self::registrar_erro_passo( $erros, $id, $resultado );
+					}
+					if ( $vistos >= $teto_lista ) {
+						$parar = true;
+						break;
 					}
 					continue;
 				}
 				++$gravados;
-				if ( $gravados >= $gravar ) {
+				if ( ( ! $so_contar && $gravados >= $gravar ) || $vistos >= $teto_lista ) {
+					$parar = true;
 					break;
 				}
 			}
 
-			$offset += count( $itens );
-			if ( count( $itens ) < 20 || ( $total > 0 && $offset >= $total ) ) {
+			$offset        += $consumidos;
+			$pagina_inteira = $consumidos >= count( $itens );
+			if ( $pagina_inteira && ( count( $itens ) < 20 || ( $total > 0 && $offset >= $total ) ) ) {
 				$concluida = true;
 				break;
 			}
-			if ( ! $so_contar && $gravados >= $gravar ) {
+			if ( $parar || ( ! $so_contar && $gravados >= $gravar ) ) {
 				break;
 			}
 		}
@@ -294,7 +380,122 @@ final class VH_Tiny_Importacao {
 			'gravados'    => $gravados,
 			'pulados'     => $pulados,
 			'ultimo_erro' => $ultimo_erro,
+			'erros'       => $erros,
 		];
+	}
+
+	/**
+	 * @param array{com_estoque?:int,sem_estoque?:int,fora?:int,gravados?:int,pulados?:int} $parcial
+	 * @return array<string, mixed>
+	 */
+	private static function passo_pausa( int $offset, int $total, WP_Error $erro, array $parcial = [] ): array {
+		return [
+			'offset'      => $offset,
+			'total'       => $total,
+			'concluida'   => false,
+			'com_estoque' => (int) ( $parcial['com_estoque'] ?? 0 ),
+			'sem_estoque' => (int) ( $parcial['sem_estoque'] ?? 0 ),
+			'fora'        => (int) ( $parcial['fora'] ?? 0 ),
+			'gravados'    => (int) ( $parcial['gravados'] ?? 0 ),
+			'pulados'     => (int) ( $parcial['pulados'] ?? 0 ),
+			'ultimo_erro' => null,
+			'erros'       => [],
+			'aguardar'    => self::espera_de( $erro ),
+		];
+	}
+
+	private static function e_limite( WP_Error $erro ): bool {
+		if ( 'vh_tiny_limite' === $erro->get_error_code() ) {
+			return true;
+		}
+		$dados = $erro->get_error_data();
+		return is_array( $dados ) && 429 === (int) ( $dados['status'] ?? 0 );
+	}
+
+	private static function espera_de( WP_Error $erro ): int {
+		$dados = $erro->get_error_data();
+		$seg   = is_array( $dados ) ? (int) ( $dados['retry_after'] ?? 0 ) : 0;
+		if ( $seg <= 0 ) {
+			$seg = 20;
+		}
+		return min( 60, max( 5, $seg ) );
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function abrir_corrida(): array {
+		$corrida = [
+			'status'      => 'andamento',
+			'offset'      => 0,
+			'total'       => 0,
+			'percentual'  => 0,
+			'gravados'    => 0,
+			'sem_estoque' => 0,
+			'fora'        => 0,
+			'pulados'     => 0,
+			'concluida'   => false,
+			'erros'       => [],
+		];
+		update_option( self::OPTION_CORRIDA, $corrida, false );
+		return $corrida;
+	}
+
+	/**
+	 * @param array<string, mixed> $passo
+	 * @return array<string, mixed>
+	 */
+	private static function somar_corrida( array $passo ): array {
+		$corrida = self::corrida();
+		if ( 'andamento' !== $corrida['status'] ) {
+			$corrida = self::abrir_corrida();
+		}
+		$corrida['erros'] = array_values(
+			array_filter(
+				$corrida['erros'],
+				static fn( array $erro ): bool => 'vh_tiny_limite' !== ( $erro['codigo'] ?? '' ) && ! str_contains( (string) ( $erro['mensagem'] ?? '' ), 'HTTP 429' )
+			)
+		);
+		$corrida['gravados']    += (int) ( $passo['gravados'] ?? 0 );
+		$corrida['sem_estoque'] += (int) ( $passo['sem_estoque'] ?? 0 );
+		$corrida['fora']        += (int) ( $passo['fora'] ?? 0 );
+		$corrida['pulados']     += (int) ( $passo['pulados'] ?? 0 );
+		$corrida['offset']       = (int) ( $passo['offset'] ?? 0 );
+		$corrida['total']        = (int) ( $passo['total'] ?? $corrida['total'] );
+		$corrida['concluida']    = ! empty( $passo['concluida'] );
+		$corrida['status']       = $corrida['concluida'] ? 'concluida' : 'andamento';
+		$corrida['percentual']   = $corrida['concluida']
+			? 100
+			: ( $corrida['total'] > 0 ? round( ( $corrida['offset'] / $corrida['total'] ) * 100, 1 ) : 0 );
+
+		foreach ( (array) ( $passo['erros'] ?? [] ) as $erro ) {
+			if ( ! is_array( $erro ) ) {
+				continue;
+			}
+			$corrida['erros'][] = [
+				'tiny_id'  => (int) ( $erro['tiny_id'] ?? 0 ),
+				'codigo'   => (string) ( $erro['codigo'] ?? '' ),
+				'mensagem' => (string) ( $erro['mensagem'] ?? '' ),
+			];
+		}
+		if ( count( $corrida['erros'] ) > 15 ) {
+			$corrida['erros'] = array_slice( $corrida['erros'], -15 );
+		}
+
+		update_option( self::OPTION_CORRIDA, $corrida, false );
+		return self::corrida();
+	}
+
+	/**
+	 * @param array<int, array{codigo:string,mensagem:string,tiny_id:int}> $erros
+	 * @return array{codigo:string,mensagem:string,tiny_id:int}
+	 */
+	private static function registrar_erro_passo( array &$erros, int $tiny_id, WP_Error $erro ): array {
+		$falha = self::anotar_falha( $tiny_id, $erro );
+		if ( count( $erros ) < 15 ) {
+			$erros[] = $falha;
+		}
+		return $falha;
 	}
 
 	/**
@@ -352,6 +553,7 @@ final class VH_Tiny_Importacao {
 		if ( $eh_variavel ) {
 			WC_Product_Variable::sync( $id );
 		}
+		self::marcar_promocao_na_busca( $id );
 		self::anexar_imagens( $id, (array) ( $canonico['imagens'] ?? [] ) );
 
 		return true;
@@ -861,6 +1063,16 @@ final class VH_Tiny_Importacao {
 	}
 
 	/**
+	 * A vitrine filtra promoção pela coluna onsale. O sync de variação atualiza
+	 * o preço, mas não essa coluna.
+	 */
+	private static function marcar_promocao_na_busca( int $product_id ): void {
+		if ( $product_id > 0 && function_exists( 'wc_update_product_lookup_tables_column' ) ) {
+			wc_update_product_lookup_tables_column( $product_id, 'onsale' );
+		}
+	}
+
+	/**
 	 * @param array<string, mixed> $canonico
 	 */
 	private static function aplicar_precos_existente( WC_Product $produto, array $canonico ): bool {
@@ -869,6 +1081,7 @@ final class VH_Tiny_Importacao {
 				return false;
 			}
 			$produto->save();
+			self::marcar_promocao_na_busca( $produto->get_id() );
 			return true;
 		}
 		if ( ! $produto->is_type( 'variable' ) ) {
@@ -910,6 +1123,7 @@ final class VH_Tiny_Importacao {
 		}
 		if ( $mudou ) {
 			WC_Product_Variable::sync( $produto->get_id() );
+			self::marcar_promocao_na_busca( $produto->get_id() );
 			if ( function_exists( 'wc_delete_product_transients' ) ) {
 				wc_delete_product_transients( $produto->get_id() );
 			}
@@ -924,7 +1138,7 @@ final class VH_Tiny_Importacao {
 		if ( get_transient( self::LOCK ) ) {
 			return new WP_Error( 'vh_tiny_import_lock', __( 'Já existe uma importação em andamento.', 'vapor-hub-loja' ), [ 'status' => 409 ] );
 		}
-		set_transient( self::LOCK, 1, 2 * MINUTE_IN_SECONDS );
+		set_transient( self::LOCK, 1, 20 );
 		try {
 			return $callback();
 		} finally {
