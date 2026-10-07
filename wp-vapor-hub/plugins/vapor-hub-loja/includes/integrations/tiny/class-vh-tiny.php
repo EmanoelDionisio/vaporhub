@@ -48,6 +48,8 @@ final class VH_Tiny {
 				/* Raiz que abriga a árvore de categorias da loja no ERP. */
 				'categoria_raiz'        => 'Loja Vapor Hub',
 				'categoria_raiz_id'     => 0,
+				'import_exigir_estoque' => true,
+				'import_exigir_preco'   => true,
 			]
 		);
 	}
@@ -268,6 +270,12 @@ final class VH_Tiny {
 				}
 			}
 			$dados['import_marcas'] = array_values( array_unique( $marcas ) );
+		}
+
+		foreach ( [ 'import_exigir_estoque', 'import_exigir_preco' ] as $recorte ) {
+			if ( array_key_exists( $recorte, $config ) ) {
+				$dados[ $recorte ] = ! empty( $config[ $recorte ] );
+			}
 		}
 
 		if ( array_key_exists( 'map_atributos', $config ) && is_array( $config['map_atributos'] ) ) {
@@ -504,6 +512,8 @@ final class VH_Tiny {
 		}
 		$status['import_raizes']        = array_map( 'intval', (array) ( $dados['import_raizes'] ?? [] ) );
 		$status['import_marcas']        = array_values( (array) ( $dados['import_marcas'] ?? [] ) );
+		$status['import_exigir_estoque'] = ! empty( $dados['import_exigir_estoque'] );
+		$status['import_exigir_preco']   = ! empty( $dados['import_exigir_preco'] );
 		$status['import_offset']        = (int) get_option( 'vh_tiny_import_offset', 0 );
 		$status['receber_catalogo']     = self::interruptor_recebimento( 'receber_catalogo' );
 		$status['receber_estoque_preco'] = self::interruptor_recebimento( 'receber_estoque_preco' );

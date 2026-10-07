@@ -85,6 +85,77 @@ final class ImportacaoCorridaTest extends VH_Test_Case {
 		self::assertSame( 0, wc_get_product_id_by_sku( 'COM-FIM' ) );
 	}
 
+	public function testEstoqueSemPrecoFicaForaDoRecorte(): void {
+		$resultado = VH_Tiny_Importacao::gravar(
+			[
+				'sku'       => 'SEM-PRECO-VAR',
+				'nome'      => 'Pod sem preço',
+				'situacao'  => 'A',
+				'estoque'   => 0,
+				'variacoes' => [
+					[
+						'sku'           => 'SEM-PRECO-VAR-1',
+						'estoque'       => 5,
+						'preco_regular' => '',
+					],
+				],
+			],
+			99001
+		);
+
+		self::assertTrue( is_wp_error( $resultado ) );
+		self::assertSame( 'vh_tiny_sem_preco', $resultado->get_error_code() );
+		self::assertSame( 0, wc_get_product_id_by_sku( 'SEM-PRECO-VAR' ) );
+	}
+
+	public function testSemPrecoEntraQuandoOFiltroEstaDesligado(): void {
+		VH_Tiny::salvar_config( [ 'import_exigir_preco' => false ] );
+
+		$resultado = VH_Tiny_Importacao::gravar(
+			[
+				'sku'       => 'SEM-PRECO-LIVRE',
+				'nome'      => 'Pod sem preço liberado',
+				'situacao'  => 'A',
+				'estoque'   => 0,
+				'variacoes' => [
+					[
+						'sku'           => 'SEM-PRECO-LIVRE-1',
+						'estoque'       => 5,
+						'preco_regular' => '',
+					],
+				],
+			],
+			99002
+		);
+
+		self::assertTrue( true === $resultado );
+		$id = wc_get_product_id_by_sku( 'SEM-PRECO-LIVRE' );
+		self::assertGreaterThan( 0, $id );
+		unset( VH_Fake_WP::$produtos[ $id ], VH_Fake_WP::$produtos[ wc_get_product_id_by_sku( 'SEM-PRECO-LIVRE-1' ) ] );
+		VH_Tiny::salvar_config( [ 'import_exigir_preco' => true ] );
+	}
+
+	public function testSemEstoqueEntraQuandoOFiltroEstaDesligado(): void {
+		VH_Tiny::salvar_config( [ 'import_exigir_estoque' => false ] );
+
+		$resultado = VH_Tiny_Importacao::gravar(
+			[
+				'sku'           => 'SEM-ESTOQUE-LIVRE',
+				'nome'          => 'Pod sem estoque liberado',
+				'situacao'      => 'A',
+				'estoque'       => 0,
+				'preco_regular' => '19.90',
+			],
+			99003
+		);
+
+		self::assertTrue( true === $resultado );
+		$id = wc_get_product_id_by_sku( 'SEM-ESTOQUE-LIVRE' );
+		self::assertGreaterThan( 0, $id );
+		unset( VH_Fake_WP::$produtos[ $id ] );
+		VH_Tiny::salvar_config( [ 'import_exigir_estoque' => true ] );
+	}
+
 	private function principal( string $sku, int $saldo ): void {
 		VH_Fake_Tiny_ERP::seed_produto(
 			[

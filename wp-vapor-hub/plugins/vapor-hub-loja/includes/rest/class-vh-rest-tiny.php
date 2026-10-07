@@ -374,6 +374,11 @@ class VH_REST_Tiny extends VH_REST_Controller {
 		if ( null !== $request->get_param( 'import_marcas' ) ) {
 			$config['import_marcas'] = (string) $request->get_param( 'import_marcas' );
 		}
+		foreach ( [ 'import_exigir_estoque', 'import_exigir_preco' ] as $recorte ) {
+			if ( null !== $request->get_param( $recorte ) ) {
+				$config[ $recorte ] = (bool) $request->get_param( $recorte );
+			}
+		}
 
 		VH_Tiny::salvar_config( $config );
 		return $this->ok( VH_Tiny::status_publico() );
@@ -666,7 +671,7 @@ class VH_REST_Tiny extends VH_REST_Controller {
 	}
 
 	public function importar_previa( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$estado = VH_Tiny_Importacao::previa( (bool) $request->get_param( 'reiniciar' ) );
+		$estado = VH_Tiny_Importacao::previa( (bool) $request->get_param( 'reiniciar' ), $this->recorte_pedido( $request ) );
 		if ( is_wp_error( $estado ) ) {
 			return $estado;
 		}
@@ -674,7 +679,8 @@ class VH_REST_Tiny extends VH_REST_Controller {
 	}
 
 	public function importar_lote( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$passo = VH_Tiny_Importacao::lote( (int) $request->get_param( 'gravar' ) );
+		$recorte = $this->recorte_pedido( $request );
+		$passo = VH_Tiny_Importacao::lote( (int) $request->get_param( 'gravar' ), $recorte );
 		if ( is_wp_error( $passo ) ) {
 			return $passo;
 		}
@@ -691,6 +697,19 @@ class VH_REST_Tiny extends VH_REST_Controller {
 			__( 'Catálogo importado do Tiny apagado para repetir a prova.', 'vapor-hub-loja' )
 		);
 		return $this->ok( $resultado );
+	}
+
+	/**
+	 * @return array<string, bool>
+	 */
+	private function recorte_pedido( WP_REST_Request $request ): array {
+		$recorte = [];
+		foreach ( [ 'import_exigir_estoque', 'import_exigir_preco' ] as $chave ) {
+			if ( null !== $request->get_param( $chave ) ) {
+				$recorte[ $chave ] = (bool) $request->get_param( $chave );
+			}
+		}
+		return $recorte;
 	}
 
 	private function redirect_painel( string $status, string $msg = '' ): WP_REST_Response {

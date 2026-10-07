@@ -44,7 +44,8 @@ final class VH_Tiny_Importacao {
 	 *
 	 * @return array<string, mixed>|WP_Error
 	 */
-	public static function previa( bool $reiniciar = false ) {
+	public static function previa( bool $reiniciar = false, array $recorte = [] ) {
+		self::guardar_recorte( $recorte );
 		if ( $reiniciar ) {
 			update_option( self::OPTION_PREVIA, [ 'offset' => 0, 'com_estoque' => 0, 'sem_estoque' => 0, 'fora' => 0, 'concluida' => false ], false );
 		}
@@ -76,7 +77,8 @@ final class VH_Tiny_Importacao {
 	 *
 	 * @return array<string, mixed>|WP_Error
 	 */
-	public static function lote( int $gravar = 5 ) {
+	public static function lote( int $gravar = 5, array $recorte = [] ) {
+		self::guardar_recorte( $recorte );
 		$gravar = max( 1, min( 10, $gravar ) );
 		$offset = (int) get_option( self::OPTION_OFFSET, 0 );
 		if ( 0 === $offset ) {
@@ -144,8 +146,9 @@ final class VH_Tiny_Importacao {
 		if ( self::ja_importado( $tiny_id ) ) {
 			return true;
 		}
-		if ( self::quantidade( $canonico ) <= 0 ) {
-			return new WP_Error( 'vh_tiny_sem_estoque', __( 'Produto sem estoque: fora do primeiro recorte.', 'vapor-hub-loja' ) );
+		$recorte = self::motivo_recorte( $canonico );
+		if ( is_wp_error( $recorte ) ) {
+			return $recorte;
 		}
 		$situacao = strtoupper( (string) ( $canonico['situacao'] ?? 'A' ) );
 		if ( '' !== $situacao && 'A' !== $situacao ) {
@@ -328,8 +331,13 @@ final class VH_Tiny_Importacao {
 					}
 					continue;
 				}
-				if ( self::quantidade( $canonico ) <= 0 ) {
-					++$sem_estoque;
+				$motivo = self::motivo_recorte( $canonico );
+				if ( is_wp_error( $motivo ) ) {
+					if ( 'vh_tiny_sem_estoque' === $motivo->get_error_code() ) {
+						++$sem_estoque;
+					} else {
+						++$fora;
+					}
 					if ( $vistos >= $teto_lista ) {
 						$parar = true;
 						break;
@@ -812,6 +820,85 @@ final class VH_Tiny_Importacao {
 	}
 
 	/**
+	 * Grava o recorte só quando o painel mudou, para não reescrever a opção a cada lote.
+	 *
+	 * @param array<string, mixed> $recorte
+	 */
+	private static function guardar_recorte( array $recorte ): void {
+		if ( ! $recorte ) {
+			return;
+		}
+		$atual = VH_Tiny::obter();
+		foreach ( $recorte as $chave => $valor ) {
+			if ( ! array_key_exists( $chave, $atual ) || (bool) $atual[ $chave ] !== (bool) $valor ) {
+				VH_Tiny::salvar_config( $recorte );
+				return;
+			}
+		}
+	}
+
+	/**
+	 * Recorte da importação. Os dois filtros nascem ligados; a loja desliga no painel.
+	 */
+	public static function exigir_estoque(): bool {
+		return ! empty( VH_Tiny::obter()['import_exigir_estoque'] );
+	}
+
+	public static function exigir_preco(): bool {
+		return ! empty( VH_Tiny::obter()['import_exigir_preco'] );
+	}
+
+	/**
+	 * @param array<string, mixed> $canonico
+	 * @return true|WP_Error
+	 */
+	private static function motivo_recorte( array $canonico ) {
+		if ( self::exigir_estoque() && self::quantidade( $canonico ) <= 0 ) {
+			return new WP_Error( 'vh_tiny_sem_estoque', __( 'Produto sem estoque: fora do primeiro recorte.', 'vapor-hub-loja' ) );
+		}
+		if ( self::exigir_preco() && self::exigir_estoque() && ! self::tem_oferta( $canonico ) ) {
+			return new WP_Error( 'vh_tiny_sem_preco', __( 'Produto sem preço: fora do primeiro recorte.', 'vapor-hub-loja' ) );
+		}
+		if ( self::exigir_preco() && ! self::tem_preco( $canonico ) ) {
+			return new WP_Error( 'vh_tiny_sem_preco', __( 'Produto sem preço: fora do primeiro recorte.', 'vapor-hub-loja' ) );
+		}
+		return true;
+	}
+
+	/**
+	 * @param array<string, mixed> $canonico
+	 */
+	private static function tem_preco( array $canonico ): bool {
+		if ( (float) ( $canonico['preco_regular'] ?? 0 ) > 0 ) {
+			return true;
+		}
+		foreach ( (array) ( $canonico['variacoes'] ?? [] ) as $variacao ) {
+			if ( is_array( $variacao ) && (float) ( $variacao['preco_regular'] ?? 0 ) > 0 ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Há o que vender: estoque e preço no simples, ou numa mesma variação.
+	 *
+	 * @param array<string, mixed> $canonico
+	 */
+	private static function tem_oferta( array $canonico ): bool {
+		$variacoes = array_values( array_filter( (array) ( $canonico['variacoes'] ?? [] ), 'is_array' ) );
+		if ( $variacoes ) {
+			foreach ( $variacoes as $var ) {
+				if ( (int) ( $var['estoque'] ?? 0 ) > 0 && (float) ( $var['preco_regular'] ?? 0 ) > 0 ) {
+					return true;
+				}
+			}
+			return false;
+		}
+		return (float) ( $canonico['preco_regular'] ?? 0 ) > 0;
+	}
+
+	/**
 	 * @param array<string, mixed> $canonico
 	 */
 	private static function categoria_tiny_id( array $canonico ): int {
@@ -894,7 +981,7 @@ final class VH_Tiny_Importacao {
 	private static function e_recorte( WP_Error $erro ): bool {
 		return in_array(
 			$erro->get_error_code(),
-			[ 'vh_tiny_sem_estoque', 'vh_tiny_situacao_inativa', 'vh_tiny_marca_fora', 'vh_tiny_categoria_fora' ],
+			[ 'vh_tiny_sem_estoque', 'vh_tiny_sem_preco', 'vh_tiny_situacao_inativa', 'vh_tiny_marca_fora', 'vh_tiny_categoria_fora' ],
 			true
 		);
 	}

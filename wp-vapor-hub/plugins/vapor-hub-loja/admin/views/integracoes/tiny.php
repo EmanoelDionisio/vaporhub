@@ -282,11 +282,20 @@ $tiny_msg      = isset( $_GET['tiny_msg'] ) ? sanitize_text_field( wp_unslash( r
 			</div>
 			<div class="vh-form-grupo" id="vh-tiny-raizes" style="margin-top:16px" data-selecionadas="<?php echo esc_attr( implode( ',', array_map( 'strval', (array) ( $status['import_raizes'] ?? [] ) ) ) ); ?>">
 				<label><?php esc_html_e( 'Raízes de categoria permitidas', 'vapor-hub-loja' ); ?></label>
-				<p class="vh-form-descricao"><?php esc_html_e( 'Vazio usa a árvore dos produtos com estoque. Marque uma raiz para limitar esta loja.', 'vapor-hub-loja' ); ?></p>
+				<p class="vh-form-descricao"><?php esc_html_e( 'Vazio não limita a árvore. Marque uma raiz para esta loja.', 'vapor-hub-loja' ); ?></p>
 			</div>
-			<p class="vh-form-descricao" style="margin-top:12px">
-				<?php esc_html_e( 'A importação inicial traz só produto principal ativo com estoque, com categoria, grade e variações. O cron seguinte não repete esse cadastro.', 'vapor-hub-loja' ); ?>
-			</p>
+			<fieldset class="vh-tiny-direcao" style="margin-top:16px;border:1px solid var(--vh-cinza-200);border-radius:8px;padding:14px">
+				<legend style="font-weight:600;padding:0 6px"><?php esc_html_e( 'Recorte da importação', 'vapor-hub-loja' ); ?></legend>
+				<div class="vh-toggle-wrapper">
+					<input type="checkbox" class="vh-toggle" id="vh-tiny-import-estoque" <?php checked( ! empty( $status['import_exigir_estoque'] ) ); ?> />
+					<label for="vh-tiny-import-estoque"><?php esc_html_e( 'Só com estoque', 'vapor-hub-loja' ); ?></label>
+				</div>
+				<div class="vh-toggle-wrapper" style="margin-top:8px">
+					<input type="checkbox" class="vh-toggle" id="vh-tiny-import-preco" <?php checked( ! empty( $status['import_exigir_preco'] ) ); ?> />
+					<label for="vh-tiny-import-preco"><?php esc_html_e( 'Só com preço', 'vapor-hub-loja' ); ?></label>
+				</div>
+				<p class="vh-form-descricao" style="margin-top:10px"><?php esc_html_e( 'Produto principal ativo, com categoria, grade e variações. Desligue um filtro para trazer o restante. Vale a partir do próximo item.', 'vapor-hub-loja' ); ?></p>
+			</fieldset>
 			<div class="vh-form-acoes">
 				<button type="submit" class="vh-btn vh-btn--secundario"><?php esc_html_e( 'Salvar configuração', 'vapor-hub-loja' ); ?></button>
 				<button type="button" id="vh-tiny-sincronizar" class="vh-btn vh-btn--primario"><?php esc_html_e( 'Sincronizar agora', 'vapor-hub-loja' ); ?></button>

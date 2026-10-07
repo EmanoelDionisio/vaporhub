@@ -21,6 +21,19 @@
         return msg;
     }
 
+    function recorteImportacao() {
+        var estoque = document.getElementById('vh-tiny-import-estoque');
+        var preco = document.getElementById('vh-tiny-import-preco');
+        var corpo = {};
+        if (estoque) {
+            corpo.import_exigir_estoque = estoque.checked;
+        }
+        if (preco) {
+            corpo.import_exigir_preco = preco.checked;
+        }
+        return corpo;
+    }
+
     function rest(path, method, body) {
         var opcoes = {
             method: method || 'GET',
@@ -430,7 +443,7 @@
                 statusImportacao('Importação pausada. O ponto ficou salvo. Clique em Continuar importação quando quiser.', false);
                 return Promise.resolve();
             }
-            return rest('tiny/importar', 'POST', { gravar: 1 }).then(function (resp) {
+            return rest('tiny/importar', 'POST', Object.assign({ gravar: 1 }, recorteImportacao())).then(function (resp) {
                 var d = resp.dados || {};
                 var corrida = d.corrida || {
                     offset: d.offset,
@@ -490,7 +503,7 @@
             previa.addEventListener('click', function () {
                 previa.disabled = true;
                 statusImportacao('Contando o recorte…');
-                rest('tiny/importar/previa', 'POST', {}).then(function (resp) {
+                rest('tiny/importar/previa', 'POST', recorteImportacao()).then(function (resp) {
                     var d = resp.dados || {};
                     statusImportacao('Com estoque nesta fatia: ' + (d.com_estoque || 0) + (d.concluida ? '. Contagem fechada.' : '. Clique de novo para continuar a contagem.'));
                 }).catch(function (err) {
@@ -552,6 +565,7 @@
                 import_marcas: marcasInput ? marcasInput.value.trim() : '',
                 import_raizes: raizesSelecionadas()
             };
+            Object.assign(payload, recorteImportacao());
             form.querySelectorAll('[data-trava]').forEach(function (el) {
                 payload[el.getAttribute('data-trava')] = el.checked;
             });
