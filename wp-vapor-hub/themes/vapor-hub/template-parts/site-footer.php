@@ -28,16 +28,23 @@ $logo_url = function_exists( 'vh_logo_url_resolvida' ) ? vh_logo_url_resolvida()
 
 $loja_url = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/' );
 
-$cats_loja = get_terms(
-	array(
-		'taxonomy'   => 'product_cat',
-		'hide_empty' => false,
-		'parent'     => 0,
-		'number'     => 8,
-		'orderby'    => 'name',
-		'order'      => 'ASC',
-	)
-);
+$menu_rodape = function_exists( 'vh_menu_tem_itens' ) && vh_menu_tem_itens( 'rodape' );
+$cats_loja   = array();
+if ( ! $menu_rodape ) {
+	$cats_loja = get_terms(
+		array(
+			'taxonomy'   => 'product_cat',
+			'hide_empty' => false,
+			'parent'     => 0,
+			'number'     => 8,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+		)
+	);
+	if ( is_wp_error( $cats_loja ) ) {
+		$cats_loja = array();
+	}
+}
 if ( is_wp_error( $cats_loja ) ) {
 	$cats_loja = array();
 }
@@ -92,6 +99,19 @@ $link_trocas   = ! empty( $pagina_trocas ) ? get_permalink( $pagina_trocas[0] ) 
 
 			<div class="vh-footer-mvp-col">
 				<h4 class="vh-footer-mvp-titulo"><?php esc_html_e( 'Loja', 'vapor-hub' ); ?></h4>
+				<?php if ( $menu_rodape ) : ?>
+					<?php
+					wp_nav_menu(
+						array(
+							'theme_location' => 'rodape',
+							'container'      => false,
+							'menu_class'     => 'vh-footer-mvp-links',
+							'depth'          => 0,
+							'fallback_cb'    => false,
+						)
+					);
+					?>
+				<?php else : ?>
 				<ul class="vh-footer-mvp-links">
 					<?php foreach ( $cats_loja as $cat ) : ?>
 						<li>
@@ -100,6 +120,7 @@ $link_trocas   = ! empty( $pagina_trocas ) ? get_permalink( $pagina_trocas[0] ) 
 					<?php endforeach; ?>
 					<li><a href="<?php echo esc_url( $loja_url ); ?>"><?php esc_html_e( 'Outlet', 'vapor-hub' ); ?></a></li>
 				</ul>
+				<?php endif; ?>
 			</div>
 
 			<div class="vh-footer-mvp-col">

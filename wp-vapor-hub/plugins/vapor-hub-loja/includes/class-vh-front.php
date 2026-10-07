@@ -183,6 +183,70 @@ class VH_Front {
             );
         }
 
+        if ( 'menus' === VH_Router::secao_atual() ) {
+            $vh_menu_posicao = VH_Menus_Service::posicao_requisicao();
+            $vh_menu_estado  = VH_Menus_Service::estado( $vh_menu_posicao );
+            wp_enqueue_script(
+                'vh-menus-js',
+                VH_LOJA_ASSETS . 'js/menus.js',
+                [ 'vh-app-js' ],
+                VH_LOJA_VERSION,
+                true
+            );
+            wp_localize_script(
+                'vh-menus-js',
+                'vhMenus',
+                [
+                    'restUrl'    => esc_url_raw( rest_url( VH_REST_Controller::NS . '/' ) ),
+                    'nonce'      => wp_create_nonce( 'wp_rest' ),
+                    'posicao'    => $vh_menu_posicao,
+                    'itens'      => $vh_menu_estado['itens'],
+                    'origens'    => $vh_menu_estado['origens'],
+                    'icones'     => VH_Menus_Service::icones(),
+                    'automatico' => $vh_menu_estado['automatico'] ? '1' : '0',
+                    'descricao'  => VH_Menus_Service::posicoes()[ $vh_menu_posicao ]['descricao'],
+                    'limites'    => [
+                        'itens'        => VH_Menus_Service::MAX_ITENS,
+                        'profundidade' => VH_Menus_Service::MAX_PROFUNDIDADE,
+                        'titulo'       => VH_Menus_Service::MAX_TITULO,
+                    ],
+                    'i18n'       => [
+                        'automatico'      => __( 'Este é o menu automático. Salve para assumir o controle.', 'vapor-hub-loja' ),
+                        'titulo'          => __( 'Todo item do menu precisa de um título.', 'vapor-hub-loja' ),
+                        'url'             => __( 'O link informado não é permitido. Use um caminho da loja ou um endereço http(s).', 'vapor-hub-loja' ),
+                        'destino'         => __( 'Selecione a página ou a categoria.', 'vapor-hub-loja' ),
+                        'profundo'        => __( 'O menu aceita no máximo 5 níveis.', 'vapor-hub-loja' ),
+                        'limite'          => __( 'O menu aceita no máximo 120 itens.', 'vapor-hub-loja' ),
+                        'erro'            => __( 'Não foi possível salvar o menu. Tente novamente.', 'vapor-hub-loja' ),
+                        'salvo'           => __( 'Menu salvo.', 'vapor-hub-loja' ),
+                        'salvando'        => __( 'Salvando…', 'vapor-hub-loja' ),
+                        'vazio'           => __( 'Nenhum item neste menu. Adicione o primeiro abaixo.', 'vapor-hub-loja' ),
+                        'adicionar'       => __( 'Adicionar', 'vapor-hub-loja' ),
+                        'tituloCampo'     => __( 'Título', 'vapor-hub-loja' ),
+                        'aponta'          => __( 'Aponta para', 'vapor-hub-loja' ),
+                        'icone'           => __( 'Ícone', 'vapor-hub-loja' ),
+                        'semIcone'        => __( 'Sem ícone', 'vapor-hub-loja' ),
+                        'categoria'       => __( 'Categoria', 'vapor-hub-loja' ),
+                        'pagina'          => __( 'Página', 'vapor-hub-loja' ),
+                        'link'            => __( 'Link', 'vapor-hub-loja' ),
+                        'placeholderLink' => __( '/loja/ ou https://', 'vapor-hub-loja' ),
+                        'semCategorias'   => __( 'Nenhuma categoria disponível', 'vapor-hub-loja' ),
+                        'semPaginas'      => __( 'Nenhuma página publicada', 'vapor-hub-loja' ),
+                        'destinoAtual'    => __( 'Destino atual', 'vapor-hub-loja' ),
+                        'subir'           => __( 'Subir', 'vapor-hub-loja' ),
+                        'descer'          => __( 'Descer', 'vapor-hub-loja' ),
+                        'aninhar'         => __( 'Colocar dentro do item anterior', 'vapor-hub-loja' ),
+                        'soltar'          => __( 'Voltar um nível', 'vapor-hub-loja' ),
+                        'remover'         => __( 'Remover', 'vapor-hub-loja' ),
+                        'umItem'          => __( '1 item', 'vapor-hub-loja' ),
+                        'itens'           => __( 'itens', 'vapor-hub-loja' ),
+                        'arrastar'        => __( 'Arrastar para reordenar ou aninhar', 'vapor-hub-loja' ),
+                        'dica'            => __( 'Segure o ícone e arraste. A faixa de cima ou de baixo reordena; o centro coloca o item dentro do outro.', 'vapor-hub-loja' ),
+                    ],
+                ]
+            );
+        }
+
         VH_Personalizacao_Service::enqueue_editor_assets();
 
         if ( 'tiny' === VH_Router::secao_atual() ) {

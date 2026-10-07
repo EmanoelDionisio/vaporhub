@@ -58,13 +58,14 @@ class VH_Router {
             'clientes'   => [ 'label' => __( 'Clientes', 'vapor-hub-loja' ),    'icone' => 'dashicons-groups',            'grupo' => 'gestao' ],
             'cupons'     => [ 'label' => __( 'Cupons', 'vapor-hub-loja' ),      'icone' => 'dashicons-tickets-alt',       'grupo' => 'gestao' ],
             'relatorios' => [ 'label' => __( 'Relatórios', 'vapor-hub-loja' ),  'icone' => 'dashicons-chart-bar',         'grupo' => 'gestao' ],
-            'aparencia'  => [ 'label' => __( 'Aparência', 'vapor-hub-loja' ),   'icone' => 'dashicons-admin-appearance',  'grupo' => 'site' ],
-            'comunidade' => [ 'label' => __( 'Comunidade', 'vapor-hub-loja' ),  'icone' => 'dashicons-format-gallery',    'grupo' => 'site' ],
-            'revenda'    => [ 'label' => __( 'Revenda', 'vapor-hub-loja' ),     'icone' => 'dashicons-megaphone',         'grupo' => 'site' ],
-            'seo'        => [ 'label' => __( 'SEO e Métricas', 'vapor-hub-loja' ), 'icone' => 'dashicons-chart-area',     'grupo' => 'site' ],
-            'tiny'       => [ 'label' => __( 'Tiny ERP', 'vapor-hub-loja' ),      'icone' => 'dashicons-randomize',       'grupo' => 'site' ],
-            'seguranca'  => [ 'label' => __( 'Segurança', 'vapor-hub-loja' ),   'icone' => 'dashicons-shield',            'grupo' => 'site' ],
-            'ajuda'      => [ 'label' => __( 'Ajuda', 'vapor-hub-loja' ),       'icone' => 'dashicons-editor-help',       'grupo' => 'site' ],
+            'aparencia'  => [ 'label' => __( 'Aparência', 'vapor-hub-loja' ),   'icone' => 'dashicons-admin-appearance',  'grupo' => 'vitrine' ],
+            'menus'      => [ 'label' => __( 'Menus', 'vapor-hub-loja' ),       'icone' => 'dashicons-menu',              'grupo' => 'vitrine' ],
+            'comunidade' => [ 'label' => __( 'Comunidade', 'vapor-hub-loja' ),  'icone' => 'dashicons-format-gallery',    'grupo' => 'conteudo' ],
+            'revenda'    => [ 'label' => __( 'Revenda', 'vapor-hub-loja' ),     'icone' => 'dashicons-megaphone',         'grupo' => 'conteudo' ],
+            'seo'        => [ 'label' => __( 'SEO e Métricas', 'vapor-hub-loja' ), 'icone' => 'dashicons-chart-area',     'grupo' => 'sistema' ],
+            'tiny'       => [ 'label' => __( 'Tiny ERP', 'vapor-hub-loja' ),      'icone' => 'dashicons-randomize',       'grupo' => 'sistema' ],
+            'seguranca'  => [ 'label' => __( 'Segurança', 'vapor-hub-loja' ),   'icone' => 'dashicons-shield',            'grupo' => 'sistema' ],
+            'ajuda'      => [ 'label' => __( 'Ajuda', 'vapor-hub-loja' ),       'icone' => 'dashicons-editor-help',       'grupo' => 'sistema' ],
         ];
     }
 
@@ -75,8 +76,10 @@ class VH_Router {
      */
     public static function grupos(): array {
         return [
-            'gestao' => __( 'Gestão da Loja', 'vapor-hub-loja' ),
-            'site'   => __( 'Site e Conteúdo', 'vapor-hub-loja' ),
+            'gestao'   => __( 'Gestão da Loja', 'vapor-hub-loja' ),
+            'vitrine'  => __( 'Vitrine', 'vapor-hub-loja' ),
+            'conteudo' => __( 'Conteúdo', 'vapor-hub-loja' ),
+            'sistema'  => __( 'Sistema', 'vapor-hub-loja' ),
         ];
     }
 
@@ -207,6 +210,7 @@ class VH_Router {
             'dashboard'  => 'dashboard.php',
             'relatorios' => 'relatorios/index.php',
             'aparencia'  => 'aparencia.php',
+            'menus'      => 'menus.php',
             'comunidade' => [ 'galeria' => 'comunidade/galeria.php', 'envios' => 'comunidade/envios/lista.php', 'ver' => 'comunidade/envios/detalhe.php' ],
             'revenda'    => [ 'listar' => 'revenda/lista.php', 'config' => 'revenda/config.php', 'ver' => 'revenda/detalhe.php' ],
             'seo'        => 'seo/index.php',

@@ -169,6 +169,10 @@ defined( 'ABSPATH' ) || exit;
                 <span class="dashicons dashicons-admin-appearance"></span>
                 <?php esc_html_e( 'Banners e aparência', 'vapor-hub-loja' ); ?>
             </a>
+            <a href="<?php echo esc_url( VH_Router::url( 'menus' ) ); ?>">
+                <span class="dashicons dashicons-menu"></span>
+                <?php esc_html_e( 'Menus da loja', 'vapor-hub-loja' ); ?>
+            </a>
             <a href="<?php echo esc_url( VH_Router::url( 'relatorios' ) ); ?>">
                 <span class="dashicons dashicons-chart-bar"></span>
                 <?php esc_html_e( 'Relatórios da Loja', 'vapor-hub-loja' ); ?>

@@ -15,9 +15,11 @@ require_once get_stylesheet_directory() . '/includes/class-vh-loja-filtros.php';
 require_once get_stylesheet_directory() . '/includes/class-vh-seo.php';
 require_once get_stylesheet_directory() . '/includes/vh-performance.php';
 require_once get_stylesheet_directory() . '/includes/vh-home.php';
+require_once get_stylesheet_directory() . '/includes/vh-menu-icones.php';
+require_once get_stylesheet_directory() . '/includes/class-vh-menu-walker.php';
 
 /** Versão do tema — usada para cache-busting dos assets */
-define( 'VH_VERSION', '1.0.86' );
+define( 'VH_VERSION', '1.0.89' );
 
 /** Máximo de requisições de cálculo de frete (PDP) por IP por minuto. */
 define( 'VH_FRETE_PRODUTO_RATE_LIMIT', 30 );
@@ -721,8 +723,9 @@ function vh_configurar_tema() {
 
 	/* --- Menus de navegação --- */
 	register_nav_menus( array(
-		'principal' => __( 'Menu Principal', 'vapor-hub' ),
-		'rodape'    => __( 'Menu do Rodapé', 'vapor-hub' ),
+		'principal'     => __( 'Menu Principal', 'vapor-hub' ),
+		'departamentos' => __( 'Departamentos', 'vapor-hub' ),
+		'rodape'        => __( 'Menu do Rodapé', 'vapor-hub' ),
 	) );
 
 	/* --- Tamanhos de imagem personalizados --- */
@@ -1249,6 +1252,35 @@ function vh_url_pagina_por_slug( string $slug ): string {
 		return get_permalink( $paginas[0] );
 	}
 	return trailingslashit( home_url( '/' . $slug ) );
+}
+
+/**
+ * A posição tem um menu atribuído e pelo menos um item.
+ */
+function vh_menu_tem_itens( string $local ): bool {
+	$locs = get_nav_menu_locations();
+	if ( empty( $locs[ $local ] ) ) {
+		return false;
+	}
+	$itens = wp_get_nav_menu_items( (int) $locs[ $local ] );
+	return is_array( $itens ) && count( $itens ) > 0;
+}
+
+/**
+ * Desenha um menu da vitrine, com subníveis e o mesmo walker no topo e no mobile.
+ */
+function vh_render_menu( string $local, string $classe ): void {
+	$args = array(
+		'theme_location' => $local,
+		'container'      => false,
+		'menu_class'     => $classe,
+		'depth'          => 0,
+		'fallback_cb'    => ( 'principal' === $local ) ? 'vh_menu_principal_fallback' : false,
+	);
+	if ( class_exists( 'VH_Menu_Walker' ) ) {
+		$args['walker'] = new VH_Menu_Walker();
+	}
+	wp_nav_menu( $args );
 }
 
 /**

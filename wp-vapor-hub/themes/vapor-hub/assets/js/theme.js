@@ -270,6 +270,21 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			backdrop.addEventListener( 'click', fecharMenu );
 		}
 
+		nav.addEventListener( 'click', function ( e ) {
+			var botao = e.target.closest( '.vh-nav-sub' );
+			if ( ! botao || ! nav.contains( botao ) ) {
+				return;
+			}
+			e.preventDefault();
+			e.stopPropagation();
+			var item = botao.parentElement;
+			if ( ! item ) {
+				return;
+			}
+			var aberto = item.classList.toggle( 'is-aberto' );
+			botao.setAttribute( 'aria-expanded', aberto ? 'true' : 'false' );
+		} );
+
 		document.addEventListener( 'click', function ( e ) {
 			if ( ! corpo.classList.contains( 'vh-menu-aberto' ) ) {
 				return;

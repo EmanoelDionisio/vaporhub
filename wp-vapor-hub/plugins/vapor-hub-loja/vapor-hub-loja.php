@@ -3,7 +3,7 @@
  * Plugin Name: Vapor Hub - Minha Loja
  * Plugin URI:  https://newalliance.tech
  * Description: App de gestão completo da loja Vapor Hub (pedidos, produtos, categorias, clientes, cupons, relatórios e conteúdo) com rota própria e isolado das telas nativas. Desenvolvido por New Alliance Tecnologia.
- * Version:     3.16.6
+ * Version:     3.16.27
  * Author:      New Alliance Tecnologia
  * Author URI:  https://newalliance.tech
  * License:     GPL-2.0-or-later
@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 /* ───────────────────────────────────────────────
  * Constantes
  * ─────────────────────────────────────────────── */
-define( 'VH_LOJA_VERSION', '3.16.22' );
+define( 'VH_LOJA_VERSION', '3.16.27' );
 define( 'VH_LOJA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VH_LOJA_URL', plugin_dir_url( __FILE__ ) );
 define( 'VH_LOJA_ASSETS', VH_LOJA_URL . 'admin/' );
@@ -60,6 +60,7 @@ require_once VH_LOJA_DIR . 'includes/services/class-vh-products-service.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-permalinks.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-personalizacao-service.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-categories-service.php';
+require_once VH_LOJA_DIR . 'includes/services/class-vh-menus-service.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-customers-service.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-coupons-service.php';
 require_once VH_LOJA_DIR . 'includes/services/class-vh-reports-service.php';
@@ -96,6 +97,7 @@ require_once VH_LOJA_DIR . 'includes/rest/class-vh-rest-customers.php';
 require_once VH_LOJA_DIR . 'includes/rest/class-vh-rest-coupons.php';
 require_once VH_LOJA_DIR . 'includes/rest/class-vh-rest-reports.php';
 require_once VH_LOJA_DIR . 'includes/rest/class-vh-rest-settings.php';
+require_once VH_LOJA_DIR . 'includes/rest/class-vh-rest-menus.php';
 require_once VH_LOJA_DIR . 'includes/rest/class-vh-rest-seo.php';
 require_once VH_LOJA_DIR . 'includes/rest/class-vh-rest-revenda.php';
 require_once VH_LOJA_DIR . 'includes/rest/class-vh-rest-comunidade.php';
@@ -142,6 +144,7 @@ function vh_loja_controladores_rest(): array {
         'VH_REST_Coupons',
         'VH_REST_Reports',
         'VH_REST_Settings',
+        'VH_REST_Menus',
         'VH_REST_SEO',
         'VH_REST_Revenda',
         'VH_REST_Comunidade',

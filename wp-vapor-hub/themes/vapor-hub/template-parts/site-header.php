@@ -53,17 +53,7 @@ if ( function_exists( 'WC' ) && WC()->cart ) {
 		</div>
 
 		<nav class="vh-nav-desktop" aria-label="<?php esc_attr_e( 'Menu principal', 'vapor-hub' ); ?>">
-			<?php
-			wp_nav_menu(
-				array(
-					'theme_location' => 'principal',
-					'container'      => false,
-					'menu_class'     => 'vh-nav-desktop-list',
-					'fallback_cb'    => 'vh_menu_principal_fallback',
-					'depth'          => 1,
-				)
-			);
-			?>
+			<?php vh_render_menu( 'principal', 'vh-nav-desktop-list' ); ?>
 		</nav>
 
 		<div class="vh-header-acoes">
@@ -106,22 +96,24 @@ if ( function_exists( 'WC' ) && WC()->cart ) {
 		</div>
 	</div>
 
+	<?php if ( function_exists( 'vh_menu_tem_itens' ) && vh_menu_tem_itens( 'departamentos' ) ) : ?>
+		<nav class="vh-nav-departamentos" aria-label="<?php esc_attr_e( 'Departamentos', 'vapor-hub' ); ?>">
+			<div class="vh-nav-departamentos-inner">
+				<?php vh_render_menu( 'departamentos', 'vh-nav-departamentos-list' ); ?>
+			</div>
+		</nav>
+	<?php endif; ?>
+
 	<div class="vh-nav-mobile-backdrop" aria-hidden="true" tabindex="-1"></div>
 
 	<div id="vh-nav-mobile" class="vh-nav-mobile" aria-hidden="true">
 		<div class="vh-nav-mobile-inner">
 			<p class="vh-nav-mobile-eyebrow"><?php esc_html_e( 'Navegação', 'vapor-hub' ); ?></p>
-			<?php
-			wp_nav_menu(
-				array(
-					'theme_location' => 'principal',
-					'container'      => false,
-					'menu_class'     => 'vh-nav-mobile-list',
-					'fallback_cb'    => 'vh_menu_principal_fallback',
-					'depth'          => 1,
-				)
-			);
-			?>
+			<?php vh_render_menu( 'principal', 'vh-nav-mobile-list' ); ?>
+			<?php if ( function_exists( 'vh_menu_tem_itens' ) && vh_menu_tem_itens( 'departamentos' ) ) : ?>
+				<p class="vh-nav-mobile-eyebrow"><?php esc_html_e( 'Departamentos', 'vapor-hub' ); ?></p>
+				<?php vh_render_menu( 'departamentos', 'vh-nav-mobile-list' ); ?>
+			<?php endif; ?>
 			<div class="vh-nav-mobile-rodape">
 				<a href="<?php echo esc_url( $conta_url ); ?>" class="vh-btn vh-btn-secondary vh-nav-mobile-conta">
 					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
