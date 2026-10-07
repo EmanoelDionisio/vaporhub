@@ -384,7 +384,7 @@ strong, b {
 }
 
 .vh-badge-personalizavel {
-	background-color: var(--vh-cor-texto);
+	background-color: var(--vh-cor-primaria);
 	color: var(--vh-cor-texto-invertido);
 }
 

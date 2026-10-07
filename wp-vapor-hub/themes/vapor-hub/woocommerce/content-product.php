@@ -31,25 +31,9 @@ $imagem     = $product->get_image( 'vh-produto-card', array(
 ) );
 
 /* --- Verificar badges --- */
-$em_promocao  = $product->is_on_sale();
-$eh_exclusivo = false;
-$eh_novo      = false;
-
-if ( taxonomy_exists( 'product_brand' ) ) {
-	$marcas = get_the_terms( $produto_id, 'product_brand' );
-	if ( ! is_wp_error( $marcas ) && ! empty( $marcas ) ) {
-		foreach ( $marcas as $marca ) {
-			if ( mb_strtolower( $marca->name ) === 'vapor hub' ) {
-				$eh_exclusivo = true;
-				break;
-			}
-		}
-	}
-}
-
-if ( ! $eh_exclusivo ) {
-	$eh_exclusivo = get_post_meta( $produto_id, '_vh_exclusivo', true ) === 'sim';
-}
+$em_promocao = $product->is_on_sale();
+$eh_exclusivo = function_exists( 'vh_produto_e_exclusivo' ) && vh_produto_e_exclusivo( $product );
+$eh_novo     = false;
 
 $data_publicacao = get_the_date( 'U', $produto_id );
 $dias_desde      = ( time() - (int) $data_publicacao ) / DAY_IN_SECONDS;

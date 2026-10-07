@@ -17,7 +17,7 @@ require_once get_stylesheet_directory() . '/includes/vh-performance.php';
 require_once get_stylesheet_directory() . '/includes/vh-home.php';
 
 /** Versão do tema — usada para cache-busting dos assets */
-define( 'VH_VERSION', '1.0.84' );
+define( 'VH_VERSION', '1.0.85' );
 
 /** Máximo de requisições de cálculo de frete (PDP) por IP por minuto. */
 define( 'VH_FRETE_PRODUTO_RATE_LIMIT', 30 );
@@ -835,51 +835,41 @@ function vh_texto_botao_individual( $texto = '', $produto = null ) {
 add_filter( 'woocommerce_product_single_add_to_cart_text', 'vh_texto_botao_individual', 10, 2 );
 
 /**
- * Verifica se o produto é exclusivo da marca Vapor Hub.
+ * Produto marcado na loja como exclusivo. Não usa o nome da marca.
  *
  * @param WC_Product $product Produto WooCommerce.
  */
 function vh_produto_e_exclusivo( WC_Product $product ): bool {
-	$produto_id   = $product->get_id();
-	$eh_exclusivo = false;
-
-	if ( taxonomy_exists( 'product_brand' ) ) {
-		$marcas = get_the_terms( $produto_id, 'product_brand' );
-		if ( ! is_wp_error( $marcas ) && ! empty( $marcas ) ) {
-			foreach ( $marcas as $marca ) {
-				if ( mb_strtolower( $marca->name ) === 'piscou afundou' ) {
-					$eh_exclusivo = true;
-					break;
-				}
-			}
-		}
-	}
-
-	if ( ! $eh_exclusivo ) {
-		$eh_exclusivo = get_post_meta( $produto_id, '_vh_exclusivo', true ) === 'sim';
-	}
-
-	return $eh_exclusivo;
+	return get_post_meta( $product->get_id(), '_vh_exclusivo', true ) === 'sim';
 }
 
 /**
- * HTML dos selos sobre a galeria na página individual do produto.
+ * Selos da galeria, numa pilha só. A oferta do WooCommerce fica aqui para não
+ * cobrir outro selo.
  *
  * @param WC_Product $product Produto WooCommerce.
  */
 function vh_badges_galeria_produto_html( WC_Product $product ): string {
 	$badges = array();
 
+	if ( $product->is_on_sale() ) {
+		$badges[] = '<span class="vh-badge vh-badge-promo">' . esc_html__( 'Oferta', 'vapor-hub' ) . '</span>';
+	}
+
 	if ( vh_produto_e_exclusivo( $product ) ) {
 		$badges[] = '<span class="vh-badge vh-badge-exclusivo">' . esc_html__( 'Exclusivo', 'vapor-hub' ) . '</span>';
 	}
 
-	if ( $product->is_type( 'variable' ) ) {
-		$badges[] = '<span class="vh-badge vh-badge-personalizavel">' . esc_html__( 'Personalizável', 'vapor-hub' ) . '</span>';
-	}
-
 	return implode( '', $badges );
 }
+
+/**
+ * A oferta nativa é absoluta e cai no mesmo canto da pilha da galeria.
+ */
+function vh_remover_selo_oferta_padrao(): void {
+	remove_action( 'woocommerce_before_single_product_summary', 'woocommerce_show_product_sale_flash', 10 );
+}
+add_action( 'wp', 'vh_remover_selo_oferta_padrao' );
 
 /**
  * Exibe o selo "Exclusivo" em produtos da marca Vapor Hub.
@@ -894,20 +884,6 @@ function vh_selo_exclusivo() {
 	echo '<span class="vh-badge vh-badge-exclusivo">' . esc_html__( 'Exclusivo', 'vapor-hub' ) . '</span>';
 }
 add_action( 'woocommerce_before_shop_loop_item_title', 'vh_selo_exclusivo', 9 );
-
-/**
- * Exibe o selo "Personalizável" em produtos variáveis.
- */
-function vh_selo_personalizavel() {
-	global $product;
-
-	if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) ) {
-		return;
-	}
-
-	echo '<span class="vh-badge vh-badge-personalizavel">' . esc_html__( 'Personalizável', 'vapor-hub' ) . '</span>';
-}
-add_action( 'woocommerce_before_shop_loop_item_title', 'vh_selo_personalizavel', 10 );
 
 /**
  * Botão "Continuar para finalização" no carrinho com classes da marca.

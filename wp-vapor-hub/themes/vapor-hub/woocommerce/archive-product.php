@@ -229,21 +229,6 @@ $categoria_slug  = ! empty( $filtros['categoria'] ) ? $filtros['categoria'] : ''
 									<?php esc_html_e( 'Lançamentos dos últimos 30 dias.', 'vapor-hub' ); ?>
 								</p>
 							</li>
-							<li>
-								<label class="vh-loja-exclusive">
-									<input
-										type="checkbox"
-										class="vh-loja-filtro-flag"
-										data-vh-filtro="exclusivos"
-										value="1"
-										<?php checked( ! empty( $filtros['exclusivos'] ) ); ?>
-									>
-									<span><?php esc_html_e( 'Apenas exclusivos', 'vapor-hub' ); ?></span>
-								</label>
-								<p class="vh-loja-filtro-ajuda vh-text-xs vh-text-muted">
-									<?php esc_html_e( 'Produtos exclusivos da marca.', 'vapor-hub' ); ?>
-								</p>
-							</li>
 						</ul>
 					</div>
 
@@ -277,7 +262,7 @@ $categoria_slug  = ! empty( $filtros['categoria'] ) ? $filtros['categoria'] : ''
 									<span><?php esc_html_e( 'Com opções', 'vapor-hub' ); ?></span>
 								</label>
 								<p class="vh-loja-filtro-ajuda vh-text-xs vh-text-muted">
-									<?php esc_html_e( 'Produtos personalizáveis ou com variações.', 'vapor-hub' ); ?>
+									<?php esc_html_e( 'Produtos com cor, quantidade ou outras opções.', 'vapor-hub' ); ?>
 								</p>
 							</li>
 						</ul>

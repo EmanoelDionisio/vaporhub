@@ -2329,7 +2329,12 @@ body.woocommerce-cart:not(:has(.woocommerce-cart-form)) .site-main .elementor-wi
 }
 
 .vh-produto-galeria-badges .vh-badge {
+	position: static;
 	box-shadow: 0 4px 14px rgba(28, 20, 13, .14);
+}
+
+.vh-produto-galeria-media span.onsale {
+	display: none;
 }
 
 .vh-produto-galeria .woocommerce-product-gallery {

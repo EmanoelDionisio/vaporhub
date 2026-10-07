@@ -282,17 +282,12 @@
 	min-width: auto;
 }
 
-/* Selos personalizados (exclusivo, personalizável) dentro do grid */
-.woocommerce ul.products li.product .vh-badge {
-	position: absolute;
-	top: var(--vh-espaco-3);
-	right: var(--vh-espaco-3);
-	z-index: 5;
-}
-
-/* Se houver onsale + badge custom, empilhar */
-.woocommerce ul.products li.product .vh-badge + .vh-badge {
-	top: calc(var(--vh-espaco-3) + 28px);
+/* Selos do card ficam na faixa flex. Posição absoluta empilhava um sobre o outro. */
+.woocommerce ul.products li.product .vh-produto-card-badges .vh-badge {
+	position: static;
+	top: auto;
+	right: auto;
+	left: auto;
 }
 
 /* =========================================================================
