@@ -368,27 +368,13 @@
      * ═══════════════════════════════════════════════ */
     const MAX_BENEFICIOS = 8;
 
-    const DASHICON_BENEFICIO = {
-        'check-circle': 'dashicons-yes-alt',
-        settings: 'dashicons-admin-generic',
-        truck: 'dashicons-cart',
-        users: 'dashicons-groups',
-        star: 'dashicons-star-filled',
-        heart: 'dashicons-heart',
-        shield: 'dashicons-shield',
-        gift: 'dashicons-awards',
-    };
-
     function atualizarPreviewBeneficio($item) {
-        const icone = $item.find('.vh-beneficio-select-icone').val() || 'check-circle';
+        const icone = $item.find('.vh-beneficio-icone').val() || 'check-circle';
         const titulo = $.trim($item.find('.vh-beneficio-input-titulo').val());
-        const dash = DASHICON_BENEFICIO[icone] || 'dashicons-yes-alt';
-
-        $item.find('.vh-beneficio-icone-preview')
-            .attr('data-icone', icone)
-            .find('.dashicons')
-            .attr('class', 'dashicons ' + dash);
-
+        const previa = $item.find('.vh-beneficio-icone-preview .vh-menu-icone-atual').get(0);
+        if (previa && window.vhIconesBiblioteca) {
+            window.vhIconesBiblioteca.desenhar(previa, icone);
+        }
         $item.find('.vh-beneficio-item-titulo-preview').text(
             titulo || (PA.beneficio_novo || 'Novo benefício')
         );
@@ -466,7 +452,11 @@
 
         if (total <= 1) {
             $item.find('input[type="text"]').val('');
-            $item.find('select').val('check-circle');
+            $item.find('.vh-beneficio-icone').val('check-circle');
+            if (window.vhIconesBiblioteca) {
+                window.vhIconesBiblioteca.desenhar($item.find('.vh-menu-icone-abrir .vh-menu-icone-atual').get(0), 'check-circle');
+                $item.find('.vh-menu-icone-abrir').addClass('tem-icone');
+            }
             atualizarPreviewBeneficio($item);
             return;
         }
@@ -500,7 +490,7 @@
         }
     });
 
-    $(document).on('change', '.vh-beneficio-select-icone', function () {
+    $(document).on('change', '.vh-beneficio-icone', function () {
         atualizarPreviewBeneficio($(this).closest('.vh-beneficio-item'));
     });
 

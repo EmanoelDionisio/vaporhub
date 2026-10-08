@@ -15,6 +15,7 @@ class VH_Settings {
         'vh_comunidade',
         'vh_revenda',
         'vh_hero',
+        'vh_home',
         'vh_rodape',
         'vh_identidade_visual',
         'vh_seguranca',
@@ -40,6 +41,12 @@ class VH_Settings {
             'type'              => 'array',
             'sanitize_callback' => [ __CLASS__, 'sanitizar_hero' ],
             'default'           => [],
+        ] );
+
+        register_setting( 'vh_aparencia_grupo', 'vh_home', [
+            'type'              => 'array',
+            'sanitize_callback' => [ __CLASS__, 'sanitizar_home' ],
+            'default'           => self::home_padrao(),
         ] );
 
         register_setting( 'vh_aparencia_grupo', 'vh_rodape', [
@@ -124,16 +131,40 @@ class VH_Settings {
      * @return array<string, string>
      */
     public static function icones_beneficio_disponiveis(): array {
+        if ( function_exists( 'vh_menu_icones' ) ) {
+            return vh_menu_icones();
+        }
+
         return [
-            'check-circle' => __( 'Check Circle', 'vapor-hub-loja' ),
-            'settings'     => __( 'Engrenagem', 'vapor-hub-loja' ),
-            'truck'        => __( 'Caminhão', 'vapor-hub-loja' ),
-            'users'        => __( 'Usuários', 'vapor-hub-loja' ),
-            'star'         => __( 'Estrela', 'vapor-hub-loja' ),
+            'check-circle' => __( 'Conferido', 'vapor-hub-loja' ),
+            'settings'     => __( 'Ajuste', 'vapor-hub-loja' ),
+            'truck'        => __( 'Entrega', 'vapor-hub-loja' ),
+            'users'        => __( 'Pessoas', 'vapor-hub-loja' ),
+            'star'         => __( 'Favorito', 'vapor-hub-loja' ),
             'heart'        => __( 'Coração', 'vapor-hub-loja' ),
-            'shield'       => __( 'Escudo', 'vapor-hub-loja' ),
+            'shield'       => __( 'Proteção', 'vapor-hub-loja' ),
             'gift'         => __( 'Presente', 'vapor-hub-loja' ),
         ];
+    }
+
+    /**
+     * Botão que abre a biblioteca visual. O valor gravado fica no campo oculto.
+     */
+    public static function botao_icone( string $name, string $slug, bool $permite_vazio = false ): string {
+        $slug = sanitize_key( $slug );
+        $mapa = self::icones_beneficio_disponiveis();
+        if ( ! isset( $mapa[ $slug ] ) ) {
+            $slug = $permite_vazio ? '' : 'check-circle';
+        }
+        $svg = ( '' !== $slug && function_exists( 'vh_menu_icone_html' ) ) ? vh_menu_icone_html( $slug ) : '';
+        $classe = 'vh-menu-icone-abrir' . ( '' !== $slug ? ' tem-icone' : '' );
+        $vazio  = $permite_vazio ? ' data-vh-icone-vazio="1"' : '';
+
+        return '<div class="vh-menu-icone-linha">'
+            . '<button type="button" class="' . esc_attr( $classe ) . '" aria-haspopup="listbox" aria-expanded="false" aria-label="' . esc_attr__( 'Ícone', 'vapor-hub-loja' ) . '"' . $vazio . '>'
+            . '<span class="vh-menu-icone-atual">' . $svg . '</span></button>'
+            . '<input type="hidden" class="vh-beneficio-icone vh-menu-icone" name="' . esc_attr( $name ) . '" value="' . esc_attr( $slug ) . '" />'
+            . '</div>';
     }
 
     public static function sanitizar_hero( $input ): array {
@@ -185,6 +216,95 @@ class VH_Settings {
         ];
     }
 
+    /**
+     * Textos da página inicial. A ordem dos blocos fica no tema.
+     *
+     * @return array<string,string>
+     */
+    public static function home_padrao(): array {
+        return [
+            'destaques_mostrar'  => '1',
+            'destaques_rotulo'   => 'Mais procurados',
+            'destaques_titulo'   => 'Destaques',
+            'categorias_mostrar' => '1',
+            'categorias_rotulo'  => 'Navegue por categoria',
+            'categorias_titulo'  => 'O que você procura',
+            'oferta_mostrar'     => '1',
+            'oferta_titulo'      => 'Produtos em promoção',
+            'oferta_texto'       => 'Peças e sabores com preço reduzido, no mesmo catálogo da loja.',
+            'oferta_botao'       => 'Conferir ofertas',
+            'oferta_link'        => '',
+            'vendidos_mostrar'   => '1',
+            'vendidos_rotulo'    => 'Mais vendidos',
+            'vendidos_titulo'    => 'Mais vendidos',
+            'chamada_mostrar'    => '1',
+            'chamada_rotulo'     => 'A loja',
+            'chamada_titulo'     => 'Escolha no seu tempo',
+            'chamada_texto'      => 'Pods, líquidos e acessórios no mesmo catálogo.',
+            'chamada_botao'      => 'Ir para a loja',
+            'chamada_link'       => '',
+        ];
+    }
+
+    /**
+     * @param mixed $input
+     * @return array<string,string>
+     */
+    public static function sanitizar_home( $input ): array {
+        $padrao = self::home_padrao();
+        $atual  = self::obter( 'vh_home', $padrao );
+        if ( ! is_array( $atual ) ) {
+            $atual = [];
+        }
+        if ( ! is_array( $input ) ) {
+            $input = [];
+        }
+        $input = array_merge( $padrao, $atual, $input );
+
+        $limpo = [];
+        foreach ( [ 'destaques_mostrar', 'categorias_mostrar', 'oferta_mostrar', 'vendidos_mostrar', 'chamada_mostrar' ] as $chave ) {
+            $limpo[ $chave ] = ! empty( $input[ $chave ] ) && '0' !== (string) $input[ $chave ] ? '1' : '0';
+        }
+
+        $textos = [
+            'destaques_rotulo'  => 40,
+            'destaques_titulo'  => 80,
+            'categorias_rotulo' => 40,
+            'categorias_titulo' => 80,
+            'oferta_titulo'     => 80,
+            'oferta_texto'      => 180,
+            'oferta_botao'      => 40,
+            'vendidos_rotulo'   => 40,
+            'vendidos_titulo'   => 80,
+            'chamada_rotulo'    => 40,
+            'chamada_titulo'    => 80,
+            'chamada_texto'     => 180,
+            'chamada_botao'     => 40,
+        ];
+        foreach ( $textos as $chave => $limite ) {
+            $valor = sanitize_text_field( (string) ( $input[ $chave ] ?? '' ) );
+            if ( function_exists( 'mb_substr' ) ) {
+                $valor = mb_substr( $valor, 0, $limite );
+            } else {
+                $valor = substr( $valor, 0, $limite );
+            }
+            $limpo[ $chave ] = '' !== $valor ? $valor : $padrao[ $chave ];
+        }
+
+        foreach ( [ 'oferta_link', 'chamada_link' ] as $chave_link ) {
+            $link = trim( (string) ( $input[ $chave_link ] ?? '' ) );
+            if ( '' === $link ) {
+                $limpo[ $chave_link ] = '';
+            } elseif ( class_exists( 'VH_Menus_Service' ) ) {
+                $limpo[ $chave_link ] = VH_Menus_Service::url_permitida( $link );
+            } else {
+                $limpo[ $chave_link ] = esc_url_raw( $link );
+            }
+        }
+
+        return $limpo;
+    }
+
     public static function sanitizar_rodape( $input ): array {
         if ( ! is_array( $input ) ) {
             return [];
@@ -199,6 +319,14 @@ class VH_Settings {
 
     public static function sanitizar_identidade_visual( $input ): array {
         $padrao = self::identidade_visual_padrao();
+        $atual  = self::obter( 'vh_identidade_visual', $padrao );
+        if ( ! is_array( $atual ) ) {
+            $atual = $padrao;
+        }
+        if ( ! is_array( $input ) ) {
+            $input = [];
+        }
+        $input = array_merge( $atual, $input );
         if ( ! is_array( $input ) ) {
             return $padrao;
         }
@@ -222,7 +350,9 @@ class VH_Settings {
         $raio_card = max( 6, min( 28, $raio_card ) );
 
         return [
-            'logo_url'          => esc_url_raw( $input['logo_url'] ?? '' ),
+            'logo_url'           => esc_url_raw( $input['logo_url'] ?? '' ),
+            'logo_escuro_url'   => esc_url_raw( $input['logo_escuro_url'] ?? '' ),
+            'logo_painel_url'   => esc_url_raw( $input['logo_painel_url'] ?? '' ),
             'favicon_url'       => esc_url_raw( $input['favicon_url'] ?? '' ),
             'fonte_titulo'      => $fonte_titulo,
             'fonte_corpo'       => $fonte_corpo,
@@ -232,7 +362,12 @@ class VH_Settings {
             'cor_superficie'    => sanitize_hex_color( $input['cor_superficie'] ?? '' ) ?: $padrao['cor_superficie'],
             'cor_texto'         => sanitize_hex_color( $input['cor_texto'] ?? '' ) ?: $padrao['cor_texto'],
             'cor_texto_suave'   => sanitize_hex_color( $input['cor_texto_suave'] ?? '' ) ?: $padrao['cor_texto_suave'],
-            'cor_borda'         => sanitize_hex_color( $input['cor_borda'] ?? '' ) ?: $padrao['cor_borda'],
+            'cor_borda'          => sanitize_hex_color( $input['cor_borda'] ?? '' ) ?: $padrao['cor_borda'],
+            'cor_fundo_escuro'  => sanitize_hex_color( $input['cor_fundo_escuro'] ?? '' ) ?: $padrao['cor_fundo_escuro'],
+            'cor_superficie_escuro' => sanitize_hex_color( $input['cor_superficie_escuro'] ?? '' ) ?: $padrao['cor_superficie_escuro'],
+            'cor_texto_escuro'  => sanitize_hex_color( $input['cor_texto_escuro'] ?? '' ) ?: $padrao['cor_texto_escuro'],
+            'cor_texto_suave_escuro' => sanitize_hex_color( $input['cor_texto_suave_escuro'] ?? '' ) ?: $padrao['cor_texto_suave_escuro'],
+            'cor_borda_escuro'  => sanitize_hex_color( $input['cor_borda_escuro'] ?? '' ) ?: $padrao['cor_borda_escuro'],
             'estilo_card'       => $estilo_card,
             'raio_card'         => (string) $raio_card,
         ];
@@ -472,8 +607,10 @@ class VH_Settings {
 
     public static function identidade_visual_padrao(): array {
         return [
-            'logo_url'           => '',
-            'favicon_url'        => '',
+            'logo_url'               => '',
+            'logo_escuro_url'        => '',
+            'logo_painel_url'        => '',
+            'favicon_url'            => '',
             'fonte_titulo'       => 'plus_jakarta',
             'fonte_corpo'        => 'plus_jakarta',
             'cor_primaria'       => '#7618f1',
@@ -482,15 +619,31 @@ class VH_Settings {
             'cor_superficie'     => '#ffffff',
             'cor_texto'          => '#1a1228',
             'cor_texto_suave'    => '#6b6680',
-            'cor_borda'          => '#e4dff0',
+            'cor_borda'              => '#e4dff0',
+            'cor_fundo_escuro'       => '#0e0b14',
+            'cor_superficie_escuro'  => '#17141f',
+            'cor_texto_escuro'       => '#f4f1fa',
+            'cor_texto_suave_escuro' => '#9b94ab',
+            'cor_borda_escuro'       => '#2c2738',
             'estilo_card'        => 'suave',
             'raio_card'          => '20',
         ];
     }
 
     /**
-     * Tokens de marca do painel (mesmo violeta da loja).
+     * Marca do painel. Sem arquivo próprio, usa a marca do modo claro.
      */
+    public static function logo_painel_url(): string {
+        $id = self::obter( 'vh_identidade_visual', self::identidade_visual_padrao() );
+        if ( ! is_array( $id ) ) {
+            return '';
+        }
+        $painel = esc_url_raw( (string) ( $id['logo_painel_url'] ?? '' ) );
+        if ( '' !== $painel ) {
+            return $painel;
+        }
+        return esc_url_raw( (string) ( $id['logo_url'] ?? '' ) );
+    }
     public static function css_tokens_marca(): string {
         $id = self::obter( 'vh_identidade_visual', self::identidade_visual_padrao() );
         if ( ! is_array( $id ) ) {

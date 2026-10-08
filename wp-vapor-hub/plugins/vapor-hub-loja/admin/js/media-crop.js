@@ -91,7 +91,9 @@
         elCropImg.src = estado.objectUrl;
 
         qs('vh-crop-editor-titulo').textContent = I18N.titulo || 'Ajustar imagem';
-        qs('vh-crop-editor-dica').textContent = I18N.arraste || '';
+        qs('vh-crop-editor-dica').textContent = perfil.proporcional
+            ? (I18N.arrasteLogo || 'Arraste para enquadrar. A marca cabe em até 400×160, proporcional, sem esticar.')
+            : (I18N.arraste || '');
         qs('vh-crop-editor-perfil').textContent = perfil.label || (perfil.width + '×' + perfil.height);
         qs('vh-crop-editor-cancelar').textContent = I18N.cancelar || 'Cancelar';
         qs('vh-crop-editor-aplicar').textContent = I18N.aplicar || 'Usar imagem';
@@ -107,14 +109,7 @@
         elCropImg.onload = function () {
             destruirCropper();
             if (!window.Cropper) return;
-            estado.cropper = new window.Cropper(elCropImg, {
-                aspectRatio: perfil.width / perfil.height,
-                viewMode: 1,
-                dragMode: 'move',
-                autoCropArea: 1,
-                responsive: true,
-                background: false,
-            });
+            estado.cropper = new window.Cropper(elCropImg, opcoesCropper(perfil));
         };
     }
 
@@ -196,6 +191,55 @@
         });
     }
 
+    /**
+     * Marca: o quadro é livre e a saída cabe em até 400×160, na mesma proporção.
+     * Os outros perfis continuam no retângulo fixo.
+     */
+    function opcoesCropper(perfil) {
+        var opcoes = {
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 1,
+            responsive: true,
+            background: false,
+            aspectRatio: perfil.width / perfil.height,
+        };
+        if (perfil.proporcional) {
+            delete opcoes.aspectRatio;
+        }
+        return opcoes;
+    }
+
+    /**
+     * Medidas da exportação. Na marca, a escala é única: não estica um lado.
+     */
+    function medidasExportacao(cropper, perfil) {
+        if (!perfil.proporcional) {
+            return { width: perfil.width, height: perfil.height };
+        }
+        var dados = cropper.getData();
+        var largura = dados && dados.width ? dados.width : perfil.width;
+        var altura = dados && dados.height ? dados.height : perfil.height;
+        if (!(largura > 0) || !(altura > 0)) {
+            return { width: perfil.width, height: perfil.height };
+        }
+        var escala = Math.min(perfil.width / largura, perfil.height / altura);
+        return {
+            width: Math.max(1, Math.round(largura * escala)),
+            height: Math.max(1, Math.round(altura * escala)),
+        };
+    }
+
+    function canvasDoPerfil(cropper, perfil) {
+        var medidas = medidasExportacao(cropper, perfil);
+        return cropper.getCroppedCanvas({
+            width: medidas.width,
+            height: medidas.height,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+        });
+    }
+
     function aplicarCrop() {
         var perfil = perfilAtual();
         if (!estado.cropper || !perfil) return;
@@ -207,12 +251,7 @@
             btn.textContent = I18N.enviando || 'Enviando…';
         }
 
-        var canvas = estado.cropper.getCroppedCanvas({
-            width: perfil.width,
-            height: perfil.height,
-            imageSmoothingEnabled: true,
-            imageSmoothingQuality: 'high',
-        });
+        var canvas = canvasDoPerfil(estado.cropper, perfil);
 
         if (!canvas) {
             if (btn) {
@@ -382,12 +421,7 @@
         getCroppedBlob: function (cropper, perfilSlug, qualidade) {
             var perfil = PROFILES[perfilSlug];
             if (!cropper || !perfil) return null;
-            var canvas = cropper.getCroppedCanvas({
-                width: perfil.width,
-                height: perfil.height,
-                imageSmoothingEnabled: true,
-                imageSmoothingQuality: 'high',
-            });
+            var canvas = canvasDoPerfil(cropper, perfil);
             if (!canvas) return null;
             var fmt = formatoExportacao(perfil);
             var qualidade = fmt.qualidade !== undefined ? fmt.qualidade : undefined;

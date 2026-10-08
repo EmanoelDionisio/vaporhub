@@ -13,11 +13,7 @@ $vh_secoes      = VH_Router::secoes();
 $vh_grupos      = VH_Router::grupos();
 $vh_secao_atual = $secao;
 
-$vh_logo = '';
-if ( class_exists( 'VH_Settings' ) ) {
-    $vh_identidade = VH_Settings::obter( 'vh_identidade_visual', VH_Settings::identidade_visual_padrao() );
-    $vh_logo       = $vh_identidade['logo_url'] ?? '';
-}
+    $vh_logo = class_exists( 'VH_Settings' ) ? VH_Settings::logo_painel_url() : '';
 ?>
 
 <div class="vh-loja-brand">

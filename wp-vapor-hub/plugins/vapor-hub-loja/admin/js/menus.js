@@ -223,150 +223,9 @@
         return item._k;
     }
 
-    function htmlIcone(slug) {
-        var lista = CFG.icones || [];
-        var i;
-        for (i = 0; i < lista.length; i++) {
-            if (lista[i].slug === slug) {
-                return lista[i].html || '';
-            }
-        }
-        return '';
-    }
-
-    function desenharSvg(caixa, slug) {
-        if (!caixa) {
-            return;
-        }
-        caixa.textContent = '';
-        var html = htmlIcone(slug);
-        if (!html) {
-            caixa.appendChild(el('span', 'vh-menu-ico-vazio'));
-            return;
-        }
-        var molde = document.createElement('template');
-        molde.innerHTML = html.trim();
-        if (molde.content.firstChild) {
-            caixa.appendChild(molde.content.firstChild);
-        }
-    }
-
-    var biblioteca = null;
-    var iconeAberto = null;
-
-    function garantirBiblioteca() {
-        if (biblioteca) {
-            return biblioteca;
-        }
-        biblioteca = el('div', 'vh-menu-biblioteca');
-        biblioteca.hidden = true;
-        biblioteca.setAttribute('role', 'listbox');
-        biblioteca.setAttribute('aria-label', I18N.icone || 'Ícone');
-
-        function opcao(slug, rotulo) {
-            var botao = document.createElement('button');
-            botao.type = 'button';
-            botao.className = 'vh-menu-biblioteca-item';
-            botao.setAttribute('role', 'option');
-            botao.setAttribute('data-icone', slug);
-            botao.setAttribute('aria-label', rotulo);
-            var desenho = el('span', 'vh-menu-biblioteca-desenho');
-            desenharSvg(desenho, slug);
-            botao.appendChild(desenho);
-            return botao;
-        }
-
-        biblioteca.appendChild(opcao('', I18N.semIcone || 'Sem ícone'));
-        (CFG.icones || []).forEach(function (icone) {
-            biblioteca.appendChild(opcao(icone.slug, icone.rotulo || icone.slug));
-        });
-
-        biblioteca.addEventListener('click', function (evento) {
-            var item = evento.target.closest('.vh-menu-biblioteca-item');
-            if (!item || !iconeAberto) {
-                return;
-            }
-            var slug = item.getAttribute('data-icone') || '';
-            iconeAberto.input.value = slug;
-            desenharSvg(iconeAberto.botao.querySelector('.vh-menu-icone-atual'), slug);
-            iconeAberto.botao.classList.toggle('tem-icone', slug !== '');
-            sujo = true;
-            fecharBiblioteca();
-        });
-
-        document.body.appendChild(biblioteca);
-        return biblioteca;
-    }
-
-    function fecharBiblioteca() {
-        if (!biblioteca || biblioteca.hidden) {
-            return;
-        }
-        biblioteca.hidden = true;
-        if (iconeAberto) {
-            iconeAberto.botao.setAttribute('aria-expanded', 'false');
-        }
-        iconeAberto = null;
-    }
-
-    function abrirBiblioteca(botao, input) {
-        var painel = garantirBiblioteca();
-        iconeAberto = { botao: botao, input: input };
-        botao.setAttribute('aria-expanded', 'true');
-        painel.querySelectorAll('.vh-menu-biblioteca-item').forEach(function (item) {
-            var ativo = (item.getAttribute('data-icone') || '') === (input.value || '');
-            item.classList.toggle('is-ativa', ativo);
-            item.setAttribute('aria-selected', ativo ? 'true' : 'false');
-        });
-        painel.hidden = false;
-        if (window.innerWidth < 720) {
-            painel.style.left = '12px';
-            painel.style.right = '12px';
-            painel.style.top = 'auto';
-            painel.style.bottom = '12px';
-            return;
-        }
-        painel.style.right = 'auto';
-        painel.style.bottom = 'auto';
-        var rect = botao.getBoundingClientRect();
-        var largura = painel.offsetWidth || 280;
-        var esquerda = Math.max(12, Math.min(rect.left, window.innerWidth - largura - 12));
-        var topo = rect.bottom + 8;
-        if (topo + painel.offsetHeight > window.innerHeight - 12) {
-            topo = Math.max(12, rect.top - painel.offsetHeight - 8);
-        }
-        painel.style.left = esquerda + 'px';
-        painel.style.top = topo + 'px';
-    }
-
     function criarIcone(slug) {
-        var linha = el('div', 'vh-menu-icone-linha');
-        var botao = document.createElement('button');
-        botao.type = 'button';
-        botao.className = 'vh-menu-icone-abrir' + (slug ? ' tem-icone' : '');
-        botao.setAttribute('aria-haspopup', 'listbox');
-        botao.setAttribute('aria-expanded', 'false');
-        botao.setAttribute('aria-label', I18N.icone || 'Ícone');
-        var atual = el('span', 'vh-menu-icone-atual');
-        desenharSvg(atual, slug || '');
-        botao.appendChild(atual);
-
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.className = 'vh-menu-icone';
-        input.value = slug || '';
-
-        botao.addEventListener('click', function (evento) {
-            evento.preventDefault();
-            if (iconeAberto && iconeAberto.botao === botao) {
-                fecharBiblioteca();
-                return;
-            }
-            abrirBiblioteca(botao, input);
-        });
-
-        linha.appendChild(botao);
-        linha.appendChild(input);
+        var linha = window.vhIconesBiblioteca.criar(slug || '', { vazio: true });
+        linha.querySelector('.vh-menu-icone').classList.add('vh-menu-icone');
         return linha;
     }
 
@@ -809,7 +668,7 @@
             icone.value = '';
             var botaoIcone = icone.parentElement.querySelector('.vh-menu-icone-abrir');
             if (botaoIcone) {
-                desenharSvg(botaoIcone.querySelector('.vh-menu-icone-atual'), '');
+                window.vhIconesBiblioteca.desenhar(botaoIcone.querySelector('.vh-menu-icone-atual'), '');
                 botaoIcone.classList.remove('tem-icone');
             }
         }
@@ -927,26 +786,9 @@
     mostrarAviso(CFG.automatico);
     render();
 
-    document.addEventListener('click', function (evento) {
-        if (!biblioteca || biblioteca.hidden) {
-            return;
-        }
-        if (biblioteca.contains(evento.target)) {
-            return;
-        }
-        if (iconeAberto && iconeAberto.botao.contains(evento.target)) {
-            return;
-        }
-        fecharBiblioteca();
-    });
-
-    document.addEventListener('keydown', function (evento) {
-        if (evento.key === 'Escape') {
-            fecharBiblioteca();
+    document.addEventListener('change', function (evento) {
+        if (evento.target.classList && evento.target.classList.contains('vh-menu-icone')) {
+            sujo = true;
         }
     });
-
-    window.addEventListener('scroll', function () {
-        fecharBiblioteca();
-    }, true);
 }());

@@ -19,7 +19,7 @@ require_once get_stylesheet_directory() . '/includes/vh-menu-icones.php';
 require_once get_stylesheet_directory() . '/includes/class-vh-menu-walker.php';
 
 /** Versão do tema — usada para cache-busting dos assets */
-define( 'VH_VERSION', '1.0.91' );
+define( 'VH_VERSION', '1.0.97' );
 
 /** Máximo de requisições de cálculo de frete (PDP) por IP por minuto. */
 define( 'VH_FRETE_PRODUTO_RATE_LIMIT', 30 );
@@ -53,21 +53,30 @@ function vh_correios_para_woocommerce_plugin_path(): string {
  * @return array<string,string>
  */
 function vh_identidade_visual_atual(): array {
-	$padrao = array(
-		'logo_url'           => '',
-		'favicon_url'        => '',
-		'fonte_titulo'       => 'plus_jakarta',
-		'fonte_corpo'        => 'plus_jakarta',
-		'cor_primaria'       => '#7618f1',
-		'cor_primaria_hover' => '#5c10d0',
-		'cor_fundo'          => '#f6f4fb',
-		'cor_superficie'     => '#ffffff',
-		'cor_texto'          => '#1a1228',
-		'cor_texto_suave'    => '#6b6680',
-		'cor_borda'          => '#e4dff0',
-		'estilo_card'        => 'suave',
-		'raio_card'          => '20',
-	);
+	$padrao = class_exists( 'VH_Settings' )
+		? VH_Settings::identidade_visual_padrao()
+		: array(
+			'logo_url'               => '',
+			'logo_escuro_url'        => '',
+			'logo_painel_url'        => '',
+			'favicon_url'            => '',
+			'fonte_titulo'           => 'plus_jakarta',
+			'fonte_corpo'            => 'plus_jakarta',
+			'cor_primaria'           => '#7618f1',
+			'cor_primaria_hover'     => '#5c10d0',
+			'cor_fundo'              => '#f6f4fb',
+			'cor_superficie'         => '#ffffff',
+			'cor_texto'              => '#1a1228',
+			'cor_texto_suave'        => '#6b6680',
+			'cor_borda'              => '#e4dff0',
+			'cor_fundo_escuro'       => '#0e0b14',
+			'cor_superficie_escuro'  => '#17141f',
+			'cor_texto_escuro'       => '#f4f1fa',
+			'cor_texto_suave_escuro' => '#9b94ab',
+			'cor_borda_escuro'       => '#2c2738',
+			'estilo_card'            => 'suave',
+			'raio_card'              => '20',
+		);
 
 	$salvo = get_option( 'vh_identidade_visual', array() );
 	if ( ! is_array( $salvo ) ) {
@@ -76,7 +85,7 @@ function vh_identidade_visual_atual(): array {
 
 	$dados = wp_parse_args( $salvo, $padrao );
 	$dados['raio_card'] = (string) max( 6, min( 28, absint( $dados['raio_card'] ) ) );
-	foreach ( array( 'cor_primaria', 'cor_primaria_hover', 'cor_fundo', 'cor_superficie', 'cor_texto', 'cor_texto_suave', 'cor_borda' ) as $chave_cor ) {
+	foreach ( array( 'cor_primaria', 'cor_primaria_hover', 'cor_fundo', 'cor_superficie', 'cor_texto', 'cor_texto_suave', 'cor_borda', 'cor_fundo_escuro', 'cor_superficie_escuro', 'cor_texto_escuro', 'cor_texto_suave_escuro', 'cor_borda_escuro' ) as $chave_cor ) {
 		$dados[ $chave_cor ] = sanitize_hex_color( $dados[ $chave_cor ] ) ?: $padrao[ $chave_cor ];
 	}
 	return $dados;
@@ -257,6 +266,18 @@ h1,h2,h3,h4,h5,h6,.vh-loja-titulo,.vh-home-title,.vh-produto-titulo{font-family:
 .vh-card{border-radius:var(--vh-raio-card-custom);box-shadow:var(--vh-sombra-card-custom);}
 .woocommerce ul.products li.product:hover,
 .vh-card:hover{box-shadow:var(--vh-sombra-card-hover-custom);}
+html[data-vh-tema=\"escuro\"]{
+--vh-cor-fundo: {$identidade['cor_fundo_escuro']};
+--vh-cor-superficie: {$identidade['cor_superficie_escuro']};
+--vh-cor-texto: {$identidade['cor_texto_escuro']};
+--vh-cor-texto-suave: {$identidade['cor_texto_suave_escuro']};
+--vh-cor-borda: {$identidade['cor_borda_escuro']};
+--vh-cor-borda-forte: color-mix(in srgb, {$identidade['cor_borda_escuro']} 72%, {$identidade['cor_texto_escuro']});
+--vh-cor-sucesso-fundo: color-mix(in srgb, var(--vh-cor-sucesso) 18%, {$identidade['cor_superficie_escuro']});
+--vh-cor-erro-fundo: color-mix(in srgb, var(--vh-cor-erro) 18%, {$identidade['cor_superficie_escuro']});
+--vh-cor-info-fundo: color-mix(in srgb, var(--vh-cor-info) 18%, {$identidade['cor_superficie_escuro']});
+--vh-cor-alerta-fundo: color-mix(in srgb, var(--vh-cor-alerta) 18%, {$identidade['cor_superficie_escuro']});
+}
 ";
 }
 
@@ -1298,7 +1319,6 @@ function vh_menu_principal_fallback( $args = null ): void {
 		array( 'url' => home_url( '/' ), 'label' => __( 'Início', 'vapor-hub' ) ),
 		array( 'url' => function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/loja/' ), 'label' => __( 'Loja', 'vapor-hub' ) ),
 		array( 'url' => vh_url_pagina_por_slug( 'acessorios' ), 'label' => __( 'Acessórios', 'vapor-hub' ) ),
-		array( 'url' => vh_url_pagina_por_slug( 'comunidade' ), 'label' => __( 'Comunidade', 'vapor-hub' ) ),
 		array( 'url' => vh_url_pagina_por_slug( 'contato' ), 'label' => __( 'Contato', 'vapor-hub' ) ),
 	);
 
@@ -1411,7 +1431,6 @@ function vh_incluir_popup_revenda(): void {
 	}
 	get_template_part( 'template-parts/popup', 'revenda' );
 }
-add_action( 'wp_footer', 'vh_incluir_popup_revenda', 99 );
 
 /**
  * Inclui o modal de envio de foto da comunidade (gatilho .vh-abrir-comunidade-foto).
@@ -1422,7 +1441,6 @@ function vh_incluir_popup_comunidade_foto(): void {
 	}
 	get_template_part( 'template-parts/popup', 'comunidade-foto' );
 }
-add_action( 'wp_footer', 'vh_incluir_popup_comunidade_foto', 99 );
 
 /**
  * Legado admin-ajax — delega ao serviço do plugin quando disponível.

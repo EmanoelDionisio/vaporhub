@@ -4319,6 +4319,12 @@ body.vh-menu-arrastando {
     height: 100%;
 }
 
+.vh-beneficio-icone-preview .vh-menu-icone-atual svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+}
+
 .vh-menu-ico-vazio {
     width: 12px;
     height: 2px;

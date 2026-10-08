@@ -182,11 +182,15 @@ function vh_logo_imagem_html( array $args = array() ): string {
 			'decoding'      => 'async',
 			'fetchpriority' => 'auto',
 			'sizes'         => '(max-width: 781px) 160px, 200px',
+			'url'           => '',
+			'variante'      => '',
 		)
 	);
 
+	$classe = trim( (string) $args['class'] . ( '' !== $args['variante'] ? ' vh-logo--' . sanitize_html_class( (string) $args['variante'] ) : '' ) );
+
 	$attrs = array(
-		'class'          => $args['class'],
+		'class'          => $classe,
 		'loading'        => $args['loading'],
 		'decoding'       => $args['decoding'],
 		'alt'            => get_bloginfo( 'name' ),
@@ -198,16 +202,20 @@ function vh_logo_imagem_html( array $args = array() ): string {
 		$attrs['fetchpriority'] = 'high';
 	}
 
-	$id = vh_logo_attachment_id();
+	$url = '' !== (string) $args['url'] ? esc_url_raw( (string) $args['url'] ) : vh_logo_url_resolvida();
+	$id  = '' !== $url && function_exists( 'vh_attachment_id_from_url' ) ? vh_attachment_id_from_url( $url ) : 0;
+	if ( ! $id && '' === (string) $args['url'] ) {
+		$id = vh_logo_attachment_id();
+	}
+
 	if ( $id ) {
 		return wp_get_attachment_image( $id, 'vh-logo', false, $attrs );
 	}
 
-	$url = vh_logo_url_resolvida();
 	if ( '' === $url ) {
 		return sprintf(
 			'<span class="%1$s vh-header-logo-texto">%2$s</span>',
-			esc_attr( $args['class'] ),
+			esc_attr( $classe ),
 			esc_html( get_bloginfo( 'name' ) ?: 'Vapor Hub' )
 		);
 	}
@@ -215,10 +223,35 @@ function vh_logo_imagem_html( array $args = array() ): string {
 		'<img src="%1$s" alt="%2$s" class="%3$s" width="200" height="80" loading="%4$s" decoding="%5$s" referrerpolicy="no-referrer">',
 		esc_url( $url ),
 		esc_attr( get_bloginfo( 'name' ) ),
-		esc_attr( $args['class'] ),
+		esc_attr( $classe ),
 		esc_attr( $args['loading'] ),
 		esc_attr( $args['decoding'] )
 	);
+}
+
+/**
+ * Marca clara e, quando houver, a marca do modo escuro.
+ *
+ * @param array<string,string> $args Mesmos argumentos de vh_logo_imagem_html().
+ */
+function vh_logo_par_html( array $args = array() ): string {
+	$identidade = vh_identidade_visual_atual();
+	$claro      = vh_logo_url_resolvida();
+	$escuro     = ! empty( $identidade['logo_escuro_url'] ) ? esc_url_raw( (string) $identidade['logo_escuro_url'] ) : '';
+
+	if ( '' === $escuro || $escuro === $claro ) {
+		return vh_logo_imagem_html( $args );
+	}
+
+	$marca_clara           = $args;
+	$marca_clara['url']    = $claro;
+	$marca_clara['variante'] = 'claro';
+	$marca_escura          = $args;
+	$marca_escura['url']   = $escuro;
+	$marca_escura['variante'] = 'escuro';
+	$marca_escura['fetchpriority'] = 'auto';
+
+	return vh_logo_imagem_html( $marca_clara ) . vh_logo_imagem_html( $marca_escura );
 }
 
 /**

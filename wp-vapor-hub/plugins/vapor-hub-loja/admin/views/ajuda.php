@@ -35,11 +35,24 @@ defined( 'ABSPATH' ) || exit;
                     <?php esc_html_e( 'Como trocar o logo', 'vapor-hub-loja' ); ?>
                 </h3>
                 <ol>
-                    <li><?php esc_html_e( 'Acesse Minha Loja > Aparência.', 'vapor-hub-loja' ); ?></li>
-                    <li><?php esc_html_e( 'Vá até "Identidade Visual e Cards da Loja".', 'vapor-hub-loja' ); ?></li>
-                    <li><?php esc_html_e( 'Use "Selecionar Logo" para enviar o novo logo.', 'vapor-hub-loja' ); ?></li>
-                    <li><?php esc_html_e( 'No campo "Favicon", envie um ícone quadrado (512×512) para a aba do navegador.', 'vapor-hub-loja' ); ?></li>
+                    <li><?php esc_html_e( 'Acesse Minha Loja > Aparência > Cores.', 'vapor-hub-loja' ); ?></li>
+                    <li><?php esc_html_e( 'Envie a marca do modo claro, a do modo escuro e, se quiser, uma marca só do painel.', 'vapor-hub-loja' ); ?></li>
+                    <li><?php esc_html_e( 'Marca escura vazia reaproveita a clara. Marca do painel vazia também. O favicon continua no campo ao lado.', 'vapor-hub-loja' ); ?></li>
                     <li><?php esc_html_e( 'Clique em "Salvar Aparência".', 'vapor-hub-loja' ); ?></li>
+                </ol>
+            </div>
+
+            <div class="vh-ajuda-card">
+                <h3>
+                    <span class="dashicons dashicons-store"></span>
+                    <?php esc_html_e( 'Como cuidar da página inicial', 'vapor-hub-loja' ); ?>
+                </h3>
+                <ol>
+                    <li><?php esc_html_e( 'Abra Minha Loja > Aparência > Página inicial.', 'vapor-hub-loja' ); ?></li>
+                    <li><?php esc_html_e( 'Cada bloco tem um interruptor “Mostrar na home” e os textos que o visitante lê. As duas faixas (ofertas e destaque) também ficam aqui.', 'vapor-hub-loja' ); ?></li>
+                    <li><?php esc_html_e( 'Destaques só lista produto marcado como destaque no cadastro do produto.', 'vapor-hub-loja' ); ?></li>
+                    <li><?php esc_html_e( 'Mais vendidos só aparece depois que houver vendas.', 'vapor-hub-loja' ); ?></li>
+                    <li><?php esc_html_e( 'O banner continua em Aparência > Banner. As cores, em Aparência > Cores.', 'vapor-hub-loja' ); ?></li>
                 </ol>
             </div>
 

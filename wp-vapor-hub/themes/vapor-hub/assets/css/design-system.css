@@ -740,6 +740,18 @@ html[data-vh-tema="escuro"] .vh-tema-icone--sol {
 	display: block;
 }
 
+.vh-logo--escuro {
+	display: none;
+}
+
+html[data-vh-tema="escuro"] .vh-logo--claro {
+	display: none;
+}
+
+html[data-vh-tema="escuro"] .vh-logo--escuro {
+	display: block;
+}
+
 .vh-tema-toggle:focus-visible {
 	outline: 2px solid var(--vh-cor-primaria);
 	outline-offset: 2px;

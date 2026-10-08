@@ -60,8 +60,8 @@ $link_trocas   = ! empty( $pagina_trocas ) ? get_permalink( $pagina_trocas[0] ) 
 			<div class="vh-footer-mvp-col">
 				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vh-footer-mvp-logo-link">
 					<?php
-					if ( function_exists( 'vh_logo_imagem_html' ) ) {
-						echo vh_logo_imagem_html(
+					if ( function_exists( 'vh_logo_par_html' ) ) {
+						echo vh_logo_par_html(
 							array(
 								'class'  => 'vh-footer-mvp-logo',
 								'loading'=> 'lazy',
@@ -130,7 +130,6 @@ $link_trocas   = ! empty( $pagina_trocas ) ? get_permalink( $pagina_trocas[0] ) 
 					<li><a href="<?php echo esc_url( $link_trocas ); ?>"><?php esc_html_e( 'Trocas e devoluções', 'vapor-hub' ); ?></a></li>
 					<li><a href="<?php echo esc_url( $loja_url ); ?>"><?php esc_html_e( 'Política de envio', 'vapor-hub' ); ?></a></li>
 					<li><a href="<?php echo esc_url( function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : '#' ); ?>"><?php esc_html_e( 'Rastrear pedido', 'vapor-hub' ); ?></a></li>
-					<li><a href="#" class="vh-abrir-revenda"><?php esc_html_e( 'Área do revendedor', 'vapor-hub' ); ?></a></li>
 				</ul>
 			</div>
 

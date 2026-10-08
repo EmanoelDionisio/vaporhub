@@ -82,6 +82,24 @@ class VH_Front {
         }
 
         wp_enqueue_script(
+            'vh-icones-js',
+            VH_LOJA_ASSETS . 'js/icones.js',
+            [],
+            VH_LOJA_VERSION,
+            true
+        );
+        wp_localize_script(
+            'vh-icones-js',
+            'vhIconesCatalogo',
+            [
+                'itens'    => class_exists( 'VH_Menus_Service' ) ? VH_Menus_Service::icones() : [],
+                'rotulo'   => __( 'Ícone', 'vapor-hub-loja' ),
+                'semIcone' => __( 'Sem ícone', 'vapor-hub-loja' ),
+            ]
+        );
+        $deps_admin[] = 'vh-icones-js';
+
+        wp_enqueue_script(
             'vh-admin-js',
             VH_LOJA_ASSETS . 'js/admin.js',
             $deps_admin,
@@ -189,7 +207,7 @@ class VH_Front {
             wp_enqueue_script(
                 'vh-menus-js',
                 VH_LOJA_ASSETS . 'js/menus.js',
-                [ 'vh-app-js' ],
+                [ 'vh-app-js', 'vh-icones-js' ],
                 VH_LOJA_VERSION,
                 true
             );
@@ -399,8 +417,7 @@ class VH_Front {
         $turnstile_ativo = ! empty( $seg['turnstile_ativo'] ) && '1' === (string) $seg['turnstile_ativo'];
         $turnstile_site  = $seg['turnstile_site_key'] ?? '';
 
-        $identidade = VH_Settings::obter( 'vh_identidade_visual', VH_Settings::identidade_visual_padrao() );
-        $logo       = $identidade['logo_url'] ?? '';
+        $logo = class_exists( 'VH_Settings' ) ? VH_Settings::logo_painel_url() : '';
 
         wp_enqueue_style( 'dashicons' );
         wp_enqueue_style(

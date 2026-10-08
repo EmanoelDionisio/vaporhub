@@ -66,7 +66,7 @@ class VH_Portal {
         add_rewrite_rule( '^minha-loja/?$', 'index.php?' . self::QV_SECAO . '=dashboard', 'top' );
         add_rewrite_rule( '^minha-loja/([^/]+)/novo/?$', 'index.php?' . self::QV_SECAO . '=$matches[1]&' . self::QV_ACAO . '=novo', 'top' );
         add_rewrite_rule( '^minha-loja/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_SECAO . '=$matches[1]&' . self::QV_ID . '=$matches[2]', 'top' );
-        add_rewrite_rule( '^minha-loja/([^/]+)/(config|envios|conexao|mapeamento|logs)/?$', 'index.php?' . self::QV_SECAO . '=$matches[1]&' . self::QV_ACAO . '=$matches[2]', 'top' );
+        add_rewrite_rule( '^minha-loja/([^/]+)/(config|envios|conexao|mapeamento|logs|banner|inicio|cores|rodape)/?$', 'index.php?' . self::QV_SECAO . '=$matches[1]&' . self::QV_ACAO . '=$matches[2]', 'top' );
         add_rewrite_rule( '^minha-loja/([^/]+)/?$', 'index.php?' . self::QV_SECAO . '=$matches[1]', 'top' );
     }
 

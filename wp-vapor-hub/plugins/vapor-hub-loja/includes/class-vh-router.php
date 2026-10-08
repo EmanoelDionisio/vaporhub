@@ -27,6 +27,7 @@ class VH_Router {
         'revenda'    => [ 'listar', 'config', 'ver' ],
         'comunidade' => [ 'galeria', 'envios', 'ver' ],
         'tiny'       => [ 'conexao', 'mapeamento', 'logs' ],
+        'aparencia'  => [ 'banner', 'inicio', 'cores', 'rodape' ],
     ];
 
     /**
@@ -173,7 +174,7 @@ class VH_Router {
             return ! empty( $query_args ) ? add_query_arg( $query_args, $url ) : $url;
         }
 
-        if ( $acao && 'listar' !== $acao && $id <= 0 && in_array( $acao, [ 'config', 'envios', 'conexao', 'mapeamento', 'logs' ], true ) ) {
+        if ( $acao && 'listar' !== $acao && $id <= 0 && in_array( $acao, [ 'config', 'envios', 'conexao', 'mapeamento', 'logs', 'banner', 'inicio', 'cores', 'rodape' ], true ) ) {
             $url = trailingslashit( home_url( '/minha-loja/' . $secao . '/' . $acao ) );
             return ! empty( $query_args ) ? add_query_arg( $query_args, $url ) : $url;
         }
@@ -248,6 +249,10 @@ class VH_Router {
             'conexao'     => __( 'Conexão', 'vapor-hub-loja' ),
             'mapeamento'  => __( 'Mapeamento', 'vapor-hub-loja' ),
             'logs'        => __( 'Logs', 'vapor-hub-loja' ),
+            'banner'      => __( 'Banner', 'vapor-hub-loja' ),
+            'inicio'      => __( 'Página inicial', 'vapor-hub-loja' ),
+            'cores'       => __( 'Cores', 'vapor-hub-loja' ),
+            'rodape'      => __( 'Rodapé', 'vapor-hub-loja' ),
         ];
 
         return isset( $sufixos[ $acao ] ) ? $base . ' — ' . $sufixos[ $acao ] : $base;

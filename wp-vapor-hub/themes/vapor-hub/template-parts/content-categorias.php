@@ -54,16 +54,19 @@ if ( is_wp_error( $categorias ) || empty( $categorias ) ) :
 endif;
 ?>
 
-<section class="vh-categorias vh-section vh-animar vh-slide-up" aria-label="<?php esc_attr_e( 'Categorias de produtos', 'vapor-hub' ); ?>">
+<section class="vh-categorias vh-categorias--faixa vh-section vh-animar vh-slide-up" aria-label="<?php esc_attr_e( 'Categorias de produtos', 'vapor-hub' ); ?>">
 	<div class="vh-container">
 		<div class="vh-categorias-header vh-text-center">
-			<span class="vh-categorias-eyebrow"><?php esc_html_e( 'Navegue por categoria', 'vapor-hub' ); ?></span>
-			<h2 class="vh-categorias-titulo">
-				<?php esc_html_e( 'O que você procura', 'vapor-hub' ); ?>
-			</h2>
-			<p class="vh-text-muted">
-				<?php esc_html_e( 'Pods, e-líquidos, nicotina oral e acessórios — escolha pelo que você usa.', 'vapor-hub' ); ?>
-			</p>
+			<?php
+			$vh_rotulo = isset( $args['rotulo'] ) ? (string) $args['rotulo'] : __( 'Navegue por categoria', 'vapor-hub' );
+			$vh_titulo = isset( $args['titulo'] ) ? (string) $args['titulo'] : __( 'O que você procura', 'vapor-hub' );
+			?>
+			<?php if ( '' !== $vh_rotulo ) : ?>
+				<span class="vh-categorias-eyebrow"><?php echo esc_html( $vh_rotulo ); ?></span>
+			<?php endif; ?>
+			<?php if ( '' !== $vh_titulo ) : ?>
+				<h2 class="vh-categorias-titulo"><?php echo esc_html( $vh_titulo ); ?></h2>
+			<?php endif; ?>
 		</div>
 
 		<div class="vh-categorias-grid">

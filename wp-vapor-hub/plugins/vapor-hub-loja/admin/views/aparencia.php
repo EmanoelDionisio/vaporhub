@@ -17,14 +17,21 @@ if ( ! in_array( $slides_nav, [ 'dots', 'setas', 'ambos', 'nenhum' ], true ) ) {
     $slides_nav = 'dots';
 }
 
-$icones_disponiveis = VH_Settings::icones_beneficio_disponiveis();
 $total_beneficios   = max( 1, count( $beneficios ) );
+$vh_aba             = class_exists( 'VH_Router' ) ? VH_Router::acao_atual( 'aparencia' ) : 'banner';
+$vh_home            = VH_Settings::obter( 'vh_home', VH_Settings::home_padrao() );
+$vh_home            = wp_parse_args( is_array( $vh_home ) ? $vh_home : [], VH_Settings::home_padrao() );
+$vh_n_destaque      = function_exists( 'vh_home_ids_destaque' ) ? count( vh_home_ids_destaque() ) : 0;
+$vh_n_vendidos      = function_exists( 'vh_home_ids_vendidos' ) ? count( vh_home_ids_vendidos() ) : 0;
 ?>
 
 <div class="vh-admin-wrap">
 
+    <?php require VH_LOJA_DIR . 'admin/views/aparencia/partials/subnav.php'; ?>
+
     <form class="vh-rest-form" id="vh-form-aparencia" data-endpoint="settings/aparencia" data-method="PUT">
 
+        <?php if ( 'banner' === $vh_aba ) : ?>
         <!-- ═══ Slides do Hero (toggle principal — primeira seção) ═══ -->
         <div class="vh-admin-section" id="vh-hero-slides-section">
             <h2><?php esc_html_e( 'Banner da Home — Slides', 'vapor-hub-loja' ); ?></h2>
@@ -240,7 +247,9 @@ $total_beneficios   = max( 1, count( $beneficios ) );
                 </div>
             </div>
         </div><!-- /#vh-hero-conteudo-section -->
+        <?php endif; ?>
 
+        <?php if ( 'inicio' === $vh_aba ) : ?>
         <!-- ═══ Barra de Benefícios ═══ -->
         <div class="vh-admin-section">
             <h2><?php esc_html_e( 'Barra de Benefícios', 'vapor-hub-loja' ); ?></h2>
@@ -256,8 +265,8 @@ $total_beneficios   = max( 1, count( $beneficios ) );
                     <div class="vh-beneficio-item" data-indice="<?php echo esc_attr( $i ); ?>">
                         <div class="vh-beneficio-item-cabeca">
                             <span class="vh-beneficio-ordem"><?php echo esc_html( (string) ( $i + 1 ) ); ?></span>
-                            <div class="vh-beneficio-icone-preview" data-icone="<?php echo esc_attr( $icone ); ?>" aria-hidden="true">
-                                <span class="dashicons <?php echo esc_attr( VH_Settings::dashicon_beneficio( $icone ) ); ?>"></span>
+                            <div class="vh-beneficio-icone-preview" aria-hidden="true">
+                                <span class="vh-menu-icone-atual"><?php echo function_exists( 'vh_menu_icone_html' ) ? vh_menu_icone_html( (string) $icone ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
                             </div>
                             <span class="vh-beneficio-item-titulo-preview"><?php echo esc_html( $item['titulo'] ?: __( 'Novo benefício', 'vapor-hub-loja' ) ); ?></span>
                             <button type="button" class="vh-btn vh-btn--ghost vh-beneficio-remover"
@@ -268,13 +277,7 @@ $total_beneficios   = max( 1, count( $beneficios ) );
                         <div class="vh-beneficio-item-corpo">
                             <div class="vh-form-grupo vh-beneficio-campo-icone">
                                 <label><?php esc_html_e( 'Ícone', 'vapor-hub-loja' ); ?></label>
-                                <select class="vh-beneficio-select-icone" name="vh_beneficios[<?php echo esc_attr( $i ); ?>][icone]">
-                                    <?php foreach ( $icones_disponiveis as $val => $label ) : ?>
-                                        <option value="<?php echo esc_attr( $val ); ?>" <?php selected( $icone, $val ); ?>>
-                                            <?php echo esc_html( $label ); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <?php echo VH_Settings::botao_icone( 'vh_beneficios[' . $i . '][icone]', (string) $icone ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                             </div>
                             <div class="vh-form-grupo">
                                 <label><?php esc_html_e( 'Título', 'vapor-hub-loja' ); ?></label>
@@ -305,6 +308,110 @@ $total_beneficios   = max( 1, count( $beneficios ) );
             </div>
         </div>
 
+        <div class="vh-admin-section">
+            <h2><?php esc_html_e( 'Blocos da página inicial', 'vapor-hub-loja' ); ?></h2>
+            <p class="vh-form-descricao" style="margin-bottom:18px">
+                <?php esc_html_e( 'A ordem é fixa: destaques, categorias, faixa de ofertas, mais vendidos e faixa de destaque. Você escolhe o texto e se cada bloco aparece. As cores vêm de Cores.', 'vapor-hub-loja' ); ?>
+                <a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Ver a loja', 'vapor-hub-loja' ); ?></a>
+            </p>
+
+            <?php
+            $vh_blocos = [
+                'destaques'  => [
+                    'nome'   => __( 'Destaques', 'vapor-hub-loja' ),
+                    'ajuda'  => __( 'O visitante vê os produtos marcados como destaque, logo depois dos benefícios.', 'vapor-hub-loja' ),
+                    'vazio'  => __( 'Ainda não há produtos em destaque. Marque “Produto em destaque” no cadastro do produto.', 'vapor-hub-loja' ),
+                    'contagem' => $vh_n_destaque,
+                ],
+                'categorias' => [
+                    'nome'   => __( 'Categorias', 'vapor-hub-loja' ),
+                    'ajuda'  => __( 'O visitante vê as categorias principais da loja, com a foto de cada uma.', 'vapor-hub-loja' ),
+                    'vazio'  => '',
+                    'contagem' => 1,
+                ],
+                'oferta'     => [
+                    'nome'   => __( 'Faixa de ofertas', 'vapor-hub-loja' ),
+                    'ajuda'  => __( 'Faixa colorida com a cor principal da loja, entre as categorias e os mais vendidos.', 'vapor-hub-loja' ),
+                    'tipo'   => 'faixa',
+                    'link'   => __( 'Vazio abre a loja em promoção', 'vapor-hub-loja' ),
+                    'vazio'  => '',
+                    'contagem' => 1,
+                ],
+                'vendidos'   => [
+                    'nome'   => __( 'Mais vendidos', 'vapor-hub-loja' ),
+                    'ajuda'  => __( 'O visitante vê o que mais vendeu. A lista só aparece depois da primeira venda.', 'vapor-hub-loja' ),
+                    'vazio'  => __( 'Ainda não há vendas suficientes para esta lista.', 'vapor-hub-loja' ),
+                    'contagem' => $vh_n_vendidos,
+                ],
+                'chamada'    => [
+                    'nome'   => __( 'Faixa de destaque', 'vapor-hub-loja' ),
+                    'ajuda'  => __( 'Faixa depois dos mais vendidos. O botão pode abrir uma página, uma categoria ou a loja.', 'vapor-hub-loja' ),
+                    'tipo'   => 'faixa',
+                    'rotulo' => true,
+                    'link'   => __( 'Vazio abre a loja', 'vapor-hub-loja' ),
+                    'vazio'  => '',
+                    'contagem' => 1,
+                ],
+            ];
+            foreach ( $vh_blocos as $vh_chave => $vh_bloco ) :
+                $vh_mostrar = (string) ( $vh_home[ $vh_chave . '_mostrar' ] ?? '1' );
+                ?>
+                <div class="vh-admin-section" style="margin-top:16px">
+                    <h3 style="margin:0 0 8px;font-size:16px"><?php echo esc_html( $vh_bloco['nome'] ); ?></h3>
+                    <label class="vh-switch-linha">
+                        <input type="hidden" name="vh_home[<?php echo esc_attr( $vh_chave ); ?>_mostrar]" value="0" />
+                        <input type="checkbox" class="vh-toggle" name="vh_home[<?php echo esc_attr( $vh_chave ); ?>_mostrar]" value="1" <?php checked( $vh_mostrar, '1' ); ?> />
+                        <span class="vh-switch-texto">
+                            <strong><?php esc_html_e( 'Mostrar na home', 'vapor-hub-loja' ); ?></strong>
+                            <small><?php echo esc_html( $vh_bloco['ajuda'] ); ?></small>
+                        </span>
+                    </label>
+                    <?php if ( '' !== $vh_bloco['vazio'] && $vh_bloco['contagem'] < 1 ) : ?>
+                        <p class="vh-form-descricao"><?php echo esc_html( $vh_bloco['vazio'] ); ?></p>
+                    <?php endif; ?>
+                    <?php if ( 'faixa' === ( $vh_bloco['tipo'] ?? '' ) ) : ?>
+                        <?php if ( ! empty( $vh_bloco['rotulo'] ) ) : ?>
+                        <div class="vh-form-grupo">
+                            <label><?php esc_html_e( 'Linha pequena', 'vapor-hub-loja' ); ?></label>
+                            <input type="text" maxlength="40" name="vh_home[<?php echo esc_attr( $vh_chave ); ?>_rotulo]" value="<?php echo esc_attr( $vh_home[ $vh_chave . '_rotulo' ] ?? '' ); ?>" />
+                        </div>
+                        <?php endif; ?>
+                        <div class="vh-form-grupo">
+                            <label><?php esc_html_e( 'Título', 'vapor-hub-loja' ); ?></label>
+                            <input type="text" maxlength="80" name="vh_home[<?php echo esc_attr( $vh_chave ); ?>_titulo]" value="<?php echo esc_attr( $vh_home[ $vh_chave . '_titulo' ] ?? '' ); ?>" />
+                        </div>
+                        <div class="vh-form-grupo">
+                            <label><?php esc_html_e( 'Frase', 'vapor-hub-loja' ); ?></label>
+                            <input type="text" maxlength="180" name="vh_home[<?php echo esc_attr( $vh_chave ); ?>_texto]" value="<?php echo esc_attr( $vh_home[ $vh_chave . '_texto' ] ?? '' ); ?>" />
+                        </div>
+                        <div class="vh-hero-grid">
+                            <div class="vh-form-grupo">
+                                <label><?php esc_html_e( 'Texto do botão', 'vapor-hub-loja' ); ?></label>
+                                <input type="text" maxlength="40" name="vh_home[<?php echo esc_attr( $vh_chave ); ?>_botao]" value="<?php echo esc_attr( $vh_home[ $vh_chave . '_botao' ] ?? '' ); ?>" />
+                            </div>
+                            <div class="vh-form-grupo">
+                                <label><?php esc_html_e( 'Link do botão', 'vapor-hub-loja' ); ?></label>
+                                <input type="text" name="vh_home[<?php echo esc_attr( $vh_chave ); ?>_link]" value="<?php echo esc_attr( $vh_home[ $vh_chave . '_link' ] ?? '' ); ?>" placeholder="<?php echo esc_attr( $vh_bloco['link'] ); ?>" />
+                            </div>
+                        </div>
+                    <?php else : ?>
+                        <div class="vh-hero-grid">
+                            <div class="vh-form-grupo">
+                                <label><?php esc_html_e( 'Linha pequena', 'vapor-hub-loja' ); ?></label>
+                                <input type="text" maxlength="40" name="vh_home[<?php echo esc_attr( $vh_chave ); ?>_rotulo]" value="<?php echo esc_attr( $vh_home[ $vh_chave . '_rotulo' ] ?? '' ); ?>" />
+                            </div>
+                            <div class="vh-form-grupo">
+                                <label><?php esc_html_e( 'Título', 'vapor-hub-loja' ); ?></label>
+                                <input type="text" maxlength="80" name="vh_home[<?php echo esc_attr( $vh_chave ); ?>_titulo]" value="<?php echo esc_attr( $vh_home[ $vh_chave . '_titulo' ] ?? '' ); ?>" />
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+
+        <?php if ( 'rodape' === $vh_aba ) : ?>
         <!-- ═══ Rodapé ═══ -->
         <div class="vh-admin-section">
             <h2><?php esc_html_e( 'Rodapé', 'vapor-hub-loja' ); ?></h2>
@@ -337,41 +444,65 @@ $total_beneficios   = max( 1, count( $beneficios ) );
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
+        <?php if ( 'cores' === $vh_aba ) : ?>
         <!-- ═══ Identidade Visual e Cards da Loja ═══ -->
         <div class="vh-admin-section">
             <h2><?php esc_html_e( 'Identidade Visual e Cards da Loja (geral)', 'vapor-hub-loja' ); ?></h2>
             <p style="color:var(--vh-cinza-500);margin-bottom:20px;font-size:13px">
-                <?php esc_html_e( 'Configurações que valem para o site inteiro: logo, favicon, tipografia, paleta de cores e visual dos cards de produto.', 'vapor-hub-loja' ); ?>
+                <?php esc_html_e( 'Marca, favicon, tipografia, paleta do modo claro, paleta do modo escuro e visual dos cards. Vale para o site inteiro.', 'vapor-hub-loja' ); ?>
             </p>
 
             <div class="vh-hero-grid">
+                <?php
+                $vh_marcas = array(
+                    'logo_url' => array(
+                        'rotulo' => __( 'Marca do modo claro', 'vapor-hub-loja' ),
+                        'id'     => 'vh-logo-claro',
+                        'ajuda'  => __( 'Aparece no cabeçalho e no rodapé quando o visitante está no modo claro. PNG com fundo transparente, cerca de 400×160 px.', 'vapor-hub-loja' ),
+                    ),
+                    'logo_escuro_url' => array(
+                        'rotulo' => __( 'Marca do modo escuro', 'vapor-hub-loja' ),
+                        'id'     => 'vh-logo-escuro',
+                        'ajuda'  => __( 'Versão da marca para o fundo escuro. Se ficar vazia, a loja usa a marca do modo claro.', 'vapor-hub-loja' ),
+                    ),
+                    'logo_painel_url' => array(
+                        'rotulo' => __( 'Marca do painel', 'vapor-hub-loja' ),
+                        'id'     => 'vh-logo-painel',
+                        'ajuda'  => __( 'Aparece na lateral do Minha Loja e na tela de entrada. Se ficar vazia, usa a marca do modo claro.', 'vapor-hub-loja' ),
+                    ),
+                );
+                foreach ( $vh_marcas as $vh_chave_marca => $vh_marca ) :
+                    $vh_url_marca = $identidade[ $vh_chave_marca ] ?? '';
+                    ?>
                 <div class="vh-form-grupo">
-                    <label><?php esc_html_e( 'Logo da Loja (override do tema)', 'vapor-hub-loja' ); ?></label>
+                    <label><?php echo esc_html( $vh_marca['rotulo'] ); ?></label>
                     <div class="vh-upload-wrapper">
-                        <div class="vh-upload-preview" id="vh-logo-preview">
-                            <?php if ( ! empty( $identidade['logo_url'] ) ) : ?>
-                                <img src="<?php echo esc_url( $identidade['logo_url'] ); ?>" alt="" />
+                        <div class="vh-upload-preview" id="<?php echo esc_attr( $vh_marca['id'] ); ?>-preview">
+                            <?php if ( $vh_url_marca ) : ?>
+                                <img src="<?php echo esc_url( $vh_url_marca ); ?>" alt="" />
                             <?php else : ?>
                                 <span class="dashicons dashicons-format-image"></span>
                             <?php endif; ?>
                         </div>
-                        <input type="hidden" name="vh_identidade_visual[logo_url]" id="vh-logo-url"
-                               value="<?php echo esc_attr( $identidade['logo_url'] ?? '' ); ?>" />
+                        <input type="hidden" name="vh_identidade_visual[<?php echo esc_attr( $vh_chave_marca ); ?>]" id="<?php echo esc_attr( $vh_marca['id'] ); ?>-url"
+                               value="<?php echo esc_attr( $vh_url_marca ); ?>" />
                         <button type="button" class="vh-btn vh-btn--secundario vh-upload-btn"
                                 data-crop="logo"
-                                data-target="#vh-logo-url" data-preview="#vh-logo-preview">
-                            <?php esc_html_e( 'Selecionar Logo', 'vapor-hub-loja' ); ?>
+                                data-target="#<?php echo esc_attr( $vh_marca['id'] ); ?>-url" data-preview="#<?php echo esc_attr( $vh_marca['id'] ); ?>-preview">
+                            <?php esc_html_e( 'Selecionar', 'vapor-hub-loja' ); ?>
                         </button>
-                        <?php if ( ! empty( $identidade['logo_url'] ) ) : ?>
+                        <?php if ( $vh_url_marca ) : ?>
                             <button type="button" class="vh-btn vh-btn--ghost vh-upload-limpar"
-                                    data-target="#vh-logo-url" data-preview="#vh-logo-preview">
+                                    data-target="#<?php echo esc_attr( $vh_marca['id'] ); ?>-url" data-preview="#<?php echo esc_attr( $vh_marca['id'] ); ?>-preview">
                                 <?php esc_html_e( 'Remover', 'vapor-hub-loja' ); ?>
                             </button>
                         <?php endif; ?>
-                        <p class="vh-form-descricao"><?php esc_html_e( 'Use PNG com fundo transparente. O sistema converte para WebP mantendo a transparência e otimiza para ~400×160 px.', 'vapor-hub-loja' ); ?></p>
+                        <p class="vh-form-descricao"><?php echo esc_html( $vh_marca['ajuda'] ); ?></p>
                     </div>
                 </div>
+                <?php endforeach; ?>
                 <div class="vh-form-grupo">
                     <label><?php esc_html_e( 'Favicon (ícone do site)', 'vapor-hub-loja' ); ?></label>
                     <div class="vh-upload-wrapper">
@@ -451,6 +582,31 @@ $total_beneficios   = max( 1, count( $beneficios ) );
                 </div>
             </div>
 
+            <h3><?php esc_html_e( 'Modo escuro', 'vapor-hub-loja' ); ?></h3>
+            <p class="vh-form-descricao"><?php esc_html_e( 'Cores de quando o visitante liga o modo escuro. A cor principal continua a mesma dos dois modos.', 'vapor-hub-loja' ); ?></p>
+            <div class="vh-hero-grid">
+                <div class="vh-form-grupo">
+                    <label><?php esc_html_e( 'Fundo', 'vapor-hub-loja' ); ?></label>
+                    <input type="color" name="vh_identidade_visual[cor_fundo_escuro]" value="<?php echo esc_attr( $identidade['cor_fundo_escuro'] ?? '#0e0b14' ); ?>" />
+                </div>
+                <div class="vh-form-grupo">
+                    <label><?php esc_html_e( 'Superfície', 'vapor-hub-loja' ); ?></label>
+                    <input type="color" name="vh_identidade_visual[cor_superficie_escuro]" value="<?php echo esc_attr( $identidade['cor_superficie_escuro'] ?? '#17141f' ); ?>" />
+                </div>
+                <div class="vh-form-grupo">
+                    <label><?php esc_html_e( 'Texto', 'vapor-hub-loja' ); ?></label>
+                    <input type="color" name="vh_identidade_visual[cor_texto_escuro]" value="<?php echo esc_attr( $identidade['cor_texto_escuro'] ?? '#f4f1fa' ); ?>" />
+                </div>
+                <div class="vh-form-grupo">
+                    <label><?php esc_html_e( 'Texto suave', 'vapor-hub-loja' ); ?></label>
+                    <input type="color" name="vh_identidade_visual[cor_texto_suave_escuro]" value="<?php echo esc_attr( $identidade['cor_texto_suave_escuro'] ?? '#9b94ab' ); ?>" />
+                </div>
+                <div class="vh-form-grupo">
+                    <label><?php esc_html_e( 'Borda', 'vapor-hub-loja' ); ?></label>
+                    <input type="color" name="vh_identidade_visual[cor_borda_escuro]" value="<?php echo esc_attr( $identidade['cor_borda_escuro'] ?? '#2c2738' ); ?>" />
+                </div>
+            </div>
+
             <div class="vh-hero-grid">
                 <div class="vh-form-grupo">
                     <label><?php esc_html_e( 'Estilo dos Cards de Produto', 'vapor-hub-loja' ); ?></label>
@@ -469,6 +625,7 @@ $total_beneficios   = max( 1, count( $beneficios ) );
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
         <p>
             <button type="submit" class="vh-btn vh-btn--primario"><?php esc_html_e( 'Salvar Aparência', 'vapor-hub-loja' ); ?></button>
@@ -541,8 +698,8 @@ $total_beneficios   = max( 1, count( $beneficios ) );
     <div class="vh-beneficio-item" data-indice="{{INDEX}}">
         <div class="vh-beneficio-item-cabeca">
             <span class="vh-beneficio-ordem">{{NUMERO}}</span>
-            <div class="vh-beneficio-icone-preview" data-icone="check-circle" aria-hidden="true">
-                <span class="dashicons dashicons-yes-alt"></span>
+            <div class="vh-beneficio-icone-preview" aria-hidden="true">
+                <span class="vh-menu-icone-atual"><?php echo function_exists( 'vh_menu_icone_html' ) ? vh_menu_icone_html( 'check-circle' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
             </div>
             <span class="vh-beneficio-item-titulo-preview"><?php esc_html_e( 'Novo benefício', 'vapor-hub-loja' ); ?></span>
             <button type="button" class="vh-btn vh-btn--ghost vh-beneficio-remover"
@@ -553,13 +710,7 @@ $total_beneficios   = max( 1, count( $beneficios ) );
         <div class="vh-beneficio-item-corpo">
             <div class="vh-form-grupo vh-beneficio-campo-icone">
                 <label><?php esc_html_e( 'Ícone', 'vapor-hub-loja' ); ?></label>
-                <select class="vh-beneficio-select-icone" name="vh_beneficios[{{INDEX}}][icone]">
-                    <?php foreach ( $icones_disponiveis as $val => $label ) : ?>
-                        <option value="<?php echo esc_attr( $val ); ?>" <?php selected( 'check-circle', $val ); ?>>
-                            <?php echo esc_html( $label ); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <?php echo VH_Settings::botao_icone( 'vh_beneficios[{{INDEX}}][icone]', 'check-circle' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </div>
             <div class="vh-form-grupo">
                 <label><?php esc_html_e( 'Título', 'vapor-hub-loja' ); ?></label>

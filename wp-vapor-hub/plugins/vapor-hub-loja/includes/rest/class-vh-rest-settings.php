@@ -102,6 +102,7 @@ class VH_REST_Settings extends VH_REST_Controller {
             case 'aparencia':
                 return [
                     'vh_hero'              => VH_Settings::obter( 'vh_hero' ),
+                    'vh_home'              => VH_Settings::obter( 'vh_home', VH_Settings::home_padrao() ),
                     'vh_beneficios'        => VH_Settings::obter( 'vh_beneficios', VH_Settings::beneficios_padrao() ),
                     'vh_rodape'            => VH_Settings::obter( 'vh_rodape' ),
                     'vh_identidade_visual' => VH_Settings::obter( 'vh_identidade_visual', VH_Settings::identidade_visual_padrao() ),
@@ -134,6 +135,9 @@ class VH_REST_Settings extends VH_REST_Controller {
         }
         if ( isset( $corpo['vh_beneficios'] ) ) {
             update_option( 'vh_beneficios', VH_Settings::sanitizar_beneficios( $corpo['vh_beneficios'] ) );
+        }
+        if ( isset( $corpo['vh_home'] ) ) {
+            update_option( 'vh_home', VH_Settings::sanitizar_home( $corpo['vh_home'] ) );
         }
         if ( isset( $corpo['vh_rodape'] ) ) {
             update_option( 'vh_rodape', VH_Settings::sanitizar_rodape( $corpo['vh_rodape'] ) );

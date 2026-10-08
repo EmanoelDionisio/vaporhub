@@ -1,0 +1,17 @@
+---
+description: Lê e reescreve o contexto vivo do Vapor Hub a cada ajuste
+alwaysApply: true
+---
+
+# Contexto vivo
+
+O estado atual do trabalho está em `.cursor/contexto.md`. A conversa anterior não substitui esse arquivo.
+
+- No começo de uma implementação, correção ou decisão neste projeto, leia `.cursor/contexto.md` antes de mudar código.
+- Ao terminar um ajuste que mude o que está valendo, reescreva o arquivo inteiro. Substitua o texto. Não acrescente um diário.
+- Cabe só isto: decisão em vigor, o que já funciona, o que ficou de fora de propósito, o que não pode regredir, e se há mudança local ainda sem commit.
+- Máximo de cerca de 40 linhas. Sem segredo, senha, histórico antigo ou plano que já foi abandonado.
+- Se o arquivo e o código discordarem, o código manda. Atualize o arquivo para o código.
+
+Exemplo do que entra: “A faixa de ofertas usa a cor principal. O link vazio abre a loja em promoção.”
+Exemplo do que fica de fora: a lista de arquivos editados na sessão e o relato de cada tentativa.

@@ -47,8 +47,13 @@ class VH_Media_Profiles {
             'logo'          => [
                 'width'  => 400,
                 'height' => 160,
-                'label'  => __( 'Logo (400×160)', 'vapor-hub-loja' ),
+                'label'  => __( 'Logo (até 400×160)', 'vapor-hub-loja' ),
                 'ratio'  => 2.5,
+                /*
+                 * O recorte acompanha a arte. A saída cabe em 400×160 sem esticar.
+                 * As três marcas do painel usam este mesmo perfil.
+                 */
+                'proporcional'            => true,
                 /* Mantém canal alpha (PNG → WebP com transparência). */
                 'preservar_transparencia' => true,
             ],
@@ -104,8 +109,30 @@ class VH_Media_Profiles {
         $src_h  = (int) $tamanho['height'];
 
         /*
-         * Logo: o cropper já exporta PNG 400×160 com transparência — reprocessar no
-         * editor GD costuma achatar o alpha (fundo preto). Pula se já está no tamanho.
+         * Logo: o navegador já entrega a arte proporcional, no máximo 400×160.
+         * Reprocessar no GD achata a transparência e forçaria de novo o retângulo fixo.
+         */
+        if ( ! empty( $perfil['proporcional'] ) ) {
+            if ( $src_w <= $dest_w && $src_h <= $dest_h ) {
+                return true;
+            }
+
+            $redim = $editor->resize( $dest_w, $dest_h, false );
+            if ( is_wp_error( $redim ) ) {
+                return $redim;
+            }
+
+            $salvo = $editor->save( $caminho );
+            if ( is_wp_error( $salvo ) ) {
+                return $salvo;
+            }
+
+            return true;
+        }
+
+        /*
+         * Logo no tamanho exato: o cropper já exportou PNG 400×160 com transparência.
+         * Reprocessar no editor GD costuma achatar o alpha (fundo preto).
          */
         if ( ! empty( $perfil['preservar_transparencia'] ) && $src_w === $dest_w && $src_h === $dest_h ) {
             return true;
@@ -159,6 +186,7 @@ class VH_Media_Profiles {
                 'label'  => (string) $perfil['label'],
                 'ratio'  => (float) $perfil['ratio'],
                 'transparente' => ! empty( $perfil['preservar_transparencia'] ),
+                'proporcional' => ! empty( $perfil['proporcional'] ),
             ];
         }
         return $saida;
@@ -207,6 +235,7 @@ class VH_Media_Profiles {
                     'erroUpload'       => __( 'Não foi possível enviar a imagem. Tente novamente.', 'vapor-hub-loja' ),
                     'erroArquivo'      => __( 'Selecione um arquivo de imagem válido (JPEG, PNG ou WebP).', 'vapor-hub-loja' ),
                     'arraste'          => __( 'Arraste para enquadrar. A imagem será salva no tamanho ideal para o site.', 'vapor-hub-loja' ),
+                    'arrasteLogo'      => __( 'Arraste para enquadrar. A marca cabe em até 400×160, proporcional, sem esticar.', 'vapor-hub-loja' ),
                 ],
             ]
         );

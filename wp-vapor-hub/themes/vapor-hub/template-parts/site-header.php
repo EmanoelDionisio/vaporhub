@@ -25,8 +25,8 @@ if ( function_exists( 'WC' ) && WC()->cart ) {
 		<div class="vh-header-logo">
 			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vh-header-logo-link" rel="home">
 				<?php
-				if ( function_exists( 'vh_logo_imagem_html' ) ) {
-					echo vh_logo_imagem_html(
+				if ( function_exists( 'vh_logo_par_html' ) ) {
+					echo vh_logo_par_html(
 						array(
 							'class'         => 'vh-header-logo-img',
 							'loading'       => 'eager',
