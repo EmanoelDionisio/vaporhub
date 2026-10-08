@@ -1415,17 +1415,20 @@ body.woocommerce-checkout .wc-block-components-totals-item__value {
    ========================================================================= */
 
 .woocommerce .star-rating {
-	color: #facc15;
-	font-size: var(--vh-fonte-sm);
+	color: var(--vh-cor-primaria);
+	font-size: 0.95rem;
+	letter-spacing: 0.08em;
 	overflow: hidden;
 	position: relative;
 	height: 1em;
 	line-height: 1;
-	width: 5.4em;
+	width: 6.2em;
 }
 
 .woocommerce .star-rating::before {
-	content: "\73\73\73\73\73";
+	content: "★★★★★";
+	font-family: var(--vh-fonte-familia), sans-serif;
+	letter-spacing: 0.08em;
 	color: var(--vh-cor-borda);
 	float: left;
 	top: 0;
@@ -1443,43 +1446,137 @@ body.woocommerce-checkout .wc-block-components-totals-item__value {
 }
 
 .woocommerce .star-rating span::before {
-	content: "\53\53\53\53\53";
+	content: "★★★★★";
+	font-family: var(--vh-fonte-familia), sans-serif;
+	letter-spacing: 0.08em;
 	top: 0;
 	position: absolute;
 	left: 0;
-	color: #facc15;
+	color: var(--vh-cor-primaria);
 }
 
-.woocommerce p.stars a {
+.woocommerce #reviews p.stars {
+	margin: 0 0 var(--vh-espaco-4);
+	line-height: 1;
+}
+
+.woocommerce #reviews p.stars span {
+	display: inline-flex;
+	gap: 0.15rem;
+}
+
+.woocommerce #reviews p.stars a {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	overflow: hidden;
+	text-indent: -9999px;
+	text-decoration: none;
 	color: var(--vh-cor-borda-forte);
-	transition: var(--vh-transicao-rapida);
 }
 
-.woocommerce p.stars a:hover,
-.woocommerce p.stars a.active {
-	color: #facc15;
+.woocommerce #reviews p.stars a::before {
+	content: "★";
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-indent: 0;
+	font-size: 1.35rem;
+	line-height: 1;
+	color: var(--vh-cor-borda-forte);
 }
 
-/* Formulário de avaliação */
-.woocommerce #reviews #comment {
+.woocommerce #reviews p.stars:hover a::before,
+.woocommerce #reviews p.stars.selected a.active::before,
+.woocommerce #reviews p.stars.selected a:not(.active)::before {
+	color: var(--vh-cor-primaria);
+}
+
+.woocommerce #reviews p.stars a:hover ~ a::before,
+.woocommerce #reviews p.stars.selected a.active ~ a::before,
+.woocommerce #reviews p.stars.selected a:hover ~ a::before {
+	color: var(--vh-cor-borda-forte);
+}
+
+.woocommerce #reviews #comment,
+.woocommerce #reviews .comment-form input[type="text"],
+.woocommerce #reviews .comment-form input[type="email"] {
 	width: 100%;
 	padding: var(--vh-espaco-3) var(--vh-espaco-4);
 	font-family: var(--vh-fonte-familia);
 	font-size: var(--vh-fonte-base);
+	color: var(--vh-cor-texto);
+	background-color: var(--vh-cor-fundo);
 	border: 1px solid var(--vh-cor-borda);
 	border-radius: var(--vh-raio-lg);
-	min-height: 100px;
+	min-height: 8rem;
 	resize: vertical;
 	outline: none;
+	box-shadow: none;
 }
 
-.woocommerce #reviews #comment:focus {
+.woocommerce #reviews .comment-form input[type="text"],
+.woocommerce #reviews .comment-form input[type="email"] {
+	min-height: 2.75rem;
+	resize: none;
+}
+
+.woocommerce #reviews #comment:focus,
+.woocommerce #reviews .comment-form input[type="text"]:focus,
+.woocommerce #reviews .comment-form input[type="email"]:focus {
 	border-color: var(--vh-cor-primaria);
 	box-shadow: 0 0 0 3px var(--vh-cor-primaria-leve);
 }
 
+.woocommerce #reviews .comment-form label,
 .woocommerce #reviews .comment-form-rating label {
+	font-family: var(--vh-fonte-familia);
+	font-size: var(--vh-fonte-sm);
 	font-weight: var(--vh-fonte-peso-semi);
+	color: var(--vh-cor-texto);
+}
+
+.woocommerce #reviews .required {
+	color: var(--vh-cor-primaria);
+}
+
+.woocommerce #reviews #submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 2.75rem;
+	margin-top: var(--vh-espaco-2);
+	padding: var(--vh-espaco-3) var(--vh-espaco-6);
+	font-family: var(--vh-fonte-familia);
+	font-size: var(--vh-fonte-sm);
+	font-weight: var(--vh-fonte-peso-semi);
+	line-height: 1;
+	color: var(--vh-cor-texto-invertido);
+	background-color: var(--vh-cor-primaria);
+	border: 2px solid var(--vh-cor-primaria);
+	border-radius: var(--vh-raio-xl);
+	cursor: pointer;
+	appearance: none;
+	transition: var(--vh-transicao);
+}
+
+.woocommerce #reviews #submit:hover,
+.woocommerce #reviews #submit:focus-visible {
+	background-color: var(--vh-cor-primaria-hover);
+	border-color: var(--vh-cor-primaria-hover);
+	color: var(--vh-cor-texto-invertido);
+}
+
+@media (min-width: 576px) {
+	.woocommerce #reviews #submit {
+		width: auto;
+	}
 }
 
 /* =========================================================================

@@ -2,7 +2,7 @@
 
 Loja WooCommerce neste repositório. Não mexer em Piscou Afundou, CIA do Vapor nem em produção até pedirem. Não fazer commit nem push sem pedido.
 
-Último envio no GitHub: menus (`a267ce8`) e paginação (`375ceac`) em `main`. O que veio depois está só na máquina, sem commit. Versões locais: plugin `3.16.32`, tema `1.0.97`.
+Último envio no GitHub: home e marcas no painel (`d13b3de`) em `main`. Avaliações e o ajuste de largura do produto no celular estão só na máquina, sem commit. Versões locais: plugin `3.16.32`, tema `1.0.99`.
 
 ## Home
 
@@ -11,6 +11,10 @@ Ordem fixa: banner, benefícios, destaques, categorias, faixa de ofertas, mais v
 A faixa de ofertas usa a cor principal do painel. Link vazio abre a loja com `vh_promocao=1`. A faixa de destaque é um cartão com superfície, texto e borda do tema. Link vazio abre a loja.
 
 No celular, destaques e mais vendidos ficam em duas colunas, com o nome em duas linhas e o botão na largura do card. A partir de 768 px voltam à grade de quatro. A loja em si não muda.
+
+A avaliação do produto usa as cores do painel: estrelas na cor principal, campo com fundo e borda do tema, e o envio no botão principal. No celular o botão ocupa a largura.
+
+Na página do produto, no celular, a galeria, o nome, a compra e as abas ficam dentro da tela. As fotos extras rolam dentro da galeria.
 
 Marcas separadas: modo claro (`logo_url`), modo escuro (`logo_escuro_url`), painel (`logo_painel_url`) e favicon. Escura ou do painel vazia reutiliza a clara. O recorte das três marcas é o mesmo perfil: o quadro acompanha a arte e a imagem salva cabe em até 400×160, proporcional, sem esticar. Favicon e as outras imagens continuam no retângulo fixo. O modo escuro (fundo, superfície, texto, texto suave, borda) sai do painel. A cor principal é a mesma nos dois modos.
 

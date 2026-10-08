@@ -19,7 +19,7 @@ require_once get_stylesheet_directory() . '/includes/vh-menu-icones.php';
 require_once get_stylesheet_directory() . '/includes/class-vh-menu-walker.php';
 
 /** Versão do tema — usada para cache-busting dos assets */
-define( 'VH_VERSION', '1.0.97' );
+define( 'VH_VERSION', '1.0.99' );
 
 /** Máximo de requisições de cálculo de frete (PDP) por IP por minuto. */
 define( 'VH_FRETE_PRODUTO_RATE_LIMIT', 30 );
