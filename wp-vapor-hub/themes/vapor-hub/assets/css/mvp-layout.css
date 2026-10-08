@@ -1223,6 +1223,7 @@ body.vh-menu-aberto .vh-nav-mobile {
 #vh-loja-produtos {
 	position: relative;
 	min-height: 200px;
+	overflow-anchor: none;
 }
 
 .vh-loja-filtros-ativos {

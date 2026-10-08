@@ -134,7 +134,7 @@ final class VH_Loja_Filtros {
 			'categoria'            => $request->get_param( 'categoria' ),
 		);
 
-		$cache_key = 'vh_loja_ajax_' . md5( wp_json_encode( $params ) );
+		$cache_key = 'vh_loja_lista_' . md5( wp_json_encode( $params ) );
 		$cached    = get_transient( $cache_key );
 		if ( is_array( $cached ) ) {
 			return new WP_REST_Response( $cached, 200 );
@@ -370,7 +370,7 @@ final class VH_Loja_Filtros {
 				'colunas'         => 3,
 				'max_paginas'     => $max_paginas,
 				'pagina_atual'    => $pagina_atual,
-				'paginacao_base'  => remove_query_arg( 'paged', self::url_com_estado( $estado ) ),
+				'paginacao_base'  => self::url_com_estado( array_merge( $estado, array( 'paged' => 1 ) ) ),
 			)
 		);
 		$html = (string) ob_get_clean();
@@ -464,7 +464,7 @@ final class VH_Loja_Filtros {
 	 * @param string|null          $base   URL base opcional.
 	 */
 	public static function url_com_estado( array $estado, ?string $base = null ): string {
-		$url = $base ?? self::url_base();
+		$url = $base ?? self::url_do_contexto( $estado );
 
 		$args = array();
 
@@ -500,15 +500,109 @@ final class VH_Loja_Filtros {
 			$args['max_price'] = self::formatar_preco_url( (float) $estado['preco_max'] );
 		}
 
-		if ( ! empty( $estado['orderby'] ) ) {
+		if ( ! empty( $estado['orderby'] ) && 'menu_order' !== $estado['orderby'] ) {
 			$args['orderby'] = $estado['orderby'];
 		}
 
-		if ( ! empty( $estado['paged'] ) && (int) $estado['paged'] > 1 ) {
-			$args['paged'] = (int) $estado['paged'];
+		if ( ! empty( $args ) ) {
+			$url = add_query_arg( $args, $url );
 		}
 
-		return ! empty( $args ) ? add_query_arg( $args, $url ) : $url;
+		$pagina = ! empty( $estado['paged'] ) ? (int) $estado['paged'] : 1;
+
+		return self::url_na_pagina( $url, $pagina );
+	}
+
+	/**
+	 * Endereço da categoria atual, no caminho público, ou da loja quando não há categoria.
+	 *
+	 * @param array<string, mixed> $estado Estado.
+	 */
+	private static function url_do_contexto( array $estado ): string {
+		if ( ! empty( $estado['categoria'] ) ) {
+			$termo = get_term_by( 'slug', sanitize_title( (string) $estado['categoria'] ), 'product_cat' );
+			if ( $termo instanceof WP_Term ) {
+				$link = get_term_link( $termo );
+				if ( ! is_wp_error( $link ) && is_string( $link ) && '' !== $link ) {
+					return $link;
+				}
+			}
+		}
+
+		return self::url_base();
+	}
+
+	/**
+	 * Base do paginate_links com o mesmo /page/N/ da vitrine.
+	 */
+	public static function base_paginacao( string $url ): string {
+		$limpa  = self::url_na_pagina( $url, 1 );
+		$partes = wp_parse_url( $limpa );
+		if ( ! is_array( $partes ) ) {
+			return $limpa;
+		}
+
+		$path = trailingslashit( (string) ( $partes['path'] ?? '/' ) ) . 'page/%#%/';
+
+		return self::remontar_url( $partes, $path );
+	}
+
+	/**
+	 * Tira da paginação parâmetros internos que o pedido AJAX carrega.
+	 */
+	public static function limpar_link_paginacao( string $link ): string {
+		$link  = remove_query_arg( array( 'categoria', 'paged' ), $link );
+		$query = wp_parse_url( $link, PHP_URL_QUERY );
+		if ( is_string( $query ) && '' !== $query ) {
+			$args = array();
+			parse_str( $query, $args );
+			if ( isset( $args['orderby'] ) && 'menu_order' === $args['orderby'] ) {
+				$link = remove_query_arg( 'orderby', $link );
+			}
+		}
+
+		return $link;
+	}
+
+	/**
+	 * Coloca a página no caminho (/page/2/) e tira ?paged=, que o WordPress devolve para o caminho.
+	 */
+	private static function url_na_pagina( string $url, int $pagina ): string {
+		$url    = remove_query_arg( 'paged', $url );
+		$partes = wp_parse_url( $url );
+		if ( ! is_array( $partes ) ) {
+			return $url;
+		}
+
+		$path = (string) ( $partes['path'] ?? '/' );
+		$path = (string) preg_replace( '#/page/[0-9]+/?$#', '/', $path );
+		if ( $pagina > 1 ) {
+			$path = trailingslashit( $path ) . 'page/' . $pagina . '/';
+		}
+
+		return self::remontar_url( $partes, $path );
+	}
+
+	/**
+	 * @param array<string, mixed> $partes
+	 */
+	private static function remontar_url( array $partes, string $path ): string {
+		$url = '';
+		if ( ! empty( $partes['scheme'] ) && ! empty( $partes['host'] ) ) {
+			$url .= $partes['scheme'] . '://' . $partes['host'];
+			if ( ! empty( $partes['port'] ) ) {
+				$url .= ':' . $partes['port'];
+			}
+		}
+		$url .= '' !== $path ? $path : '/';
+		if ( ! empty( $partes['query'] ) ) {
+			$url .= '?' . $partes['query'];
+		}
+		if ( ! empty( $partes['fragment'] ) ) {
+			$url .= '#' . $partes['fragment'];
+		}
+
+		return $url;
 	}
 
 	/**

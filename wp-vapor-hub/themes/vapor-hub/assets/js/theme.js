@@ -1267,6 +1267,34 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		var debounceTimer = null;
 		var paginaAtual  = 1;
 
+		function paginaDaUrl(href) {
+			var texto = href || '';
+			var absoluta = null;
+			try {
+				absoluta = new URL(texto, window.location.href);
+			} catch (erro) {
+				absoluta = null;
+			}
+			if (absoluta) {
+				var caminho = absoluta.pathname.match(/\/page\/(\d+)\/?$/);
+				if (caminho) {
+					return parseInt(caminho[1], 10);
+				}
+				var consulta = absoluta.searchParams.get('paged');
+				if (consulta) {
+					var pelaConsulta = parseInt(consulta, 10);
+					if (pelaConsulta > 0) {
+						return pelaConsulta;
+					}
+				}
+				return 1;
+			}
+			var legado = texto.match(/\/page\/(\d+)\/?/) || texto.match(/[?&]paged=(\d+)/);
+			return legado ? parseInt(legado[1], 10) : 1;
+		}
+
+		paginaAtual = paginaDaUrl(window.location.href);
+
 		var flags      = painel.querySelectorAll( '.vh-loja-filtro-flag' );
 		var rangeWrap  = painel.querySelector( '[data-vh-preco-teto]' );
 		var rangeMin   = rangeWrap ? rangeWrap.querySelector( '.vh-loja-range-min' ) : null;
@@ -1350,7 +1378,7 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			if ( estado.max > 0 && estado.max < teto ) {
 				params.set( 'max_price', String( estado.max ) );
 			}
-			if ( estado.orderby ) {
+			if ( estado.orderby && estado.orderby !== 'menu_order' ) {
 				params.set( 'orderby', estado.orderby );
 			}
 			if ( estado.paged > 1 ) {
@@ -1384,6 +1412,13 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		}
 
 		function aplicarResposta( data ) {
+			var rolagem = window.scrollY;
+			var raiz = document.documentElement;
+			var comportamento = raiz.style.scrollBehavior;
+			raiz.style.scrollBehavior = 'auto';
+			if ( document.activeElement && grid.contains( document.activeElement ) ) {
+				document.activeElement.blur();
+			}
 			if ( data.html ) {
 				grid.innerHTML = data.html;
 			}
@@ -1395,6 +1430,11 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			if ( data.url && window.history && window.history.replaceState ) {
 				window.history.replaceState( { paLojaFiltros: true }, '', data.url );
 			}
+			window.scrollTo( 0, rolagem );
+			window.requestAnimationFrame( function () {
+				window.scrollTo( 0, rolagem );
+				raiz.style.scrollBehavior = comportamento;
+			} );
 		}
 
 		function buscar( imediato ) {
@@ -1532,11 +1572,9 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			}
 
 			var pag = alvo && alvo.closest ? alvo.closest( '#vh-loja-produtos .page-numbers' ) : null;
-			if ( pag && grid.contains( pag ) ) {
+			if ( pag && grid.contains( pag ) && pag.tagName === 'A' ) {
 				ev.preventDefault();
-				var href = pag.getAttribute( 'href' ) || '';
-				var match = href.match( /[?&]paged=(\d+)/ );
-				paginaAtual = match ? parseInt( match[1], 10 ) : 1;
+				paginaAtual = paginaDaUrl( pag.getAttribute( 'href' ) || '' );
 				buscar( true );
 			}
 		} );
@@ -1558,11 +1596,12 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			if ( inputMax ) {
 				inputMax.value = params.get( 'max_price' ) || String( teto );
 			}
-			if ( ordering && params.has( 'orderby' ) ) {
-				ordering.value = params.get( 'orderby' );
+			if ( ordering ) {
+				var ordem = params.get( 'orderby' );
+				ordering.value = ordem && ordem !== 'menu_order' ? ordem : 'menu_order';
 			}
 
-			paginaAtual = params.get( 'paged' ) ? parseInt( params.get( 'paged' ), 10 ) : 1;
+			paginaAtual = paginaDaUrl( window.location.href );
 			sincronizarUi( 'min' );
 			buscar( true );
 		} );

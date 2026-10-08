@@ -46,11 +46,18 @@ wp_reset_postdata();
 woocommerce_product_loop_end();
 
 if ( ! empty( $max_paginas ) && $max_paginas > 1 && ! empty( $pagina_atual ) ) {
-	$base_pag = ! empty( $paginacao_base ) ? $paginacao_base : remove_query_arg( 'paged' );
+	$base_pag  = ! empty( $paginacao_base ) ? $paginacao_base : remove_query_arg( 'paged' );
+	$base_link = class_exists( 'VH_Loja_Filtros' )
+		? VH_Loja_Filtros::base_paginacao( $base_pag )
+		: trailingslashit( $base_pag ) . 'page/%#%/';
 	echo '<nav class="woocommerce-pagination" aria-label="' . esc_attr__( 'Paginação de produtos', 'vapor-hub' ) . '">';
+	$limpar = class_exists( 'VH_Loja_Filtros' ) ? array( 'VH_Loja_Filtros', 'limpar_link_paginacao' ) : null;
+	if ( $limpar ) {
+		add_filter( 'paginate_links', $limpar );
+	}
 	echo paginate_links( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		array(
-			'base'      => esc_url_raw( add_query_arg( 'paged', '%#%', $base_pag ) ),
+			'base'      => $base_link,
 			'format'    => '',
 			'current'   => max( 1, (int) $pagina_atual ),
 			'total'     => (int) $max_paginas,
@@ -59,5 +66,8 @@ if ( ! empty( $max_paginas ) && $max_paginas > 1 && ! empty( $pagina_atual ) ) {
 			'next_text' => '&rarr;',
 		)
 	);
+	if ( $limpar ) {
+		remove_filter( 'paginate_links', $limpar );
+	}
 	echo '</nav>';
 }
