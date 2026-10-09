@@ -109,6 +109,28 @@ if (str_contains($c, $needle)) {
 file_put_contents($f, $c);
 '
 
+# A porta do wp-login fica no volume. Só grava false se a constante ainda não existe,
+# para não desfazer quem tiver aberto na mão.
+docker compose -p "${PROJECT}" -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" \
+  exec -T wordpress php -r '
+$f = "/var/www/html/wp-config.php";
+$c = file_get_contents($f);
+if ($c === false || preg_match("/^[ \\t]*define\\(\\s*'\''VH_LOGIN_WORDPRESS'\''/m", $c)) {
+  exit(0);
+}
+$snippet = "define( '\''VH_LOGIN_WORDPRESS'\'', false );\n\n";
+$needle = "That'\''s all, stop editing!";
+$pos = strpos($c, $needle);
+if ($pos === false) {
+  $c .= "\n" . $snippet;
+} else {
+  $line = strrpos(substr($c, 0, $pos), "\n");
+  $at = $line === false ? 0 : $line + 1;
+  $c = substr($c, 0, $at) . $snippet . substr($c, $at);
+}
+file_put_contents($f, $c);
+'
+
 
 echo "▸ instalando Hello Elementor, WooCommerce e Correios…"
 wp theme install hello-elementor --force >/dev/null

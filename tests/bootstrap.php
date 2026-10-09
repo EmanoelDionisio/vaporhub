@@ -40,6 +40,7 @@ require_once __DIR__ . '/stubs/class-vh-fake-tiny-erp.php';
 require_once __DIR__ . '/stubs/plugin-stubs.php';
 
 $vh_arquivos_plugin = [
+	'includes/class-vh-guard.php',
 	'includes/class-vh-datetime.php',
 	'includes/class-vh-checkout-endereco.php',
 	'includes/integrations/class-vh-seo-crypto.php',

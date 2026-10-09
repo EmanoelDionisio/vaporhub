@@ -2,7 +2,11 @@
 
 Loja WooCommerce neste repositório. Não mexer em Piscou Afundou, CIA do Vapor nem em produção até pedirem. Não fazer commit nem push sem pedido.
 
-Último envio no GitHub: conta do cliente, descrição da categoria, nome do produto no painel e aviso de opções no carrinho (`429c9bf`) em `main`. A avaliação do produto (`518fb27`) vai no mesmo envio. Versões: plugin `3.16.34`, tema `1.0.105`.
+Último envio no GitHub: a cerca do cliente e a senha perdida no botão da loja, em `main`. Versões: plugin `3.16.34`, tema `1.0.107`.
+
+## Segurança
+
+Cliente logado sem `manage_options` e sem `gerenciar_vh_loja` que abre `/minha-loja/`, `/wp-admin/` ou `wp-login.php` volta para a própria conta, sem aviso. A segunda tentativa, em 15 minutos, encerra a sessão do mesmo jeito. Deslogado, essas duas URLs do WordPress vão para a home. A porta só abre com `define( 'VH_LOGIN_WORDPRESS', true );` no `wp-config` do volume. Senha perdida e erro de senha ficam em `/minha-conta/`. `admin-ajax.php` e `admin-post.php` continuam livres.
 
 ## Home
 
@@ -16,7 +20,7 @@ A avaliação do produto usa as cores do painel: estrelas na cor principal, camp
 
 Na página do produto, no celular, a galeria, o nome, a compra e as abas ficam dentro da tela. As fotos extras rolam dentro da galeria.
 
-A conta do cliente usa o mesmo cartão e o mesmo botão da loja. No celular o menu fica em lista acima do conteúdo; a partir do tablet, ao lado. Sem pedidos, o aviso e o botão ficam dentro do cartão. Com pedidos, a lista empilha no celular.
+A conta do cliente usa o mesmo cartão e o mesmo botão da loja. Esqueci a senha usa o formulário da conta, nesse cartão, com o botão principal da loja, e depois do e-mail volta para a tela de entrar. No celular o menu fica em lista acima do conteúdo; a partir do tablet, ao lado. Sem pedidos, o aviso e o botão ficam dentro do cartão. Com pedidos, a lista empilha no celular.
 
 A descrição da categoria é o campo nativo do WordPress, editado em Minha Loja → Categorias. Na primeira página da categoria, o texto aparece num cartão. Se passar de quatro linhas, surge o botão Leia mais. O texto inteiro continua no HTML.
 
@@ -34,7 +38,7 @@ Revenda e comunidade não aparecem mais na home, no rodapé nem no menu principa
 
 ## Não regredir
 
-Paginação no caminho da categoria, em `/page/N/`, sem `orderby=menu_order` por padrão. Ícones do painel pela biblioteca visual. Abas da Aparência. Cores da vitrine vindas do painel.
+Paginação no caminho da categoria, em `/page/N/`, sem `orderby=menu_order` por padrão. Ícones do painel pela biblioteca visual. Abas da Aparência. Cores da vitrine vindas do painel. A cerca do cliente não vale para administrador nem gestor.
 
 ## De fora até pedirem
 

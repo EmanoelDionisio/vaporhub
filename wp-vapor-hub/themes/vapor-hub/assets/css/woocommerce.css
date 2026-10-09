@@ -928,6 +928,49 @@ body.woocommerce-account .vh-myaccount-login-card .woocommerce-form-login p.form
 	clear: both;
 }
 
+body.woocommerce-account .vh-myaccount-login-card .lost_reset_password .form-row-first,
+body.woocommerce-account .vh-myaccount-login-card .lost_reset_password .form-row-last {
+	float: none;
+	width: 100%;
+	margin-bottom: var(--vh-espaco-5);
+}
+
+body.woocommerce-account .vh-myaccount-login-card .vh-myaccount-voltar {
+	display: block;
+	margin-top: var(--vh-espaco-4);
+	text-align: center;
+}
+
+body.woocommerce-account .lost_reset_password button.woocommerce-Button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	box-sizing: border-box;
+	min-height: 44px;
+	margin: var(--vh-espaco-2) 0 0;
+	padding: var(--vh-espaco-3) var(--vh-espaco-6);
+	font-family: var(--vh-fonte-familia);
+	font-size: var(--vh-fonte-sm);
+	font-weight: var(--vh-fonte-peso-semi);
+	line-height: 1;
+	color: var(--vh-cor-texto-invertido);
+	background-color: var(--vh-cor-primaria);
+	border: 2px solid var(--vh-cor-primaria);
+	border-radius: var(--vh-raio-xl);
+	cursor: pointer;
+	appearance: none;
+	float: none;
+	transition: var(--vh-transicao);
+}
+
+body.woocommerce-account .lost_reset_password button.woocommerce-Button:hover,
+body.woocommerce-account .lost_reset_password button.woocommerce-Button:focus-visible {
+	background-color: var(--vh-cor-primaria-hover);
+	border-color: var(--vh-cor-primaria-hover);
+	color: var(--vh-cor-texto-invertido);
+}
+
 body.woocommerce-account #customer_login.col2-set,
 body.woocommerce-account #customer_login.vh-myaccount-login-dual {
 	max-width: min(920px, 100%);

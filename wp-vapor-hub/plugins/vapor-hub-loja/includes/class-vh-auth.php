@@ -30,6 +30,10 @@ class VH_Auth {
             exit;
         }
 
+        if ( VH_Guard::cliente_atual() ) {
+            VH_Guard::aplicar_sonda();
+        }
+
         $erro = isset( $_GET['login'] ) ? sanitize_key( wp_unslash( $_GET['login'] ) ) : '';
         $redirect_to = self::redirect_seguro(
             isset( $_GET['redirect_to'] ) ? wp_unslash( $_GET['redirect_to'] ) : VH_Router::url( 'dashboard' )

@@ -115,6 +115,9 @@ class VH_Portal {
         }
 
         if ( ! current_user_can( VH_Roles::CAP ) ) {
+            if ( VH_Guard::cliente_atual() ) {
+                VH_Guard::aplicar_sonda();
+            }
             wp_safe_redirect( home_url( '/' ) );
             exit;
         }

@@ -15,7 +15,7 @@ $seguranca = VH_Settings::obter( 'vh_seguranca', VH_Settings::seguranca_padrao()
     <form id="vh-form-seguranca" class="vh-rest-form vh-admin-section" data-endpoint="settings/seguranca" data-method="PUT">
         <h2><?php esc_html_e( 'Segurança do Portal', 'vapor-hub-loja' ); ?></h2>
         <p style="color:var(--vh-cinza-500);margin-bottom:20px;font-size:13px">
-            <?php esc_html_e( 'Proteja o login em /minha-loja/entrar com Cloudflare Turnstile. O wp-login.php permanece reservado a administradores do sistema.', 'vapor-hub-loja' ); ?>
+            <?php esc_html_e( 'Proteja o login em /minha-loja/entrar com Cloudflare Turnstile. O login do WordPress fica fechado para quem está deslogado. A constante VH_LOGIN_WORDPRESS no wp-config é quem abre. Cliente que abre o painel ou o wp-admin volta para a conta, sem aviso. Senha perdida e erro de senha ficam na conta da loja.', 'vapor-hub-loja' ); ?>
         </p>
 
         <label class="vh-switch-linha">

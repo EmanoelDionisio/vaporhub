@@ -19,7 +19,7 @@ require_once get_stylesheet_directory() . '/includes/vh-menu-icones.php';
 require_once get_stylesheet_directory() . '/includes/class-vh-menu-walker.php';
 
 /** Versão do tema — usada para cache-busting dos assets */
-define( 'VH_VERSION', '1.0.105' );
+define( 'VH_VERSION', '1.0.107' );
 
 /** Máximo de requisições de cálculo de frete (PDP) por IP por minuto. */
 define( 'VH_FRETE_PRODUTO_RATE_LIMIT', 30 );
@@ -1595,3 +1595,68 @@ function vh_ajax_cadastro_revenda(): void {
 }
 add_action( 'wp_ajax_nopriv_vh_cadastro_revenda', 'vh_ajax_cadastro_revenda' );
 add_action( 'wp_ajax_vh_cadastro_revenda', 'vh_ajax_cadastro_revenda' );
+
+/**
+ * Esqueci a senha fica no cartão da conta e, depois do e-mail, volta para entrar.
+ */
+function vh_abrir_cartao_senha( string $titulo ): void {
+	echo '<div class="vh-myaccount-login-card">';
+	echo '<h2>' . esc_html( $titulo ) . '</h2>';
+}
+
+function vh_fechar_cartao_senha(): void {
+	$url = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : home_url( '/minha-conta/' );
+	echo '<a class="vh-myaccount-voltar" href="' . esc_url( (string) $url ) . '">' . esc_html__( 'Voltar para entrar', 'vapor-hub' ) . '</a>';
+	echo '</div>';
+}
+
+add_action(
+	'woocommerce_before_lost_password_form',
+	static function (): void {
+		vh_abrir_cartao_senha( __( 'Perdeu a senha?', 'vapor-hub' ) );
+	},
+	9
+);
+add_action( 'woocommerce_after_lost_password_form', 'vh_fechar_cartao_senha', 20 );
+
+add_action(
+	'woocommerce_before_reset_password_form',
+	static function (): void {
+		vh_abrir_cartao_senha( __( 'Nova senha', 'vapor-hub' ) );
+	},
+	9
+);
+add_action( 'woocommerce_after_reset_password_form', 'vh_fechar_cartao_senha', 20 );
+
+/**
+ * O WooCommerce confirma o e-mail numa tela própria. A loja devolve a tela de entrar.
+ */
+function vh_senha_perdida_volta_ao_login(): void {
+	if ( ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'lost-password' ) ) {
+		return;
+	}
+	if ( empty( $_GET['reset-link-sent'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return;
+	}
+	if ( function_exists( 'wc_get_page_permalink' ) ) {
+		wp_safe_redirect( add_query_arg( 'senha', 'enviada', wc_get_page_permalink( 'myaccount' ) ) );
+		exit;
+	}
+}
+add_action( 'template_redirect', 'vh_senha_perdida_volta_ao_login', 4 );
+
+/**
+ * A confirmação do e-mail aparece na tela de entrar, sem depender da sessão.
+ */
+function vh_aviso_senha_enviada(): void {
+	$senha = isset( $_GET['senha'] ) ? sanitize_key( wp_unslash( (string) $_GET['senha'] ) ) : '';
+	if ( 'enviada' !== $senha ) {
+		return;
+	}
+	if ( function_exists( 'wc_print_notice' ) ) {
+		wc_print_notice( __( 'Enviamos um e-mail com o link para criar uma nova senha.', 'vapor-hub' ), 'success' );
+		return;
+	}
+	echo '<p class="woocommerce-message" role="status">' . esc_html__( 'Enviamos um e-mail com o link para criar uma nova senha.', 'vapor-hub' ) . '</p>';
+}
+add_action( 'woocommerce_before_customer_login_form', 'vh_aviso_senha_enviada', 5 );
