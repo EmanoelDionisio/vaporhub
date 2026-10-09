@@ -2,7 +2,7 @@
 
 Loja WooCommerce neste repositório. Não mexer em Piscou Afundou, CIA do Vapor nem em produção até pedirem. Não fazer commit nem push sem pedido.
 
-Último envio no GitHub: a cerca do cliente e a senha perdida no botão da loja (`d7aac0f`) em `main`. Versões: plugin `3.16.34`, tema `1.0.107`.
+Último envio no GitHub: o Turnstile do painel cobre os formulários públicos da loja (`913a709`) em `main`. Versões: plugin `3.16.34`, tema `1.0.108`.
 
 ## Segurança
 
