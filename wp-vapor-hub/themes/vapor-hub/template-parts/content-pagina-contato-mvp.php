@@ -21,6 +21,10 @@ $status = isset( $_GET['contato'] ) ? sanitize_text_field( wp_unslash( $_GET['co
 
 	<?php if ( 'ok' === $status ) : ?>
 		<p class="vh-contato-alerta vh-contato-alerta--ok" role="status"><?php esc_html_e( 'Mensagem enviada com sucesso. Em breve retornamos o contato.', 'vapor-hub' ); ?></p>
+	<?php elseif ( 'turnstile' === $status ) : ?>
+		<p class="vh-contato-alerta vh-contato-alerta--erro" role="alert">
+			<?php esc_html_e( 'Conclua a verificação de segurança antes de enviar.', 'vapor-hub' ); ?>
+		</p>
 	<?php elseif ( 'erro' === $status || 'incompleto' === $status ) : ?>
 		<p class="vh-contato-alerta vh-contato-alerta--erro" role="alert">
 			<?php esc_html_e( 'Não foi possível enviar agora. Verifique os campos e tente de novo.', 'vapor-hub' ); ?>
@@ -63,6 +67,8 @@ $status = isset( $_GET['contato'] ) ? sanitize_text_field( wp_unslash( $_GET['co
 					<label class="vh-label" for="vh_contato_mensagem"><?php esc_html_e( 'Sua mensagem', 'vapor-hub' ); ?></label>
 					<textarea class="vh-textarea" id="vh_contato_mensagem" name="vh_contato_mensagem" rows="5" required></textarea>
 				</div>
+
+				<?php if ( function_exists( 'vh_turnstile_campo' ) ) { vh_turnstile_campo(); } ?>
 
 				<button type="submit" class="vh-btn vh-btn-primary vh-btn-lg vh-contato-enviar">
 					<?php esc_html_e( 'Enviar mensagem', 'vapor-hub' ); ?>

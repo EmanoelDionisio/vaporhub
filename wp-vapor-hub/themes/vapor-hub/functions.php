@@ -19,7 +19,7 @@ require_once get_stylesheet_directory() . '/includes/vh-menu-icones.php';
 require_once get_stylesheet_directory() . '/includes/class-vh-menu-walker.php';
 
 /** Versão do tema — usada para cache-busting dos assets */
-define( 'VH_VERSION', '1.0.107' );
+define( 'VH_VERSION', '1.0.108' );
 
 /** Máximo de requisições de cálculo de frete (PDP) por IP por minuto. */
 define( 'VH_FRETE_PRODUTO_RATE_LIMIT', 30 );
@@ -1451,6 +1451,11 @@ add_action( 'wp', 'vh_wc_loja_sem_wrapper_padrao', 5 );
 function vh_processar_contato_site(): void {
 	if ( ! isset( $_POST['vh_contato_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['vh_contato_nonce'] ) ), 'vh_contato_site' ) ) {
 		wp_safe_redirect( add_query_arg( 'contato', 'erro', wp_get_referer() ?: home_url( '/' ) ) );
+		exit;
+	}
+
+	if ( function_exists( 'vh_turnstile_ok' ) && ! vh_turnstile_ok() ) {
+		wp_safe_redirect( add_query_arg( 'contato', 'turnstile', wp_get_referer() ?: home_url( '/' ) ) );
 		exit;
 	}
 

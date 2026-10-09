@@ -2270,7 +2270,8 @@ body.woocommerce-cart:not(:has(.woocommerce-cart-form)) .site-main .elementor-wi
 	margin-top: var(--vh-espaco-2);
 }
 
-.vh-popup-turnstile {
+.vh-popup-turnstile,
+.vh-turnstile-campo {
 	display: flex;
 	justify-content: center;
 	margin: var(--vh-espaco-2) 0 var(--vh-espaco-4);

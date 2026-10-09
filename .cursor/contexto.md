@@ -6,7 +6,7 @@ Loja WooCommerce neste repositório. Não mexer em Piscou Afundou, CIA do Vapor 
 
 ## Segurança
 
-Cliente logado sem `manage_options` e sem `gerenciar_vh_loja` que abre `/minha-loja/`, `/wp-admin/` ou `wp-login.php` volta para a própria conta, sem aviso. A segunda tentativa, em 15 minutos, encerra a sessão do mesmo jeito. Deslogado, essas duas URLs do WordPress vão para a home. A porta só abre com `define( 'VH_LOGIN_WORDPRESS', true );` no `wp-config` do volume. Senha perdida e erro de senha ficam em `/minha-conta/`. `admin-ajax.php` e `admin-post.php` continuam livres.
+Cliente logado sem `manage_options` e sem `gerenciar_vh_loja` que abre `/minha-loja/`, `/wp-admin/` ou `wp-login.php` volta para a própria conta, sem aviso. A segunda tentativa, em 15 minutos, encerra a sessão do mesmo jeito. Deslogado, essas duas URLs do WordPress vão para a home. A porta só abre com `define( 'VH_LOGIN_WORDPRESS', true );` no `wp-config` do volume. Senha perdida e erro de senha ficam em `/minha-conta/`. `admin-ajax.php` e `admin-post.php` continuam livres. O Turnstile, quando ligado no painel, entra uma vez em cada formulário público: entrar, cadastro, senha, contato, avaliação e finalizar compra. Desligado, esses envios seguem como antes. Busca e carrinho não passam por ele.
 
 ## Home
 

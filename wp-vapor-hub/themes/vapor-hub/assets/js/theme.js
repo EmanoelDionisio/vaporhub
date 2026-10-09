@@ -119,6 +119,30 @@
 
 document.addEventListener( 'DOMContentLoaded', function () {
 
+	( function iniciarTurnstileFormularios() {
+		var campos = document.querySelectorAll( '.vh-turnstile-campo .cf-turnstile' );
+		if ( ! campos.length || ! window.vhCarregarTurnstile ) {
+			return;
+		}
+		window.vhCarregarTurnstile().then( function () {
+			if ( ! window.turnstile ) {
+				return;
+			}
+			window.turnstile.ready( function () {
+				campos.forEach( function ( el ) {
+					if ( el.getAttribute( 'data-vh-widget' ) ) {
+						return;
+					}
+					var id = window.turnstile.render( el, {
+						sitekey: el.getAttribute( 'data-sitekey' ),
+						theme: el.getAttribute( 'data-theme' ) || 'auto'
+					} );
+					el.setAttribute( 'data-vh-widget', String( id ) );
+				} );
+			} );
+		} );
+	} )();
+
 	/* =====================================================================
 	   1. HEADER — EFEITO DE SCROLL
 	   ===================================================================== */

@@ -334,6 +334,37 @@ function vh_turnstile_ativo(): bool {
 }
 
 /**
+ * Um desafio por formulário público. Desligado, não imprime nada.
+ */
+function vh_turnstile_campo(): void {
+	if ( ! vh_turnstile_ativo() ) {
+		return;
+	}
+	$seguranca = get_option( 'vh_seguranca', array() );
+	$chave     = is_array( $seguranca ) ? (string) ( $seguranca['turnstile_site_key'] ?? '' ) : '';
+	if ( '' === $chave ) {
+		return;
+	}
+	echo '<div class="vh-turnstile-campo">';
+	echo '<div class="cf-turnstile" data-sitekey="' . esc_attr( $chave ) . '" data-theme="auto"></div>';
+	echo '</div>';
+}
+
+/**
+ * A mesma checagem do login do painel. Desligado, deixa o envio seguir.
+ */
+function vh_turnstile_mensagem(): string {
+	return __( 'Conclua a verificação de segurança antes de enviar.', 'vapor-hub' );
+}
+
+function vh_turnstile_ok(): bool {
+	if ( ! vh_turnstile_ativo() ) {
+		return true;
+	}
+	return class_exists( 'VH_Auth' ) && VH_Auth::validar_turnstile();
+}
+
+/**
  * Dados para lazy load de Cropper/Turnstile no front.
  */
 function vh_localizar_assets_performance(): void {
@@ -570,3 +601,67 @@ function vh_jquery_sincrono_contextos_criticos( $tag, $handle ) {
 	return $tag;
 }
 add_filter( 'script_loader_tag', 'vh_jquery_sincrono_contextos_criticos', 999, 2 );
+
+add_action( 'woocommerce_login_form', 'vh_turnstile_campo', 20 );
+add_action( 'woocommerce_register_form', 'vh_turnstile_campo', 20 );
+add_action( 'woocommerce_lostpassword_form', 'vh_turnstile_campo', 20 );
+add_action( 'woocommerce_resetpassword_form', 'vh_turnstile_campo', 20 );
+add_action( 'woocommerce_checkout_after_customer_details', 'vh_turnstile_campo', 20 );
+add_action( 'comment_form_after_fields', 'vh_turnstile_campo', 20 );
+add_action( 'comment_form_logged_in_after', 'vh_turnstile_campo', 20 );
+
+/**
+ * @param WP_Error $erros
+ */
+function vh_turnstile_no_erro( $erros ): void {
+	if ( vh_turnstile_ok() || ! is_wp_error( $erros ) ) {
+		return;
+	}
+	$erros->add( 'vh_turnstile', vh_turnstile_mensagem() );
+}
+
+add_filter(
+	'woocommerce_process_login_errors',
+	static function ( $erros ) {
+		vh_turnstile_no_erro( $erros );
+		return $erros;
+	}
+);
+
+add_filter(
+	'woocommerce_registration_errors',
+	static function ( $erros ) {
+		vh_turnstile_no_erro( $erros );
+		return $erros;
+	}
+);
+
+add_action( 'lostpassword_post', 'vh_turnstile_no_erro', 10, 1 );
+add_action( 'validate_password_reset', 'vh_turnstile_no_erro', 10, 1 );
+
+add_action(
+	'woocommerce_checkout_process',
+	static function (): void {
+		if ( vh_turnstile_ok() || ! function_exists( 'wc_add_notice' ) ) {
+			return;
+		}
+		wc_add_notice( vh_turnstile_mensagem(), 'error' );
+	}
+);
+
+add_action(
+	'pre_comment_on_post',
+	static function (): void {
+		if ( vh_turnstile_ok() ) {
+			return;
+		}
+		wp_die(
+			esc_html( vh_turnstile_mensagem() ),
+			esc_html__( 'Verificação de segurança', 'vapor-hub' ),
+			array(
+				'response'  => 403,
+				'back_link' => true,
+			)
+		);
+	}
+);
