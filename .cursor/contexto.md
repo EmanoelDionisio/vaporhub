@@ -2,7 +2,7 @@
 
 Loja WooCommerce neste repositório. Não mexer em Piscou Afundou, CIA do Vapor nem em produção até pedirem. Não fazer commit nem push sem pedido.
 
-Último envio no GitHub: conta do cliente, descrição da categoria, nome do produto no painel e aviso de opções no carrinho, em `main`. Versões: plugin `3.16.34`, tema `1.0.105`.
+Último envio no GitHub: conta do cliente, descrição da categoria, nome do produto no painel e aviso de opções no carrinho (`429c9bf`) em `main`. A avaliação do produto (`518fb27`) vai no mesmo envio. Versões: plugin `3.16.34`, tema `1.0.105`.
 
 ## Home
 
