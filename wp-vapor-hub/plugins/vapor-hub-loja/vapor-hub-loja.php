@@ -3,7 +3,7 @@
  * Plugin Name: Vapor Hub - Minha Loja
  * Plugin URI:  https://newalliance.tech
  * Description: App de gestão completo da loja Vapor Hub (pedidos, produtos, categorias, clientes, cupons, relatórios e conteúdo) com rota própria e isolado das telas nativas. Desenvolvido por New Alliance Tecnologia.
- * Version:     3.16.32
+ * Version:     3.16.34
  * Author:      New Alliance Tecnologia
  * Author URI:  https://newalliance.tech
  * License:     GPL-2.0-or-later
@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 /* ───────────────────────────────────────────────
  * Constantes
  * ─────────────────────────────────────────────── */
-define( 'VH_LOJA_VERSION', '3.16.32' );
+define( 'VH_LOJA_VERSION', '3.16.34' );
 define( 'VH_LOJA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VH_LOJA_URL', plugin_dir_url( __FILE__ ) );
 define( 'VH_LOJA_ASSETS', VH_LOJA_URL . 'admin/' );

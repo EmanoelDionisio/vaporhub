@@ -474,12 +474,15 @@ body.vh-menu-aberto .vh-nav-mobile {
 
 .vh-nav-departamentos {
 	display: block;
+	max-width: 100%;
+	min-width: 0;
 	background: transparent;
 	border-top: 1px solid var(--vh-cor-borda);
 }
 
 .vh-nav-departamentos-inner {
-	max-width: var(--vh-container-max);
+	max-width: min(100%, var(--vh-container-max));
+	min-width: 0;
 	margin-inline: auto;
 	padding: 0.35rem var(--vh-container-padding) 0.55rem;
 }
@@ -489,6 +492,9 @@ body.vh-menu-aberto .vh-nav-mobile {
 	flex-wrap: nowrap;
 	align-items: center;
 	gap: 0.25rem 1.35rem;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
 	margin: 0;
 	padding: 0.15rem 0.15rem 0.2rem;
 	list-style: none;
@@ -526,6 +532,17 @@ body.vh-menu-aberto .vh-nav-mobile {
 .vh-nav-departamentos-list > .current-menu-ancestor > a {
 	color: var(--vh-cor-primaria);
 	background: transparent;
+	box-shadow: inset 0 -2px 0 var(--vh-cor-primaria);
+}
+
+/* A categoria aberta já está na faixa: o pai não fica marcado junto. */
+.vh-nav-departamentos-list:has(> .current-menu-item) > .current-menu-ancestor:not(.current-menu-item) > a {
+	color: var(--vh-cor-texto);
+	box-shadow: none;
+}
+
+.vh-nav-departamentos-list:has(> .current-menu-item) > .current-menu-ancestor:not(.current-menu-item) > a:hover {
+	color: var(--vh-cor-primaria);
 	box-shadow: inset 0 -2px 0 var(--vh-cor-primaria);
 }
 
@@ -663,6 +680,16 @@ body.vh-menu-aberto .vh-nav-mobile {
 	.vh-nav-departamentos-list > .current-menu-ancestor > a {
 		color: var(--vh-cor-primaria);
 		background: transparent;
+		box-shadow: inset 0 -2px 0 var(--vh-cor-primaria);
+	}
+
+	.vh-nav-departamentos-list:has(> .current-menu-item) > .current-menu-ancestor:not(.current-menu-item) > a {
+		color: var(--vh-cor-texto);
+		box-shadow: none;
+	}
+
+	.vh-nav-departamentos-list:has(> .current-menu-item) > .current-menu-ancestor:not(.current-menu-item) > a:hover {
+		color: var(--vh-cor-primaria);
 		box-shadow: inset 0 -2px 0 var(--vh-cor-primaria);
 	}
 
@@ -932,10 +959,14 @@ body.vh-menu-aberto .vh-nav-mobile {
 
 .vh-page-loja {
 	padding-block: var(--vh-espaco-8);
+	max-width: 100%;
+	min-width: 0;
+	overflow-x: clip;
 }
 
 .vh-loja-container {
-	max-width: 1400px;
+	max-width: min(100%, 1400px);
+	min-width: 0;
 }
 
 .vh-breadcrumb-mvp {
@@ -1039,15 +1070,61 @@ body.vh-menu-aberto .vh-nav-mobile {
 	cursor: pointer;
 }
 
-.vh-loja-descricao-termo {
-	margin-bottom: var(--vh-espaco-8);
+.vh-cat-descricao {
+	margin: 0 0 var(--vh-espaco-8);
+	padding: var(--vh-espaco-5);
+	background: var(--vh-cor-superficie);
+	border: 1px solid var(--vh-cor-borda);
+	border-radius: var(--vh-raio-lg, 16px);
+}
+
+.vh-cat-descricao-texto {
+	color: var(--vh-cor-texto);
+	font-size: var(--vh-fonte-sm);
+	line-height: 1.65;
+}
+
+.vh-cat-descricao-texto.is-recolhido {
+	max-height: 6.6em;
+	overflow: hidden;
+}
+
+.vh-cat-descricao-texto :where(p, ul, ol) {
+	margin: 0 0 0.75em;
+}
+
+.vh-cat-descricao-texto :where(p, ul, ol):last-child {
+	margin-bottom: 0;
+}
+
+.vh-cat-descricao-acao {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: var(--vh-espaco-4);
+}
+
+.vh-cat-descricao-acao[hidden],
+.vh-cat-descricao-acao:has(button[hidden]) {
+	display: none;
+}
+
+@media (max-width: 575px) {
+	.vh-cat-descricao {
+		padding: var(--vh-espaco-4);
+	}
+
+	.vh-cat-descricao-acao .vh-btn {
+		width: 100%;
+	}
 }
 
 .vh-loja-grid-mvp {
 	display: grid;
-	grid-template-columns: 1fr;
+	grid-template-columns: minmax(0, 1fr);
 	gap: var(--vh-espaco-4);
 	align-items: start;
+	min-width: 0;
+	max-width: 100%;
 }
 
 @media (min-width: 1024px) {
@@ -1321,8 +1398,20 @@ body.vh-menu-aberto .vh-nav-mobile {
 	color: var(--vh-cor-texto);
 }
 
+.vh-loja-produtos {
+	min-width: 0;
+	max-width: 100%;
+}
+
 .vh-loja-produtos .woocommerce ul.products {
 	grid-template-columns: repeat(2, minmax(0, 1fr));
+	min-width: 0;
+	max-width: 100%;
+}
+
+.vh-loja-produtos .woocommerce ul.products > li.product {
+	min-width: 0;
+	max-width: 100%;
 }
 
 @media (min-width: 768px) {
@@ -1931,8 +2020,19 @@ body.woocommerce-account .elementor-section.elementor-section-boxed > .elementor
 	background: var(--vh-cor-superficie);
 	border: 1px solid var(--vh-cor-borda);
 	border-radius: var(--vh-raio-xl);
-	padding: var(--vh-espaco-4);
-	margin-bottom: var(--vh-espaco-8);
+	padding: var(--vh-espaco-3);
+	margin-bottom: var(--vh-espaco-4);
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+body.woocommerce-account:not(.vh-account-guest) .woocommerce {
+	display: flex;
+	flex-direction: column;
+	gap: var(--vh-espaco-4);
+	min-width: 0;
+	max-width: 100%;
 }
 
 @media (min-width: 768px) {
@@ -1942,7 +2042,7 @@ body.woocommerce-account .elementor-section.elementor-section-boxed > .elementor
 	 */
 	body.woocommerce-account:not(.vh-account-guest) .woocommerce {
 		display: grid;
-		grid-template-columns: 240px 1fr;
+		grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
 		gap: var(--vh-espaco-8);
 		align-items: start;
 	}
@@ -2395,9 +2495,9 @@ body.woocommerce-cart:not(:has(.woocommerce-cart-form)) .site-main .elementor-wi
 
 .vh-produto-card-titulo {
 	margin: 0;
-	font-size: clamp(1rem, 2vw, 1.42rem);
-	font-weight: 800;
-	line-height: 1.25;
+	font-size: var(--vh-titulo-produto-card, clamp(0.9rem, 2.4vw, 1.05rem));
+	font-weight: var(--vh-titulo-produto-peso, 700);
+	line-height: 1.35;
 	color: var(--vh-cor-texto);
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
@@ -2411,12 +2511,14 @@ body.woocommerce-cart:not(:has(.woocommerce-cart-form)) .site-main .elementor-wi
 }
 
 .vh-produto-card-preco .price {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.35rem;
+	min-width: 0;
+	max-width: 100%;
 	margin: 0;
 	padding: 0;
-	display: inline-flex;
-	align-items: baseline;
-	gap: .38rem;
-	flex-wrap: wrap;
 }
 
 .vh-produto-card-preco .price del {
@@ -2525,11 +2627,6 @@ body.woocommerce-cart:not(:has(.woocommerce-cart-form)) .site-main .elementor-wi
 		padding: var(--vh-espaco-3);
 		min-height: 0;
 		gap: .35rem;
-	}
-
-	.vh-produto-card-titulo {
-		font-size: clamp(.88rem, 3.4vw, 1.05rem);
-		line-height: 1.3;
 	}
 
 	.vh-produto-card-preco .price ins,
@@ -2910,9 +3007,10 @@ body.woocommerce-cart:not(:has(.woocommerce-cart-form)) .site-main .elementor-wi
 
 .vh-produto-titulo {
 	margin: 0 0 .7rem;
-	font-size: clamp(1.95rem, 3.2vw, 2.85rem);
-	line-height: 1.08;
-	letter-spacing: -.01em;
+	font-size: var(--vh-titulo-produto-ficha, clamp(1.35rem, 2.2vw, 1.8rem));
+	font-weight: var(--vh-titulo-produto-peso, 700);
+	line-height: 1.28;
+	letter-spacing: -0.015em;
 	overflow-wrap: anywhere;
 }
 
@@ -3140,9 +3238,46 @@ body.woocommerce-cart:not(:has(.woocommerce-cart-form)) .site-main .elementor-wi
    CONFIGURADOR "MONTE A SUA" (produto variável)
    ========================================================================= */
 
+.vh-aviso-opcoes {
+	width: 100%;
+	margin: 0 0 .75rem;
+	padding: .7rem .85rem;
+	border-radius: 12px;
+	border: 1px solid color-mix(in srgb, var(--vh-cor-primaria) 35%, var(--vh-cor-borda));
+	background: color-mix(in srgb, var(--vh-cor-primaria) 8%, var(--vh-cor-superficie));
+	color: var(--vh-cor-texto);
+	font-size: .88rem;
+	font-weight: 700;
+	line-height: 1.4;
+}
+
+.vh-aviso-opcoes[hidden] {
+	display: none;
+}
+
+.vh-cfg-passo--pendente .vh-cfg-passo-titulo {
+	color: var(--vh-cor-primaria);
+}
+
+.vh-cfg-passo--pendente .vh-cfg-opcoes {
+	border-radius: 12px;
+	outline: 1px solid color-mix(in srgb, var(--vh-cor-primaria) 55%, var(--vh-cor-borda));
+	outline-offset: 6px;
+}
+
+.vh-configurador--aviso .vh-cfg-resumo {
+	border-color: color-mix(in srgb, var(--vh-cor-primaria) 45%, var(--vh-cor-borda));
+	background: color-mix(in srgb, var(--vh-cor-primaria) 8%, var(--vh-cor-superficie));
+}
+
+.vh-configurador--aviso .vh-cfg-resumo-texto {
+	color: var(--vh-cor-texto);
+	font-weight: 700;
+}
+
 /* Esconde os selects nativos do WooCommerce — o configurador os controla. */
-.vh-produto-form-cart .variations,
-.vh-produto-form-cart .reset_variations {
+.vh-produto-form-cart:has([data-vh-configurador]) .variations,
+.vh-produto-form-cart:has([data-vh-configurador]) .reset_variations {
 	position: absolute !important;
 	width: 1px;
 	height: 1px;

@@ -346,6 +346,11 @@ class VH_Settings {
             $estilo_card = $padrao['estilo_card'];
         }
 
+        $tamanho_titulo = sanitize_key( (string) ( $input['tamanho_titulo_produto'] ?? $padrao['tamanho_titulo_produto'] ) );
+        if ( ! in_array( $tamanho_titulo, array( 'compacto', 'equilibrado', 'destaque' ), true ) ) {
+            $tamanho_titulo = $padrao['tamanho_titulo_produto'];
+        }
+
         $raio_card = absint( $input['raio_card'] ?? $padrao['raio_card'] );
         $raio_card = max( 6, min( 28, $raio_card ) );
 
@@ -369,6 +374,7 @@ class VH_Settings {
             'cor_texto_suave_escuro' => sanitize_hex_color( $input['cor_texto_suave_escuro'] ?? '' ) ?: $padrao['cor_texto_suave_escuro'],
             'cor_borda_escuro'  => sanitize_hex_color( $input['cor_borda_escuro'] ?? '' ) ?: $padrao['cor_borda_escuro'],
             'estilo_card'       => $estilo_card,
+            'tamanho_titulo_produto' => $tamanho_titulo,
             'raio_card'         => (string) $raio_card,
         ];
     }
@@ -626,6 +632,7 @@ class VH_Settings {
             'cor_texto_suave_escuro' => '#9b94ab',
             'cor_borda_escuro'       => '#2c2738',
             'estilo_card'        => 'suave',
+            'tamanho_titulo_produto' => 'equilibrado',
             'raio_card'          => '20',
         ];
     }
@@ -644,6 +651,24 @@ class VH_Settings {
         }
         return esc_url_raw( (string) ( $id['logo_url'] ?? '' ) );
     }
+
+    /**
+     * Marca do painel pintada com a cor principal, sem uma segunda arte.
+     */
+    public static function html_marca_painel( string $classe ): string {
+        $url = self::logo_painel_url();
+        if ( '' === $url ) {
+            return '';
+        }
+
+        return sprintf(
+            '<span class="vh-marca-painel %1$s" style="--vh-marca-url:url(\'%2$s\')" role="img" aria-label="%3$s"></span>',
+            esc_attr( $classe ),
+            esc_url( $url ),
+            esc_attr( get_bloginfo( 'name' ) )
+        );
+    }
+
     public static function css_tokens_marca(): string {
         $id = self::obter( 'vh_identidade_visual', self::identidade_visual_padrao() );
         if ( ! is_array( $id ) ) {
@@ -667,7 +692,8 @@ class VH_Settings {
         }
 
         return sprintf(
-            ':root{--vh-primario:%s;--vh-primario-hover:%s;--vh-primario-light:%s;--vh-escuro:#1a1228;}',
+            ':root{--vh-primario:%1$s;--vh-primario-hover:%2$s;--vh-primario-light:%3$s;--vh-escuro:#1a1228;}
+.vh-marca-painel{display:block;background-color:var(--vh-primario);-webkit-mask-image:var(--vh-marca-url);mask-image:var(--vh-marca-url);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;}',
             $prim,
             $hover,
             $leve

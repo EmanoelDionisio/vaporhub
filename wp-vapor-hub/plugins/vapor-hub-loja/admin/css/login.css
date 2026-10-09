@@ -37,10 +37,9 @@
 }
 
 .vh-login-logo {
-    max-width: 200px;
-    max-height: 72px;
-    height: auto;
-    width: auto;
+    width: 200px;
+    max-width: 100%;
+    height: 64px;
 }
 
 .vh-login-brand .dashicons {

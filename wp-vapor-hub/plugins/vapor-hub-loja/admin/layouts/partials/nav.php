@@ -18,7 +18,7 @@ $vh_secao_atual = $secao;
 
 <div class="vh-loja-brand">
     <?php if ( $vh_logo ) : ?>
-        <img class="vh-loja-brand-logo" src="<?php echo esc_url( $vh_logo ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" />
+        <?php echo class_exists( 'VH_Settings' ) ? VH_Settings::html_marca_painel( 'vh-loja-brand-logo' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
     <?php else : ?>
         <span class="dashicons dashicons-store"></span>
         <span class="vh-loja-brand-nome"><?php esc_html_e( 'Minha Loja', 'vapor-hub-loja' ); ?></span>

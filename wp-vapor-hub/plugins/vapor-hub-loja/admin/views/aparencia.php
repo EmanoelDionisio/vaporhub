@@ -609,6 +609,15 @@ $vh_n_vendidos      = function_exists( 'vh_home_ids_vendidos' ) ? count( vh_home
 
             <div class="vh-hero-grid">
                 <div class="vh-form-grupo">
+                    <label><?php esc_html_e( 'Tamanho do nome do produto', 'vapor-hub-loja' ); ?></label>
+                    <select name="vh_identidade_visual[tamanho_titulo_produto]">
+                        <option value="compacto" <?php selected( $identidade['tamanho_titulo_produto'] ?? '', 'compacto' ); ?>><?php esc_html_e( 'Compacto — nome discreto no card', 'vapor-hub-loja' ); ?></option>
+                        <option value="equilibrado" <?php selected( $identidade['tamanho_titulo_produto'] ?? 'equilibrado', 'equilibrado' ); ?>><?php esc_html_e( 'Equilibrado — leitura confortável', 'vapor-hub-loja' ); ?></option>
+                        <option value="destaque" <?php selected( $identidade['tamanho_titulo_produto'] ?? '', 'destaque' ); ?>><?php esc_html_e( 'Em destaque — nome maior', 'vapor-hub-loja' ); ?></option>
+                    </select>
+                    <p class="description"><?php esc_html_e( 'Vale para a lista da loja, as categorias e a página do produto. Equilibrado é o tamanho recomendado.', 'vapor-hub-loja' ); ?></p>
+                </div>
+                <div class="vh-form-grupo">
                     <label><?php esc_html_e( 'Estilo dos Cards de Produto', 'vapor-hub-loja' ); ?></label>
                     <select name="vh_identidade_visual[estilo_card]">
                         <option value="suave" <?php selected( $identidade['estilo_card'] ?? '', 'suave' ); ?>><?php esc_html_e( 'Suave (elegante)', 'vapor-hub-loja' ); ?></option>

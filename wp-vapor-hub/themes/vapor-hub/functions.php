@@ -19,7 +19,7 @@ require_once get_stylesheet_directory() . '/includes/vh-menu-icones.php';
 require_once get_stylesheet_directory() . '/includes/class-vh-menu-walker.php';
 
 /** Versão do tema — usada para cache-busting dos assets */
-define( 'VH_VERSION', '1.0.99' );
+define( 'VH_VERSION', '1.0.105' );
 
 /** Máximo de requisições de cálculo de frete (PDP) por IP por minuto. */
 define( 'VH_FRETE_PRODUTO_RATE_LIMIT', 30 );
@@ -75,6 +75,7 @@ function vh_identidade_visual_atual(): array {
 			'cor_texto_suave_escuro' => '#9b94ab',
 			'cor_borda_escuro'       => '#2c2738',
 			'estilo_card'            => 'suave',
+			'tamanho_titulo_produto' => 'equilibrado',
 			'raio_card'              => '20',
 		);
 
@@ -227,6 +228,28 @@ function vh_css_identidade_visual( array $identidade ): string {
 	}
 
 	$estilo_card = isset( $identidade['estilo_card'] ) ? $identidade['estilo_card'] : 'suave';
+	$tamanhos_titulo = array(
+		'compacto'    => array(
+			'card'  => 'clamp(0.82rem, 2.4vw, 0.95rem)',
+			'ficha' => 'clamp(1.15rem, 2vw, 1.5rem)',
+			'peso'  => '600',
+		),
+		'equilibrado' => array(
+			'card'  => 'clamp(0.9rem, 2.4vw, 1.05rem)',
+			'ficha' => 'clamp(1.35rem, 2.2vw, 1.8rem)',
+			'peso'  => '700',
+		),
+		'destaque'    => array(
+			'card'  => 'clamp(1rem, 2.6vw, 1.2rem)',
+			'ficha' => 'clamp(1.55rem, 2.5vw, 2.15rem)',
+			'peso'  => '800',
+		),
+	);
+	$tamanho_titulo = isset( $identidade['tamanho_titulo_produto'] ) ? (string) $identidade['tamanho_titulo_produto'] : 'equilibrado';
+	if ( ! isset( $tamanhos_titulo[ $tamanho_titulo ] ) ) {
+		$tamanho_titulo = 'equilibrado';
+	}
+	$titulo_produto = $tamanhos_titulo[ $tamanho_titulo ];
 	$sombra_card = '0 1px 2px rgba(28,20,13,.05)';
 	$sombra_card_hover = '0 10px 15px -3px rgba(28,20,13,.08),0 4px 6px -4px rgba(28,20,13,.04)';
 	if ( 'moderno' === $estilo_card ) {
@@ -257,6 +280,9 @@ function vh_css_identidade_visual( array $identidade ): string {
 --vh-fonte-familia: {$fonte_corpo};
 --vh-fonte-titulos: {$fonte_titulo};
 --vh-raio-card-custom: {$identidade['raio_card']}px;
+--vh-titulo-produto-card: {$titulo_produto['card']};
+--vh-titulo-produto-ficha: {$titulo_produto['ficha']};
+--vh-titulo-produto-peso: {$titulo_produto['peso']};
 --vh-sombra-card-custom: {$sombra_card};
 --vh-sombra-card-hover-custom: {$sombra_card_hover};
 }
@@ -1285,6 +1311,77 @@ function vh_menu_tem_itens( string $local ): bool {
 	}
 	$itens = wp_get_nav_menu_items( (int) $locs[ $local ] );
 	return is_array( $itens ) && count( $itens ) > 0;
+}
+
+/**
+ * Na faixa de departamentos, dois itens da mesma categoria não ficam marcados juntos.
+ * Fica o item cujo nome é o da categoria. Se nenhum bater, fica o primeiro.
+ *
+ * @param array<int,WP_Post> $itens
+ * @param stdClass           $args
+ * @return array<int,WP_Post>
+ */
+function vh_menu_departamentos_uma_selecao( array $itens, $args ): array {
+	if ( empty( $args->theme_location ) || 'departamentos' !== $args->theme_location ) {
+		return $itens;
+	}
+	if ( ! function_exists( 'is_product_category' ) || ! is_product_category() ) {
+		return $itens;
+	}
+
+	$termo = get_queried_object();
+	$nome  = ( $termo instanceof WP_Term ) ? vh_menu_texto_comparavel( $termo->name ) : '';
+	$grupos = array();
+
+	foreach ( $itens as $item ) {
+		if ( (int) $item->menu_item_parent !== 0 ) {
+			continue;
+		}
+		$classes = array_map( 'strval', (array) $item->classes );
+		if ( ! in_array( 'current-menu-item', $classes, true ) ) {
+			continue;
+		}
+		$url = untrailingslashit( (string) $item->url );
+		$grupos[ $url ][] = $item;
+	}
+
+	foreach ( $grupos as $grupo ) {
+		if ( count( $grupo ) < 2 ) {
+			continue;
+		}
+		$escolhido = $grupo[0];
+		foreach ( $grupo as $item ) {
+			if ( '' !== $nome && vh_menu_texto_comparavel( $item->title ) === $nome ) {
+				$escolhido = $item;
+				break;
+			}
+		}
+		foreach ( $grupo as $item ) {
+			if ( $item === $escolhido ) {
+				continue;
+			}
+			$item->classes = array_values(
+				array_diff(
+					array_map( 'strval', (array) $item->classes ),
+					array( 'current-menu-item', 'current-menu-parent', 'current-menu-ancestor' )
+				)
+			);
+		}
+	}
+
+	return $itens;
+}
+add_filter( 'wp_nav_menu_objects', 'vh_menu_departamentos_uma_selecao', 20, 2 );
+
+/**
+ * @param string $texto
+ */
+function vh_menu_texto_comparavel( string $texto ): string {
+	$texto = wp_strip_all_tags( html_entity_decode( $texto, ENT_QUOTES, 'UTF-8' ) );
+	if ( function_exists( 'mb_strtolower' ) ) {
+		return mb_strtolower( $texto );
+	}
+	return strtolower( $texto );
 }
 
 /**

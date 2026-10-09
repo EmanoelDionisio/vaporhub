@@ -2,7 +2,7 @@
 
 Loja WooCommerce neste repositório. Não mexer em Piscou Afundou, CIA do Vapor nem em produção até pedirem. Não fazer commit nem push sem pedido.
 
-Último envio no GitHub: home e marcas no painel (`d13b3de`) em `main`. Avaliações e o ajuste de largura do produto no celular estão só na máquina, sem commit. Versões locais: plugin `3.16.32`, tema `1.0.99`.
+Último envio no GitHub: conta do cliente, descrição da categoria, nome do produto no painel e aviso de opções no carrinho, em `main`. Versões: plugin `3.16.34`, tema `1.0.105`.
 
 ## Home
 
@@ -16,7 +16,17 @@ A avaliação do produto usa as cores do painel: estrelas na cor principal, camp
 
 Na página do produto, no celular, a galeria, o nome, a compra e as abas ficam dentro da tela. As fotos extras rolam dentro da galeria.
 
-Marcas separadas: modo claro (`logo_url`), modo escuro (`logo_escuro_url`), painel (`logo_painel_url`) e favicon. Escura ou do painel vazia reutiliza a clara. O recorte das três marcas é o mesmo perfil: o quadro acompanha a arte e a imagem salva cabe em até 400×160, proporcional, sem esticar. Favicon e as outras imagens continuam no retângulo fixo. O modo escuro (fundo, superfície, texto, texto suave, borda) sai do painel. A cor principal é a mesma nos dois modos.
+A conta do cliente usa o mesmo cartão e o mesmo botão da loja. No celular o menu fica em lista acima do conteúdo; a partir do tablet, ao lado. Sem pedidos, o aviso e o botão ficam dentro do cartão. Com pedidos, a lista empilha no celular.
+
+A descrição da categoria é o campo nativo do WordPress, editado em Minha Loja → Categorias. Na primeira página da categoria, o texto aparece num cartão. Se passar de quatro linhas, surge o botão Leia mais. O texto inteiro continua no HTML.
+
+No celular, a grade de produtos da categoria e da loja fica em duas colunas dentro da tela. A faixa de departamentos rola para o lado em vez de alargar a página. O mesmo limite vale para os outros cards de produto. Se dois itens da faixa apontam para a mesma categoria, só o item com o nome da categoria fica marcado.
+
+O nome do produto, na lista e na página do produto, sai de Aparência → Cores, no campo “Tamanho do nome do produto”. As opções são Compacto, Equilibrado e Em destaque. Equilibrado é o padrão e fica menor do que o tamanho anterior.
+
+No produto variável, o clique em adicionar ao carrinho sem as opções mostra um aviso com o que falta e marca essa escolha. Com tudo escolhido, a compra segue. Se a combinação não existe, o aviso pede outras opções.
+
+Marcas separadas: modo claro (`logo_url`), modo escuro (`logo_escuro_url`), painel (`logo_painel_url`) e favicon. Escura ou do painel vazia reutiliza a clara. No login e na lateral do painel, a marca do painel é pintada com a cor principal (`--vh-primario`), sem filtro branco fixo. O recorte das três marcas é o mesmo perfil: o quadro acompanha a arte e a imagem salva cabe em até 400×160, proporcional, sem esticar. Favicon e as outras imagens continuam no retângulo fixo. O modo escuro (fundo, superfície, texto, texto suave, borda) sai do painel. A cor principal é a mesma nos dois modos.
 
 ## O que saiu da vitrine
 

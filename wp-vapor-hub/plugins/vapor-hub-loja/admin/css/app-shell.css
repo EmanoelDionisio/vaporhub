@@ -157,12 +157,9 @@ body.vh-loja-tela select,
 
 .vh-loja-brand-logo {
     display: block;
-    max-width: 220px;
-    max-height: 84px;
-    height: auto;
-    width: auto;
-    /* Força a logo a ficar branca sobre o sidebar escuro, qualquer que seja o upload. */
-    filter: brightness(0) invert(1);
+    width: 180px;
+    max-width: 100%;
+    height: 56px;
 }
 
 .vh-loja-nav {

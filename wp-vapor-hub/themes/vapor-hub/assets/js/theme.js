@@ -1877,6 +1877,203 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		sincronizarDosSelects();
 	} )();
 
+	/* Aviso ao tentar comprar um produto variável sem as opções. */
+	( function iniciarAvisoOpcoes() {
+		var forms = document.querySelectorAll( 'form.variations_form' );
+		if ( ! forms.length ) {
+			return;
+		}
+
+		function selects( form ) {
+			return form.querySelectorAll( '.variations select' );
+		}
+
+		function nomeDaOpcao( form, select ) {
+			var tax = ( select.getAttribute( 'name' ) || '' ).replace( /^attribute_/, '' );
+			var caixa = form.closest( '.vh-produto-form-cart' );
+			var titulo = caixa ? caixa.querySelector( '.vh-cfg-passo[data-tax="' + tax + '"] .vh-cfg-passo-titulo' ) : null;
+			var texto = titulo ? titulo.textContent : '';
+			if ( ! texto && select.id ) {
+				var rotulo = form.querySelector( 'label[for="' + select.id + '"]' );
+				texto = rotulo ? rotulo.textContent : '';
+			}
+			return texto.replace( /^\s*\d+\.\s*/, '' ).replace( /\s+/g, ' ' ).trim();
+		}
+
+		function algumVazio( form ) {
+			var vazio = false;
+			selects( form ).forEach( function ( select ) {
+				if ( ! select.value ) {
+					vazio = true;
+				}
+			} );
+			return vazio;
+		}
+
+		function faltando( form ) {
+			var nomes = [];
+			selects( form ).forEach( function ( select ) {
+				if ( select.value ) {
+					return;
+				}
+				var nome = nomeDaOpcao( form, select );
+				if ( nome ) {
+					nomes.push( nome );
+				}
+			} );
+			return nomes;
+		}
+
+		function juntar( nomes ) {
+			if ( nomes.length < 2 ) {
+				return nomes[ 0 ] || '';
+			}
+			if ( nomes.length === 2 ) {
+				return nomes[ 0 ] + ' e ' + nomes[ 1 ];
+			}
+			return nomes.slice( 0, -1 ).join( ', ' ) + ' e ' + nomes[ nomes.length - 1 ];
+		}
+
+		function variationId( form ) {
+			var campo = form.querySelector( 'input[name="variation_id"]' );
+			return campo ? parseInt( campo.value, 10 ) || 0 : 0;
+		}
+
+		function precisaAviso( form, botao ) {
+			if ( algumVazio( form ) ) {
+				return true;
+			}
+			if ( botao.classList.contains( 'disabled' ) || botao.classList.contains( 'wc-variation-selection-needed' ) || botao.classList.contains( 'wc-variation-is-unavailable' ) ) {
+				return true;
+			}
+			return variationId( form ) === 0;
+		}
+
+		function mensagem( form, botao ) {
+			if ( algumVazio( form ) ) {
+				var nomes = faltando( form );
+				if ( nomes.length ) {
+					return 'Escolha ' + juntar( nomes ) + ' para adicionar ao carrinho.';
+				}
+				return 'Escolha as opções do produto para adicionar ao carrinho.';
+			}
+			if ( botao.classList.contains( 'wc-variation-is-unavailable' ) || variationId( form ) === 0 ) {
+				return 'Essa combinação não está disponível. Escolha outras opções.';
+			}
+			return 'Escolha as opções do produto para adicionar ao carrinho.';
+		}
+
+		function avisoEl( form ) {
+			var existente = form.querySelector( '[data-vh-aviso-opcoes]' );
+			if ( existente ) {
+				return existente;
+			}
+			var el = document.createElement( 'p' );
+			el.className = 'vh-aviso-opcoes';
+			el.setAttribute( 'data-vh-aviso-opcoes', '' );
+			el.setAttribute( 'role', 'status' );
+			el.hidden = true;
+			var linha = form.querySelector( '.woocommerce-variation-add-to-cart' );
+			if ( linha && linha.parentElement ) {
+				linha.parentElement.insertBefore( el, linha );
+			} else {
+				form.appendChild( el );
+			}
+			return el;
+		}
+
+		function marcarPassos( form ) {
+			var caixa = form.closest( '.vh-produto-form-cart' );
+			if ( ! caixa ) {
+				return;
+			}
+			caixa.querySelectorAll( '.vh-cfg-passo' ).forEach( function ( passo ) {
+				var tax = passo.getAttribute( 'data-tax' ) || '';
+				var select = form.querySelector( 'select[name="attribute_' + tax + '"]' );
+				passo.classList.toggle( 'vh-cfg-passo--pendente', !!( select && ! select.value ) );
+			} );
+			var cfg = caixa.querySelector( '[data-vh-configurador]' );
+			if ( cfg ) {
+				cfg.classList.add( 'vh-configurador--aviso' );
+			}
+		}
+
+		function mostrar( form, botao ) {
+			var el = avisoEl( form );
+			el.textContent = mensagem( form, botao );
+			el.hidden = false;
+			marcarPassos( form );
+		}
+
+		function limpar( form ) {
+			var el = form.querySelector( '[data-vh-aviso-opcoes]' );
+			if ( el ) {
+				el.hidden = true;
+				el.textContent = '';
+			}
+			var caixa = form.closest( '.vh-produto-form-cart' );
+			if ( ! caixa ) {
+				return;
+			}
+			caixa.querySelectorAll( '.vh-cfg-passo--pendente' ).forEach( function ( passo ) {
+				passo.classList.remove( 'vh-cfg-passo--pendente' );
+			} );
+			var cfg = caixa.querySelector( '[data-vh-configurador]' );
+			if ( cfg ) {
+				cfg.classList.remove( 'vh-configurador--aviso' );
+			}
+		}
+
+		function revisar( form ) {
+			var botao = form.querySelector( '.single_add_to_cart_button' );
+			var el = form.querySelector( '[data-vh-aviso-opcoes]' );
+			if ( ! botao || ! el || el.hidden ) {
+				return;
+			}
+			if ( precisaAviso( form, botao ) ) {
+				mostrar( form, botao );
+				return;
+			}
+			limpar( form );
+		}
+
+		forms.forEach( function ( form ) {
+			form.addEventListener( 'click', function ( event ) {
+				var botao = event.target.closest( '.single_add_to_cart_button' );
+				if ( ! botao || ! form.contains( botao ) || ! precisaAviso( form, botao ) ) {
+					return;
+				}
+				event.preventDefault();
+				event.stopPropagation();
+				mostrar( form, botao );
+			}, true );
+
+			form.addEventListener( 'submit', function ( event ) {
+				var botao = form.querySelector( '.single_add_to_cart_button' );
+				if ( ! botao || ! precisaAviso( form, botao ) ) {
+					return;
+				}
+				event.preventDefault();
+				event.stopPropagation();
+				mostrar( form, botao );
+			}, true );
+
+			form.addEventListener( 'change', function () {
+				window.setTimeout( function () {
+					revisar( form );
+				}, 0 );
+			} );
+
+			if ( window.jQuery ) {
+				window.jQuery( form ).on( 'found_variation show_variation reset_data hide_variation', function () {
+					window.setTimeout( function () {
+						revisar( form );
+					}, 0 );
+				} );
+			}
+		} );
+	} )();
+
 	/* ──────────────────────────────────────────────
 	 * Carrossel do Hero (slides cadastrados no painel)
 	 * ────────────────────────────────────────────── */
@@ -1956,6 +2153,32 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		} );
 
 		iniciar();
+	} )();
+
+	( function iniciarDescricaoCategoria() {
+		var bloco = document.querySelector( '[data-vh-cat-descricao]' );
+		if ( ! bloco ) {
+			return;
+		}
+		var texto = bloco.querySelector( '.vh-cat-descricao-texto' );
+		var botao = bloco.querySelector( '[data-vh-cat-mais]' );
+		if ( ! texto || ! botao ) {
+			return;
+		}
+		var mais  = botao.getAttribute( 'data-rotulo-mais' ) || 'Leia mais';
+		var menos = botao.getAttribute( 'data-rotulo-menos' ) || 'Mostrar menos';
+
+		if ( texto.scrollHeight <= texto.clientHeight + 2 ) {
+			texto.classList.remove( 'is-recolhido' );
+			return;
+		}
+
+		botao.hidden = false;
+		botao.addEventListener( 'click', function () {
+			var recolhido = texto.classList.toggle( 'is-recolhido' );
+			botao.setAttribute( 'aria-expanded', recolhido ? 'false' : 'true' );
+			botao.textContent = recolhido ? mais : menos;
+		} );
 	} )();
 
 } );

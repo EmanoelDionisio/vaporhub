@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
     <div class="vh-login-card">
         <div class="vh-login-brand">
             <?php if ( ! empty( $logo ) ) : ?>
-                <img class="vh-login-logo" src="<?php echo esc_url( $logo ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" />
+                <?php echo class_exists( 'VH_Settings' ) ? VH_Settings::html_marca_painel( 'vh-login-logo' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             <?php else : ?>
                 <span class="dashicons dashicons-store"></span>
                 <span class="vh-login-brand-nome"><?php esc_html_e( 'Minha Loja', 'vapor-hub-loja' ); ?></span>

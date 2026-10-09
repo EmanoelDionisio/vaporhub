@@ -109,10 +109,34 @@ $categoria_slug  = ! empty( $filtros['categoria'] ) ? $filtros['categoria'] : ''
 			</div>
 		</div>
 
-		<?php if ( is_product_taxonomy() ) : ?>
-			<div class="vh-loja-descricao-termo vh-text-muted">
-				<?php do_action( 'woocommerce_archive_description' ); ?>
+		<?php
+		$vh_termo_cat = ( function_exists( 'is_product_category' ) && is_product_category() && 0 === absint( get_query_var( 'paged' ) ) )
+			? get_queried_object()
+			: null;
+		if ( $vh_termo_cat instanceof WP_Term && '' !== trim( wp_strip_all_tags( (string) $vh_termo_cat->description ) ) ) :
+			$vh_desc_id   = 'vh-cat-descricao-' . (int) $vh_termo_cat->term_id;
+			$vh_desc_html = function_exists( 'wc_format_content' )
+				? wc_format_content( $vh_termo_cat->description )
+				: wpautop( wp_kses_post( $vh_termo_cat->description ) );
+			?>
+		<section class="vh-cat-descricao" data-vh-cat-descricao aria-labelledby="<?php echo esc_attr( $vh_desc_id ); ?>-titulo">
+			<h2 class="screen-reader-text" id="<?php echo esc_attr( $vh_desc_id ); ?>-titulo"><?php esc_html_e( 'Sobre esta categoria', 'vapor-hub' ); ?></h2>
+			<div class="vh-cat-descricao-texto is-recolhido" id="<?php echo esc_attr( $vh_desc_id ); ?>">
+				<?php echo $vh_desc_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</div>
+			<div class="vh-cat-descricao-acao">
+				<button
+					type="button"
+					class="vh-btn vh-btn-primary"
+					hidden
+					data-vh-cat-mais
+					data-rotulo-mais="<?php echo esc_attr__( 'Leia mais', 'vapor-hub' ); ?>"
+					data-rotulo-menos="<?php echo esc_attr__( 'Mostrar menos', 'vapor-hub' ); ?>"
+					aria-expanded="false"
+					aria-controls="<?php echo esc_attr( $vh_desc_id ); ?>"
+				><?php esc_html_e( 'Leia mais', 'vapor-hub' ); ?></button>
+			</div>
+		</section>
 		<?php endif; ?>
 
 		<div id="vh-loja-filtros-ativos-wrap">

@@ -82,8 +82,9 @@ $vh_metodo     = $vh_edicao ? 'PATCH' : 'POST';
             </div>
 
             <div class="vh-form-grupo">
-                <label><?php esc_html_e( 'Descrição', 'vapor-hub-loja' ); ?></label>
-                <textarea name="descricao" rows="3"><?php echo esc_textarea( $vh_dados['descricao'] ); ?></textarea>
+                <label><?php esc_html_e( 'Descrição da categoria', 'vapor-hub-loja' ); ?></label>
+                <textarea name="descricao" rows="6"><?php echo esc_textarea( $vh_dados['descricao'] ); ?></textarea>
+                <p class="vh-form-descricao"><?php esc_html_e( 'Aparece no topo da página desta categoria na loja. Se o texto for longo, o visitante vê um trecho e o botão Leia mais. É a descrição nativa da categoria no WordPress.', 'vapor-hub-loja' ); ?></p>
             </div>
 
             <div class="vh-form-grupo">
